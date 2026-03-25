@@ -115,7 +115,7 @@ export function LibrosMesSection({ items }: LibrosMesSectionProps) {
   }
 
   return (
-    <section className="flex min-h-[75vh] flex-col justify-center bg-white" id="libros-mes">
+    <section className="flex min-h-[75vh] flex-col justify-center bg-white px-14" id="libros-mes">
       <div className="libros-mes-inner">
         <div className="libros-mes-grid">
           <div>
