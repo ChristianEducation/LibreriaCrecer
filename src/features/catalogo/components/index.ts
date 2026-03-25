@@ -1,0 +1,12 @@
+export { AddToCartButton } from "./AddToCartButton";
+export { CategoryCard } from "./CategoryCard";
+export { FilterBar } from "./FilterBar";
+export { HeroSlider } from "./HeroSlider";
+export { InstagramSection } from "./InstagramSection";
+export { LibrosMesSection } from "./LibrosMesSection";
+export { PageHeader } from "./PageHeader";
+export { Pagination } from "./Pagination";
+export { ProductCard } from "./ProductCard";
+export { ProductGallery } from "./ProductGallery";
+export { ProductGrid } from "./ProductGrid";
+export { QuoteSection } from "./QuoteSection";

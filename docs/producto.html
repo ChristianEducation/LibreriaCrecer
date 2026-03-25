@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>San José — Crecer Librería</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --beige:#F2EFDF;--beige-warm:#EAE6CC;--beige-mid:#DDD8B8;
+  --moss:#736002;--moss-mid:#8A7302;--gold:#D9BA1E;--gold-light:#E3C83A;
+  --white:#F8F5E6;--text:#3A3001;--text-mid:#736002;--text-light:#9A8430;
+  --border:rgba(115,96,2,0.14);--border-gold:rgba(217,186,30,0.3);
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--beige);color:var(--text);overflow-x:hidden}
+nav{position:sticky;top:0;z-index:100;height:64px;padding:0 48px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(242,239,223,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);transition:box-shadow 0.3s}
+nav.scrolled{box-shadow:0 2px 24px rgba(58,48,1,0.08)}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.nav-logo-mark{width:28px;height:28px;position:relative;flex-shrink:0}
+.nav-logo-mark::before,.nav-logo-mark::after{content:'';position:absolute;background:var(--gold)}
+.nav-logo-mark::before{width:1.5px;height:100%;left:50%;transform:translateX(-50%)}
+.nav-logo-mark::after{width:100%;height:1.5px;top:50%;transform:translateY(-50%)}
+.nav-brand-text{font-family:'EB Garamond',serif;font-size:18px;font-weight:500;color:var(--moss);letter-spacing:0.02em;line-height:1}
+.nav-brand-sub{font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);display:block;margin-top:2px}
+.nav-search{flex:1;max-width:300px;position:relative}
+.nav-search input{width:100%;padding:8px 36px 8px 16px;background:var(--beige-warm);border:1px solid var(--border);border-radius:2px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .25s,background .25s}
+.nav-search input::placeholder{color:var(--text-light)}
+.nav-search input:focus{border-color:var(--gold);background:var(--white)}
+.nav-search-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-light);display:flex;align-items:center}
+.nav-search-btn svg{width:14px;height:14px}
+.nav-links{display:flex;gap:28px;list-style:none;flex-shrink:0;align-items:center}
+.nav-links>li{position:relative}
+.nav-links a{font-size:13px;font-weight:400;letter-spacing:0.04em;color:var(--text-mid);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--moss)}
+.nav-dropdown-wrap .nav-dropdown{position:absolute;top:100%;left:0;margin-top:10px;min-width:230px;padding:10px 0;background:rgba(242,239,223,0.98);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:2px;box-shadow:0 16px 40px rgba(58,48,1,0.12);list-style:none;opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .22s ease,visibility .22s,transform .22s ease;z-index:50}
+.nav-dropdown-wrap:hover .nav-dropdown{opacity:1;visibility:visible;transform:translateY(0)}
+.nav-dropdown a{display:block;padding:9px 18px;font-size:13px;color:var(--text-mid);transition:color .15s,background .15s}
+.nav-dropdown a:hover{background:var(--beige-warm);color:var(--moss)}
+.nav-dropdown-wrap>a::after{content:'';display:inline-block;margin-left:4px;width:0;height:0;border-left:3.5px solid transparent;border-right:3.5px solid transparent;border-top:4px solid currentColor;vertical-align:middle;opacity:.5;position:relative;top:-1px}
+.nav-right{display:flex;align-items:center;gap:20px;flex-shrink:0}
+.nav-cart-wrap{position:relative}
+.nav-cart{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--moss);cursor:pointer;transition:opacity .2s;user-select:none}
+.nav-cart:hover{opacity:.75}
+.nav-cart svg{width:17px;height:17px}
+.cart-badge{background:var(--gold);color:white;font-size:9px;font-weight:600;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.cart-panel{position:fixed;top:72px;right:24px;width:320px;background:rgba(242,239,223,0.99);border:1px solid var(--border);border-radius:2px;box-shadow:0 20px 48px rgba(58,48,1,0.14);backdrop-filter:blur(20px);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .22s ease,visibility .22s,transform .22s ease;z-index:200}
+.cart-panel.open{opacity:1;visibility:visible;transform:translateY(0)}
+.cart-panel-header{padding:16px 18px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.cart-panel-title{font-family:'EB Garamond',serif;font-size:16px;font-weight:500;color:var(--moss)}
+.cart-panel-count{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-light)}
+.cart-panel-items{max-height:260px;overflow-y:auto;padding:6px 0}
+.cart-panel-items::-webkit-scrollbar{width:3px}
+.cart-panel-items::-webkit-scrollbar-thumb{background:var(--beige-mid);border-radius:2px}
+.cart-item{display:flex;align-items:center;gap:12px;padding:10px 18px;transition:background .15s}
+.cart-item:hover{background:var(--beige-warm)}
+.cart-item-cover{width:34px;flex-shrink:0;aspect-ratio:2/3;background:linear-gradient(145deg,var(--beige-warm),var(--beige-mid));border-radius:1px;display:flex;align-items:center;justify-content:center}
+.cart-item-cover svg{width:13px;height:13px;opacity:.22;color:var(--moss)}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-title{font-family:'EB Garamond',serif;font-size:13px;font-weight:500;color:var(--text);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-item-author{font-size:11px;color:var(--text-light);margin-top:1px}
+.cart-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.cart-item-price{font-size:13px;font-weight:500;color:var(--gold)}
+.cart-item-qty-wrap{display:flex;align-items:center;gap:6px}
+.cart-qty-btn{width:18px;height:18px;border-radius:1px;border:1px solid var(--border);background:transparent;font-size:13px;color:var(--text-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s}
+.cart-qty-btn:hover{background:var(--moss);border-color:var(--moss);color:white}
+.cart-item-qty{font-size:12px;color:var(--text-mid);min-width:14px;text-align:center}
+.cart-empty{padding:40px 18px;text-align:center}
+.cart-empty svg{width:32px;height:32px;opacity:.15;color:var(--moss);margin:0 auto 12px;display:block}
+.cart-empty p{font-size:13px;color:var(--text-light)}
+.cart-panel-footer{padding:14px 18px 16px;border-top:1px solid var(--border)}
+.cart-total-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:13px}
+.cart-total-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-light)}
+.cart-total-amount{font-family:'EB Garamond',serif;font-size:20px;font-weight:500;color:var(--moss)}
+.cart-checkout-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;background:var(--moss);color:white;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;border-radius:2px;transition:background .22s,transform .15s;border:none;cursor:pointer}
+.cart-checkout-btn:hover:not(:disabled){background:var(--moss-mid);transform:translateY(-1px)}
+.cart-checkout-btn svg{width:13px;height:13px}
+.product-section{background:var(--white);padding:28px 56px 72px}
+.product-layout{display:grid;grid-template-columns:1fr 1fr;gap:72px;max-width:1100px;margin:0 auto;align-items:start}
+.gallery{position:sticky;top:88px}
+.gallery-main{aspect-ratio:3/4;border-radius:4px;overflow:hidden;position:relative;margin-bottom:12px;cursor:zoom-in;box-shadow:0 8px 40px rgba(58,48,1,0.1)}
+.gallery-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#3A2A20 0%,#5C3A28 40%,#3A2A20 100%);transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.gallery-main:hover .gallery-placeholder{transform:scale(1.02)}
+.gallery-placeholder-inner{width:78%;height:88%;border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;text-align:center}
+.gallery-placeholder-author{font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:16px}
+.gallery-placeholder-title{font-family:'EB Garamond',serif;font-size:26px;font-weight:400;font-style:italic;color:rgba(255,255,255,.92);line-height:1.2;margin-bottom:10px}
+.gallery-placeholder-sub{font-family:'EB Garamond',serif;font-size:13px;color:rgba(255,255,255,.45);font-style:italic}
+.gallery-placeholder-line{width:40%;height:1px;background:rgba(255,255,255,.15);margin:16px 0}
+.gallery-placeholder-pub{font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.gallery-zoom-btn{position:absolute;bottom:12px;right:12px;width:32px;height:32px;border-radius:2px;background:rgba(58,48,1,.6);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s}
+.gallery-zoom-btn:hover{background:rgba(58,48,1,.85)}
+.gallery-zoom-btn svg{width:14px;height:14px;color:white}
+.gallery-thumbs{display:flex;gap:8px}
+.gallery-thumb{width:64px;aspect-ratio:2/3;border-radius:2px;overflow:hidden;cursor:pointer;background:linear-gradient(145deg,var(--beige-warm),var(--beige-mid));border:2px solid transparent;transition:border-color .2s,opacity .2s;flex-shrink:0;opacity:.55}
+.gallery-thumb.active{border-color:var(--gold);opacity:1}
+.gallery-thumb:hover{opacity:.85}
+.gallery-thumb-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.gallery-thumb-inner svg{width:16px;height:16px;opacity:.2;color:var(--moss)}
+.product-info{padding-top:4px}
+.product-eyebrow{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.product-eyebrow::before{content:'';width:20px;height:1px;background:var(--gold)}
+.product-info-title{font-family:'EB Garamond',serif;font-size:clamp(28px,3vw,40px);font-weight:400;color:var(--moss);line-height:1.1;letter-spacing:-.01em;margin-bottom:4px}
+.product-info-author{font-size:14px;color:var(--text-light);margin-bottom:20px;font-weight:300}
+.product-info-author a{color:var(--text-mid);text-decoration:none;transition:color .2s}
+.product-info-author a:hover{color:var(--gold)}
+.product-ref{font-size:11px;color:var(--text-light);letter-spacing:.06em;margin-bottom:12px}
+.product-stock-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:2px;font-size:11px;font-weight:500;letter-spacing:.06em;margin-bottom:20px}
+.product-stock-badge.low{background:rgba(217,186,30,.15);color:var(--gold);border:1px solid var(--border-gold)}
+.product-stock-badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.product-price-block{margin-bottom:24px}
+.product-info-price{font-family:'EB Garamond',serif;font-size:38px;font-weight:500;color:var(--moss);letter-spacing:-.01em;line-height:1}
+.product-price-note{font-size:12px;color:var(--text-light);margin-top:4px;font-weight:300}
+.product-divider{width:100%;height:1px;background:var(--border);margin:24px 0}
+.product-desc{font-size:14px;line-height:1.85;color:var(--text-mid);font-weight:300;margin-bottom:20px}
+.product-desc p+p{margin-top:14px}
+.product-specs{display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+.product-spec{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-mid)}
+.product-spec-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.product-add-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.qty-control{display:flex;align-items:center;border:1px solid var(--border);border-radius:2px;overflow:hidden;flex-shrink:0}
+.qty-btn{width:36px;height:48px;background:var(--beige-warm);border:none;font-size:16px;color:var(--text-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}
+.qty-btn:hover{background:var(--beige-mid);color:var(--moss)}
+.qty-input{width:44px;height:48px;border:none;border-left:1px solid var(--border);border-right:1px solid var(--border);text-align:center;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--text);background:white;outline:none}
+.qty-input::-webkit-outer-spin-button,.qty-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.btn-add-main{flex:1;height:48px;background:var(--moss);color:white;border:none;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .22s,transform .15s}
+.btn-add-main:hover{background:var(--moss-mid);transform:translateY(-1px)}
+.btn-add-main svg{width:16px;height:16px}
+.btn-icon{width:48px;height:48px;border-radius:2px;border:1px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-light);transition:border-color .2s,color .2s}
+.btn-icon:hover{border-color:var(--moss);color:var(--moss)}
+.btn-icon svg{width:17px;height:17px}
+.product-trust{display:flex;gap:20px;flex-wrap:wrap;padding-top:20px;margin-top:4px;border-top:1px solid var(--border)}
+.trust-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text-light)}
+.trust-item svg{width:15px;height:15px;color:var(--gold);flex-shrink:0}
+.reco-section{background:var(--beige);padding:72px 56px 80px}
+.reco-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:40px}
+.reco-eyebrow{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.reco-eyebrow::before{content:'';width:20px;height:1px;background:var(--gold)}
+.reco-title{font-family:'EB Garamond',serif;font-size:clamp(24px,2.2vw,34px);font-weight:400;color:var(--moss);line-height:1.1}
+.reco-link{font-size:12px;font-weight:500;color:var(--moss);text-decoration:none;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid transparent;padding-bottom:1px;display:flex;align-items:center;gap:6px;transition:border-color .2s}
+.reco-link:hover{border-bottom-color:var(--moss)}
+.reco-link svg{width:13px;height:13px}
+.reco-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:24px 18px}
+.reco-card{cursor:pointer;opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease}
+.reco-card.visible{opacity:1;transform:translateY(0)}
+.reco-card:nth-child(1){transition-delay:.04s}.reco-card:nth-child(2){transition-delay:.08s}
+.reco-card:nth-child(3){transition-delay:.12s}.reco-card:nth-child(4){transition-delay:.16s}
+.reco-card:nth-child(5){transition-delay:.20s}
+.reco-img{aspect-ratio:2/3;position:relative;overflow:hidden;background:linear-gradient(145deg,var(--beige-warm),var(--beige-mid));border-radius:2px;margin-bottom:12px;box-shadow:2px 4px 16px rgba(58,48,1,.09);transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s}
+.reco-card:hover .reco-img{transform:translateY(-5px);box-shadow:4px 12px 28px rgba(58,48,1,.16)}
+.reco-img-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.reco-img-inner svg{width:32px;height:32px;opacity:.12;color:var(--moss)}
+.reco-overlay{position:absolute;inset:0;border-radius:2px;background:rgba(58,48,1,.82);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .28s}
+.reco-card:hover .reco-overlay{opacity:1}
+.btn-add-reco{background:var(--gold);color:white;border:none;padding:9px 16px;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.btn-add-reco:hover{background:var(--gold-light)}
+.reco-badge{position:absolute;top:8px;left:8px;background:var(--gold);color:white;font-size:8px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:1px}
+.reco-badge.oferta{background:var(--moss)}
+.reco-author{font-size:10px;color:var(--text-light);margin-bottom:3px}
+.reco-title-text{font-family:'EB Garamond',serif;font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;line-height:1.3}
+.reco-price{font-size:13px;font-weight:500;color:var(--gold)}
+.lightbox{position:fixed;inset:0;z-index:9000;background:rgba(46,38,1,.92);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+.lightbox.open{opacity:1;visibility:visible}
+.lightbox-img-wrap{max-width:480px;width:90%;background:linear-gradient(160deg,#3A2A20,#5C3A28);border-radius:4px;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;position:relative}
+.lightbox-close{position:absolute;top:-44px;right:0;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:transparent;color:white;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.lightbox-close:hover{background:rgba(255,255,255,.1)}
+footer{background:var(--moss);padding:60px 56px 36px;color:rgba(255,255,255,.55);position:relative;overflow:hidden}
+footer::before{content:'';position:absolute;top:0;left:56px;right:56px;height:1px;background:linear-gradient(to right,transparent,rgba(217,186,30,.3),transparent)}
+.footer-layout{display:grid;grid-template-columns:1.2fr 1fr 1fr 280px;gap:48px;margin-bottom:48px}
+.footer-brand .footer-logo-mark{width:32px;height:32px;position:relative;margin-bottom:16px}
+.footer-brand .footer-logo-mark::before,.footer-brand .footer-logo-mark::after{content:'';position:absolute;background:var(--gold)}
+.footer-brand .footer-logo-mark::before{width:1.5px;height:100%;left:50%;transform:translateX(-50%)}
+.footer-brand .footer-logo-mark::after{width:100%;height:1.5px;top:50%;transform:translateY(-50%)}
+.footer-brand-name{font-family:'EB Garamond',serif;font-size:20px;font-weight:400;color:white;display:block;margin-bottom:4px}
+.footer-brand-tagline{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:16px}
+.footer-brand p{font-size:13px;line-height:1.8;max-width:220px;font-weight:300}
+.footer-col h4{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:18px}
+.footer-col ul{list-style:none}
+.footer-col li{margin-bottom:10px}
+.footer-col a{font-size:13px;color:rgba(255,255,255,.5);text-decoration:none;transition:color .2s;font-weight:300}
+.footer-col a:hover{color:rgba(255,255,255,.9)}
+.footer-map-col h4{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.footer-map-col>p{font-size:12px;margin-bottom:12px;color:rgba(255,255,255,.45);font-weight:300}
+.footer-map-embed{width:100%;height:160px;border-radius:2px;overflow:hidden;border:1px solid rgba(255,255,255,.08);filter:grayscale(.3) brightness(.85)}
+.footer-map-embed iframe{width:100%;height:100%;border:0}
+.footer-bottom{padding-top:24px;border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;font-size:11px}
+.footer-bottom a{color:rgba(255,255,255,.28);text-decoration:none;transition:color .2s}
+.footer-bottom a:hover{color:var(--gold)}
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+@media(max-width:1024px){.product-layout{grid-template-columns:1fr;gap:40px}.gallery{position:static}.gallery-main{max-width:380px;margin:0 auto 12px}.gallery-thumbs{justify-content:center}.reco-grid{grid-template-columns:repeat(3,1fr)}.footer-layout{grid-template-columns:1fr 1fr;gap:32px}}
+@media(max-width:768px){nav{padding:0 20px}.nav-links,.nav-search{display:none}.product-section,.reco-section{padding-left:20px;padding-right:20px}.reco-grid{grid-template-columns:repeat(2,1fr)}footer{padding:48px 24px 32px}.footer-layout{grid-template-columns:1fr;gap:32px}.cart-panel{right:12px;width:calc(100vw - 24px)}}
+</style>
+</head>
+<body>
+<nav id="mainNav">
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo-mark"></div>
+    <div><span class="nav-brand-text">Crecer Librería</span><span class="nav-brand-sub">Librería Católica</span></div>
+  </a>
+  <div class="nav-search">
+    <input type="text" placeholder="Buscar libros, autores...">
+    <button class="nav-search-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></button>
+  </div>
+  <ul class="nav-links">
+    <li><a href="catalogo.html">Colección</a></li>
+    <li class="nav-dropdown-wrap">
+      <a href="#">Categorías</a>
+      <ul class="nav-dropdown">
+        <li><a href="catalogo.html?cat=biblias">Biblias</a></li>
+        <li><a href="catalogo.html?cat=espiritualidad">Espiritualidad</a></li>
+        <li><a href="catalogo.html?cat=teologia">Teología · Antropología · Filosofía</a></li>
+        <li><a href="catalogo.html?cat=formacion">Formación · Acompañamiento</a></li>
+        <li><a href="catalogo.html?cat=santos">Santos · Testimonios · Oraciones</a></li>
+        <li><a href="catalogo.html?cat=pastoral">Pastoral · Eclesial</a></li>
+        <li><a href="catalogo.html?cat=artesania">Artesanía Religiosa</a></li>
+        <li><a href="catalogo.html?cat=tarjetas">Tarjetas</a></li>
+      </ul>
+    </li>
+    <li><a href="index.html#libros-mes">Recomendados</a></li>
+    <li><a href="catalogo.html?cat=novedades">Novedades</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-cart-wrap">
+      <div class="nav-cart" id="cartToggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="cart-badge" id="cartCount">0</span>
+      </div>
+      <div class="cart-panel" id="cartPanel">
+        <div class="cart-panel-header"><span class="cart-panel-title">Mi carrito</span><span class="cart-panel-count" id="cartPanelCount">Vacío</span></div>
+        <div class="cart-panel-items" id="cartPanelItems"></div>
+        <div class="cart-panel-footer">
+          <div class="cart-total-row"><span class="cart-total-label">Total</span><span class="cart-total-amount" id="cartTotal">$0</span></div>
+          <a href="checkout.html" class="cart-checkout-btn" id="cartCheckoutBtn">Ir al checkout <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section class="product-section">
+  <!-- Breadcrumb: compacto, izquierda, solo links de navegación -->
+  <p style="font-size:11px;color:var(--text-light);margin-bottom:32px;line-height:1">
+    <a href="index.html" style="color:var(--text-light);text-decoration:none" onmouseover="this.style.color='var(--moss)'" onmouseout="this.style.color='var(--text-light)'">Inicio</a>
+    <span style="opacity:.3;margin:0 5px">/</span>
+    <a href="catalogo.html" style="color:var(--text-light);text-decoration:none" onmouseover="this.style.color='var(--moss)'" onmouseout="this.style.color='var(--text-light)'">Colección</a>
+    <span style="opacity:.3;margin:0 5px">/</span>
+    <a href="catalogo.html?cat=santos" style="color:var(--text-light);text-decoration:none" onmouseover="this.style.color='var(--moss)'" onmouseout="this.style.color='var(--text-light)'">Santos · Testimonios</a>
+    <span style="opacity:.3;margin:0 5px">/</span>
+    <span style="color:var(--text-mid)">San José</span>
+  </p>
+
+  <div class="product-layout">
+    <div class="gallery fade-in" id="galleryBlock">
+      <div class="gallery-main" onclick="openLightbox()">
+        <div class="gallery-placeholder">
+          <div class="gallery-placeholder-inner">
+            <span class="gallery-placeholder-author">Fabio Rosini</span>
+            <div class="gallery-placeholder-line"></div>
+            <span class="gallery-placeholder-title">San José</span>
+            <span class="gallery-placeholder-sub">Acoger, proteger y alimentar</span>
+            <div class="gallery-placeholder-line"></div>
+            <span class="gallery-placeholder-pub">Patmos · Libros de Espiritualidad</span>
+          </div>
+        </div>
+        <button class="gallery-zoom-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+      </div>
+      <div class="gallery-thumbs">
+        <div class="gallery-thumb active"><div class="gallery-thumb-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div></div>
+        <div class="gallery-thumb"><div class="gallery-thumb-inner" style="background:linear-gradient(145deg,#2A1E18,#4A2E20)"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div></div>
+        <div class="gallery-thumb"><div class="gallery-thumb-inner" style="background:linear-gradient(145deg,#3A3001,#736002)"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div></div>
+      </div>
+    </div>
+
+    <div class="product-info fade-in" id="infoBlock" style="transition-delay:0.1s">
+      <p class="product-eyebrow">Santos · Testimonios · Oraciones</p>
+      <h1 class="product-info-title">San José</h1>
+      <p class="product-info-author">por <a href="catalogo.html?autor=fabio-rosini">Fabio Rosini</a></p>
+      <p class="product-ref">Referencia LIB700115345</p>
+      <div class="product-stock-badge low"><span class="dot"></span>Últimas unidades en stock</div>
+      <div class="product-price-block">
+        <div class="product-info-price">$23.600</div>
+        <div class="product-price-note">Impuestos incluidos · Envío calculado al checkout</div>
+      </div>
+      <div class="product-divider"></div>
+      <div class="product-desc">
+        <p>Los ángeles hablan, a veces en sueños. Así le sucedió a un joven llamado José, descendiente de David. Obedecer las palabras del ángel le convertiría en custodio de una historia maravillosa: la de acoger, proteger y alimentar al mismo Dios y a su madre, María.</p>
+        <p>En la escuela de José, un hombre tan sólido como humilde, tan fuerte como dócil, podemos aprender el arte de custodiar la vida, ajena y propia, no solo la vida natural sino también la del Espíritu.</p>
+      </div>
+      <div class="product-specs">
+        <div class="product-spec"><span class="product-spec-dot"></span>Tapa blanda</div>
+        <div class="product-spec"><span class="product-spec-dot"></span>19 × 12,5 cm</div>
+        <div class="product-spec"><span class="product-spec-dot"></span>150 páginas</div>
+        <div class="product-spec"><span class="product-spec-dot"></span>Editorial Patmos · Libros de Espiritualidad</div>
+      </div>
+      <div class="product-divider"></div>
+      <div class="product-add-row">
+        <div class="qty-control">
+          <button class="qty-btn" id="qtyMinus">−</button>
+          <input class="qty-input" type="number" id="qtyInput" value="1" min="1" max="99">
+          <button class="qty-btn" id="qtyPlus">+</button>
+        </div>
+        <button class="btn-add-main" id="btnAddMain">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          Añadir al carrito
+        </button>
+        <button class="btn-icon" title="Favorito"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+        <button class="btn-icon" title="Compartir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+      </div>
+      <div class="product-trust">
+        <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Envío a todo Chile</div>
+        <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Compra segura</div>
+        <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Retiro en tienda · Antofagasta</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="reco-section">
+  <div class="reco-header">
+    <div>
+      <p class="reco-eyebrow">También podría interesarte</p>
+      <h2 class="reco-title">Títulos relacionados</h2>
+    </div>
+    <a href="catalogo.html?cat=santos" class="reco-link">Ver más <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+  </div>
+  <div class="reco-grid" id="recoGrid"></div>
+</section>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-img-wrap" onclick="event.stopPropagation()">
+    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+    <div class="gallery-placeholder" style="width:100%;height:100%;border-radius:4px">
+      <div class="gallery-placeholder-inner">
+        <span class="gallery-placeholder-author">Fabio Rosini</span>
+        <div class="gallery-placeholder-line"></div>
+        <span class="gallery-placeholder-title">San José</span>
+        <span class="gallery-placeholder-sub">Acoger, proteger y alimentar</span>
+        <div class="gallery-placeholder-line"></div>
+        <span class="gallery-placeholder-pub">Patmos · Libros de Espiritualidad</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-layout">
+    <div class="footer-brand">
+      <div class="footer-logo-mark"></div>
+      <span class="footer-brand-name">Crecer Librería</span>
+      <span class="footer-brand-tagline">Librería Católica · Antofagasta</span>
+      <p>Comprometidos con el crecimiento espiritual e intelectual de nuestra comunidad desde Antofagasta.</p>
+    </div>
+    <div class="footer-col"><h4>Catálogo</h4><ul><li><a href="catalogo.html">Todos los libros</a></li><li><a href="catalogo.html?cat=biblias">Biblias</a></li><li><a href="catalogo.html?cat=espiritualidad">Espiritualidad</a></li><li><a href="catalogo.html?cat=artesania">Artesanía Religiosa</a></li><li><a href="catalogo.html?cat=tarjetas">Tarjetas</a></li></ul></div>
+    <div class="footer-col"><h4>Información</h4><ul><li><a href="#">Sobre Nosotros</a></li><li><a href="#">Envíos</a></li><li><a href="#">Devoluciones</a></li><li><a href="https://instagram.com/crecerlibreria" target="_blank">Instagram</a></li><li><a href="#">Contacto</a></li></ul></div>
+    <div class="footer-map-col">
+      <h4>Encuéntranos</h4><p>Arturo Prat 470, Antofagasta</p>
+      <div class="footer-map-embed"><iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3557.1!2d-70.3975!3d-23.6524!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sArturo+Prat+470%2C+Antofagasta%2C+Chile!5e0!3m2!1ses!2scl!4v1!5m2!1ses!2scl" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Crecer Librería. Todos los derechos reservados.</span>
+    <a href="https://hultur.studio" target="_blank">Diseño y desarrollo: Hultur Studio</a>
+  </div>
+</footer>
+
+<script>
+const RELATED=[
+  {title:'Historia del Alma',author:'Santa Teresa de Lisieux',price:13500,tags:['recomendado']},
+  {title:'El Castillo Interior',author:'Santa Teresa de Ávila',price:11990,tags:[]},
+  {title:'Camino',author:'San Josemaría Escrivá',price:8990,tags:['oferta']},
+  {title:'La Imitación de Cristo',author:'Tomás de Kempis',price:11500,tags:[]},
+  {title:'El Peregrino Ruso',author:'Anónimo',price:9500,tags:[]},
+];
+function fmt(n){return'$'+n.toLocaleString('es-CL')}
+function renderReco(){
+  const g=document.getElementById('recoGrid');
+  g.innerHTML=RELATED.map(p=>{
+    const b=p.tags.includes('recomendado')?'<span class="reco-badge">Recom.</span>':p.tags.includes('oferta')?'<span class="reco-badge oferta">Oferta</span>':'';
+    return`<div class="reco-card" data-title="${p.title}" data-price="${p.price}" data-author="${p.author}"><div class="reco-img"><div class="reco-img-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>${b}<div class="reco-overlay"><button class="btn-add-reco">Agregar</button></div></div><p class="reco-author">${p.author}</p><p class="reco-title-text">${p.title}</p><p class="reco-price">${fmt(p.price)}</p></div>`;
+  }).join('');
+  g.querySelectorAll('.btn-add-reco').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();const c=btn.closest('.reco-card');addToCart(c.dataset.title,parseInt(c.dataset.price),c.dataset.author);btn.textContent='✓';setTimeout(()=>{btn.textContent='Agregar'},1600)})});
+  setTimeout(()=>{const o=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');o.unobserve(e.target)}})},{threshold:.08});g.querySelectorAll('.reco-card').forEach(c=>o.observe(c))},50);
+}
+const cart=JSON.parse(localStorage.getItem('crecer_cart')||'[]');
+function saveCart(){localStorage.setItem('crecer_cart',JSON.stringify(cart));renderCartPanel()}
+function renderCartPanel(){
+  const tq=cart.reduce((s,i)=>s+i.qty,0),tp=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  document.getElementById('cartCount').textContent=tq;
+  document.getElementById('cartPanelCount').textContent=tq===0?'Vacío':tq===1?'1 producto':`${tq} productos`;
+  document.getElementById('cartTotal').textContent=fmt(tp);
+  const btn=document.getElementById('cartCheckoutBtn');
+  if(btn){btn.style.pointerEvents=cart.length===0?'none':'';btn.style.opacity=cart.length===0?'0.38':''}
+  const el=document.getElementById('cartPanelItems');
+  if(cart.length===0){el.innerHTML='<div class="cart-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg><p>Tu carrito está vacío</p></div>';return}
+  el.innerHTML=cart.map((item,idx)=>`<div class="cart-item"><div class="cart-item-cover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div><div class="cart-item-info"><div class="cart-item-title">${item.title}</div><div class="cart-item-author">${item.author}</div></div><div class="cart-item-right"><span class="cart-item-price">${fmt(item.price)}</span><div class="cart-item-qty-wrap"><button class="cart-qty-btn" onclick="chQty(${idx},-1)">−</button><span class="cart-item-qty">${item.qty}</span><button class="cart-qty-btn" onclick="chQty(${idx},1)">+</button></div></div></div>`).join('');
+}
+function chQty(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);saveCart()}
+function addToCart(title,price,author,qty=1){const ex=cart.find(i=>i.title===title);if(ex)ex.qty+=qty;else cart.push({title,price,author,qty});saveCart();showToast(`"${title}" agregado`)}
+function showToast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--moss);color:white;padding:10px 22px;border-radius:2px;font-family:"DM Sans",sans-serif;font-size:13px;z-index:9000;opacity:0;transition:opacity .3s,transform .3s;white-space:nowrap;pointer-events:none';document.body.appendChild(t)}t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';clearTimeout(t._t);t._t=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(10px)'},2400)}
+const cT=document.getElementById('cartToggle'),cP=document.getElementById('cartPanel');
+cT.addEventListener('click',e=>{e.stopPropagation();cP.classList.toggle('open')});
+document.addEventListener('click',e=>{if(!cP.contains(e.target)&&!cT.contains(e.target))cP.classList.remove('open')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){cP.classList.remove('open');closeLightbox()}});
+const qI=document.getElementById('qtyInput');
+document.getElementById('qtyMinus').addEventListener('click',()=>{const v=parseInt(qI.value);if(v>1)qI.value=v-1});
+document.getElementById('qtyPlus').addEventListener('click', ()=>{const v=parseInt(qI.value);if(v<99)qI.value=v+1});
+document.getElementById('btnAddMain').addEventListener('click',()=>{
+  const qty=parseInt(qI.value)||1,btn=document.getElementById('btnAddMain');
+  addToCart('San José',23600,'Fabio Rosini',qty);
+  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg> Agregado';
+  btn.style.background='var(--moss-mid)';
+  setTimeout(()=>{btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Añadir al carrito';btn.style.background=''},2000);
+});
+document.querySelectorAll('.gallery-thumb').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.gallery-thumb').forEach(x=>x.classList.remove('active'));t.classList.add('active')})});
+function openLightbox(){document.getElementById('lightbox').classList.add('open');document.body.style.overflow='hidden'}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');document.body.style.overflow=''}
+window.addEventListener('scroll',()=>document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>40),{passive:true});
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:.05});
+document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
+renderCartPanel();
+renderReco();
+</script>
+</body>
+</html>

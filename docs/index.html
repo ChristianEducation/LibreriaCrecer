@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crecer Librería — Librería Católica · Antofagasta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --beige:       #F2EFDF;
+  --beige-warm:  #EAE6CC;
+  --beige-mid:   #DDD8B8;
+  --moss:        #736002;
+  --moss-mid:    #8A7302;
+  --moss-light:  #A08C30;
+  --gold:        #D9BA1E;
+  --gold-light:  #E3C83A;
+  --gold-pale:   #EDD96A;
+  --white:       #F8F5E6;
+  --text:        #3A3001;
+  --text-mid:    #736002;
+  --text-light:  #9A8430;
+  --border:      rgba(115,96,2,0.14);
+  --border-gold: rgba(217,186,30,0.3);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--beige);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ─── LOADER ─── */
+#loader {
+  position: fixed; inset: 0;
+  background: var(--beige);
+  z-index: 9999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+#loader.hide { opacity: 0; visibility: hidden; }
+.loader-cross {
+  width: 48px; height: 48px;
+  position: relative;
+  animation: crossPulse 1.4s ease-in-out infinite;
+}
+.loader-cross::before, .loader-cross::after {
+  content: '';
+  position: absolute;
+  background: var(--gold);
+  border-radius: 1px;
+}
+.loader-cross::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
+.loader-cross::after  { width: 100%; height: 2px; top: 50%; transform: translateY(-50%); }
+.loader-text {
+  font-family: 'EB Garamond', serif;
+  font-size: 15px; font-weight: 400; letter-spacing: 0.35em;
+  text-transform: uppercase; color: var(--moss);
+  opacity: 0; animation: fadeUp 0.7s ease 0.4s forwards;
+}
+.loader-bar-wrap { width: 80px; height: 1px; background: var(--beige-mid); overflow: hidden; }
+.loader-bar {
+  height: 100%; width: 0; background: var(--gold);
+  animation: barExpand 1.2s ease 0.2s forwards;
+}
+@keyframes crossPulse {
+  0%,100% { transform: scale(1); opacity: 0.7; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes barExpand { to { width: 100%; } }
+
+/* ─── NAV ─── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  height: 64px; padding: 0 48px;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  background: rgba(245,240,232,0.95);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  transition: box-shadow 0.3s;
+}
+nav.scrolled { box-shadow: 0 2px 24px rgba(58,48,1,0.08); }
+
+.nav-brand {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; flex-shrink: 0;
+}
+.nav-logo-mark {
+  width: 28px; height: 28px;
+  position: relative; flex-shrink: 0;
+}
+.nav-logo-mark::before, .nav-logo-mark::after {
+  content: '';
+  position: absolute;
+  background: var(--gold);
+}
+.nav-logo-mark::before { width: 1.5px; height: 100%; left: 50%; transform: translateX(-50%); }
+.nav-logo-mark::after  { width: 100%; height: 1.5px; top: 50%; transform: translateY(-50%); }
+.nav-brand-text {
+  font-family: 'EB Garamond', serif;
+  font-size: 18px; font-weight: 500;
+  color: var(--moss); letter-spacing: 0.02em; line-height: 1;
+}
+.nav-brand-sub {
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--gold); display: block; margin-top: 2px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.nav-search {
+  flex: 1; max-width: 300px; position: relative;
+}
+.nav-search input {
+  width: 100%; padding: 8px 36px 8px 16px;
+  background: var(--beige-warm); border: 1px solid var(--border);
+  border-radius: 2px; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; color: var(--text); outline: none;
+  transition: border-color 0.25s, background 0.25s;
+}
+.nav-search input::placeholder { color: var(--text-light); }
+.nav-search input:focus { border-color: var(--gold); background: var(--white); }
+.nav-search-btn {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; color: var(--text-light);
+  display: flex; align-items: center; transition: color 0.2s;
+}
+.nav-search-btn:hover { color: var(--moss); }
+.nav-search-btn svg { width: 14px; height: 14px; }
+
+.nav-links { display: flex; gap: 28px; list-style: none; flex-shrink: 0; align-items: center; }
+.nav-links > li { position: relative; }
+.nav-links a {
+  font-size: 13px; font-weight: 400; letter-spacing: 0.04em;
+  color: var(--text-mid); text-decoration: none; transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--moss); }
+
+.nav-dropdown-wrap .nav-dropdown {
+  position: absolute; top: 100%; left: 0; margin-top: 10px;
+  min-width: 230px; padding: 10px 0;
+  background: rgba(245,240,232,0.98);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  box-shadow: 0 16px 40px rgba(58,48,1,0.12);
+  list-style: none;
+  opacity: 0; visibility: hidden; transform: translateY(-8px);
+  transition: opacity 0.22s ease, visibility 0.22s, transform 0.22s ease;
+  z-index: 50;
+}
+.nav-dropdown-wrap:hover .nav-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+.nav-dropdown a {
+  display: block; padding: 9px 18px;
+  font-size: 13px; color: var(--text-mid);
+  transition: color 0.15s, background 0.15s;
+}
+.nav-dropdown a:hover { background: var(--beige-warm); color: var(--moss); }
+.nav-dropdown-wrap > a::after {
+  content: ''; display: inline-block; margin-left: 4px;
+  width: 0; height: 0;
+  border-left: 3.5px solid transparent; border-right: 3.5px solid transparent;
+  border-top: 4px solid currentColor; vertical-align: middle;
+  opacity: 0.5; position: relative; top: -1px;
+}
+
+.nav-right { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
+.nav-cart {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--moss); cursor: pointer;
+  transition: opacity 0.2s;
+}
+.nav-cart:hover { opacity: 0.7; }
+.nav-cart svg { width: 17px; height: 17px; }
+.cart-badge {
+  background: var(--gold); color: white;
+  font-size: 9px; font-weight: 600;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ─── CART DROPDOWN ─── */
+.nav-cart-wrap { position: relative; }
+.cart-panel {
+  position: fixed; top: 72px; right: 24px;
+  width: 320px;
+  background: rgba(245,240,232,0.99);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  box-shadow: 0 20px 48px rgba(58,48,1,0.14);
+  backdrop-filter: blur(20px);
+  opacity: 0; visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.22s ease, visibility 0.22s, transform 0.22s ease;
+  z-index: 200;
+}
+.cart-panel.open { opacity: 1; visibility: visible; transform: translateY(0); }
+.cart-panel-header {
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.cart-panel-title {
+  font-family: 'EB Garamond', serif;
+  font-size: 16px; font-weight: 500; color: var(--moss);
+}
+.cart-panel-count {
+  font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-light);
+}
+.cart-panel-items { max-height: 260px; overflow-y: auto; padding: 6px 0; }
+.cart-panel-items::-webkit-scrollbar { width: 3px; }
+.cart-panel-items::-webkit-scrollbar-thumb { background: var(--beige-mid); border-radius: 2px; }
+.cart-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 18px; transition: background 0.15s;
+}
+.cart-item:hover { background: var(--beige-warm); }
+.cart-item-cover {
+  width: 34px; flex-shrink: 0; aspect-ratio: 2/3;
+  background: linear-gradient(145deg, var(--beige-warm), var(--beige-mid));
+  border-radius: 1px;
+  display: flex; align-items: center; justify-content: center;
+}
+.cart-item-cover svg { width: 13px; height: 13px; opacity: 0.22; color: var(--moss); }
+.cart-item-info { flex: 1; min-width: 0; }
+.cart-item-title {
+  font-family: 'EB Garamond', serif;
+  font-size: 13px; font-weight: 500; color: var(--text);
+  line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cart-item-author { font-size: 11px; color: var(--text-light); margin-top: 1px; }
+.cart-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+.cart-item-price { font-size: 13px; font-weight: 500; color: var(--gold); }
+.cart-item-qty-wrap { display: flex; align-items: center; gap: 6px; }
+.cart-qty-btn {
+  width: 18px; height: 18px; border-radius: 1px;
+  border: 1px solid var(--border); background: transparent;
+  font-size: 13px; line-height: 1; color: var(--text-mid);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.cart-qty-btn:hover { background: var(--moss); border-color: var(--moss); color: white; }
+.cart-item-qty { font-size: 12px; color: var(--text-mid); min-width: 14px; text-align: center; }
+.cart-empty { padding: 40px 18px; text-align: center; }
+.cart-empty svg { width: 32px; height: 32px; opacity: 0.15; color: var(--moss); margin: 0 auto 12px; display: block; }
+.cart-empty p { font-size: 13px; color: var(--text-light); }
+.cart-panel-footer {
+  padding: 14px 18px 16px;
+  border-top: 1px solid var(--border);
+}
+.cart-total-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 13px;
+}
+.cart-total-label {
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-light);
+}
+.cart-total-amount {
+  font-family: 'EB Garamond', serif;
+  font-size: 20px; font-weight: 500; color: var(--moss);
+}
+.cart-checkout-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 12px;
+  background: var(--moss); color: white;
+  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  text-decoration: none; border-radius: 2px;
+  transition: background 0.22s, transform 0.15s;
+  border: none; cursor: pointer;
+}
+.cart-checkout-btn:hover:not(:disabled) { background: var(--moss-mid); transform: translateY(-1px); }
+.cart-checkout-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+.cart-checkout-btn svg { width: 13px; height: 13px; }
+
+/* ─── HERO ─── */
+.hero-wrapper {
+  background: var(--white);
+  padding: 14px;
+}
+.hero {
+  position: relative;
+  height: 88vh; min-height: 580px;
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  border-radius: 16px;
+  background: var(--moss);
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background-image: url('ImagenHero.png');
+  background-size: cover; background-position: center;
+  border-radius: 16px;
+  transition: transform 8s ease;
+}
+.hero:hover .hero-bg { transform: scale(1.02); }
+.hero-bg-fallback {
+  position: absolute; inset: 0; border-radius: 16px;
+  background:
+    radial-gradient(ellipse at 30% 60%, rgba(217,186,30,0.1) 0%, transparent 55%),
+    radial-gradient(ellipse at 70% 30%, rgba(217,186,30,0.06) 0%, transparent 55%),
+    linear-gradient(145deg, #3A3001 0%, #5A4A02 40%, #736002 100%);
+}
+.hero-grain {
+  position: absolute; inset: 0; border-radius: 16px; z-index: 1; opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px; pointer-events: none;
+}
+.hero-overlay {
+  position: absolute; inset: 0; border-radius: 16px; z-index: 1;
+  background: radial-gradient(ellipse at center, rgba(58,48,1,0.25) 0%, rgba(58,48,1,0.68) 100%);
+}
+.hero-content {
+  position: relative; z-index: 2;
+  padding: 0 40px; max-width: 740px; width: 100%;
+  opacity: 0; transform: translateY(32px);
+  animation: fadeUp 1s cubic-bezier(0.22,1,0.36,1) 0.5s forwards;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border-gold);
+  background: rgba(217,186,30,0.08);
+  padding: 5px 16px; border-radius: 0;
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(255,255,255,0.85); margin-bottom: 28px;
+}
+.hero-tag-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--gold); flex-shrink: 0;
+}
+.hero h1 {
+  font-family: 'EB Garamond', serif;
+  font-size: clamp(40px, 5.5vw, 72px); font-weight: 400; line-height: 1.08;
+  color: white; margin-bottom: 22px; letter-spacing: -0.01em;
+}
+.hero h1 em { font-style: italic; color: rgba(232,210,140,0.9); }
+.hero-desc {
+  font-size: 15px; font-weight: 300; line-height: 1.8;
+  color: rgba(255,255,255,0.72); max-width: 420px; margin-bottom: 44px;
+  letter-spacing: 0.01em;
+}
+.hero-actions { display: flex; gap: 16px; align-items: center; justify-content: center; }
+.btn-primary {
+  background: var(--gold); color: white;
+  padding: 13px 32px; border-radius: 2px;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+  letter-spacing: 0.1em; text-decoration: none; text-transform: uppercase;
+  transition: background 0.25s, transform 0.2s;
+  display: inline-flex; align-items: center; gap: 10px;
+}
+.btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+.btn-secondary {
+  color: rgba(255,255,255,0.72); font-size: 12px; font-weight: 400;
+  letter-spacing: 0.1em; text-decoration: none; text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+  padding-bottom: 2px; transition: color 0.2s, border-color 0.2s;
+}
+.btn-secondary:hover { color: var(--gold-light); border-color: var(--gold-light); }
+
+.hero-scroll-indicator {
+  position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+  font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--text-light); z-index: 2;
+  animation: fadeIn 1s ease 1.8s both;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.hero-scroll-line {
+  width: 1px; height: 36px;
+  background: linear-gradient(to bottom, var(--border), transparent);
+  animation: lineDown 2s ease infinite;
+  transform-origin: top;
+}
+@keyframes lineDown {
+  0%   { transform: scaleY(0); opacity: 1; }
+  100% { transform: scaleY(1); opacity: 0; }
+}
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+/* ─── SECTION COMMONS ─── */
+.section { padding: 80px 56px; }
+.section-header { margin-bottom: 48px; }
+.section-eyebrow {
+  font-size: 9px; letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 12px;
+  font-family: 'DM Sans', sans-serif;
+}
+.section-eyebrow::before { content:''; width:24px; height:1px; background: var(--gold); flex-shrink:0; }
+.section-title {
+  font-family: 'EB Garamond', serif;
+  font-size: clamp(28px, 2.8vw, 42px); font-weight: 400;
+  color: var(--moss); line-height: 1.15; letter-spacing: -0.01em;
+}
+.section-desc {
+  font-size: 14px; color: var(--text-light); line-height: 1.75;
+  margin-top: 12px; max-width: 400px; font-weight: 300;
+}
+
+/* ─── LIBROS DEL MES ─── */
+.libros-mes { background: var(--white); }
+.libros-mes-layout {
+  display: grid; grid-template-columns: 280px 1fr; gap: 64px; align-items: center;
+}
+.libros-slider-wrap { position: relative; overflow: hidden; }
+.libros-slider {
+  display: flex; gap: 20px;
+  overflow: hidden; scroll-behavior: smooth;
+}
+.libro-card {
+  flex: 0 0 160px; cursor: pointer;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.libro-card.visible { opacity: 1; transform: translateY(0); }
+.libro-card:nth-child(1) { transition-delay: 0.05s; }
+.libro-card:nth-child(2) { transition-delay: 0.10s; }
+.libro-card:nth-child(3) { transition-delay: 0.15s; }
+.libro-card:nth-child(4) { transition-delay: 0.20s; }
+.libro-card:nth-child(5) { transition-delay: 0.25s; }
+.libro-img {
+  width: 100%; aspect-ratio: 2/3;
+  background: linear-gradient(145deg, var(--beige-warm), var(--beige-mid));
+  position: relative; overflow: hidden; margin-bottom: 14px;
+  box-shadow: 4px 6px 24px rgba(58,48,1,0.12);
+  transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s;
+  border-radius: 2px;
+}
+.libro-card:hover .libro-img {
+  transform: translateY(-6px);
+  box-shadow: 6px 12px 32px rgba(58,48,1,0.2);
+}
+.libro-img-inner {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.libro-img-inner svg { width: 36px; height: 36px; opacity: 0.14; color: var(--moss); }
+.libro-brand { font-size: 10px; color: var(--text-light); margin-bottom: 4px; letter-spacing: 0.04em; }
+.libro-title {
+  font-family: 'EB Garamond', serif;
+  font-size: 15px; font-weight: 500; color: var(--text);
+  margin-bottom: 5px; line-height: 1.3;
+}
+.libro-price { font-size: 14px; font-weight: 500; color: var(--gold); }
+
+.slider-controls { display: flex; gap: 8px; margin-top: 32px; }
+.slider-btn {
+  width: 36px; height: 36px; border-radius: 2px;
+  border: 1px solid var(--border); background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-mid); transition: all 0.22s;
+}
+.slider-btn:hover { background: var(--moss); border-color: var(--moss); color: white; }
+.slider-btn svg { width: 15px; height: 15px; }
+
+/* ─── CATEGORÍAS ─── */
+.categorias-section { background: var(--beige); }
+.cats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.cat-card {
+  position: relative; overflow: hidden;
+  aspect-ratio: 3/4; cursor: pointer; border-radius: 2px;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.cat-card.visible { opacity: 1; transform: translateY(0); }
+.cat-card:nth-child(1) { transition-delay: 0.04s; }
+.cat-card:nth-child(2) { transition-delay: 0.08s; }
+.cat-card:nth-child(3) { transition-delay: 0.12s; }
+.cat-card:nth-child(4) { transition-delay: 0.16s; }
+.cat-card:nth-child(5) { transition-delay: 0.20s; }
+.cat-card:nth-child(6) { transition-delay: 0.24s; }
+.cat-card:nth-child(7) { transition-delay: 0.28s; }
+.cat-card:nth-child(8) { transition-delay: 0.32s; }
+
+.cat-bg {
+  width: 100%; height: 100%;
+  background-size: cover; background-position: center;
+  transition: transform 0.6s cubic-bezier(0.22,1,0.36,1);
+}
+.cat-card:hover .cat-bg { transform: scale(1.07); }
+.cat-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(58,48,1,0.88) 0%, rgba(58,48,1,0.2) 55%, transparent 100%);
+  transition: background 0.3s;
+}
+.cat-card:hover .cat-overlay {
+  background: linear-gradient(to top, rgba(58,48,1,0.94) 0%, rgba(58,48,1,0.38) 60%, transparent 100%);
+}
+.cat-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 16px 14px;
+}
+.cat-label-sub {
+  display: block; font-family: 'DM Sans', sans-serif;
+  font-size: 9px; font-weight: 400; color: var(--gold-light);
+  letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 4px;
+}
+.cat-label-name {
+  display: block; font-family: 'EB Garamond', serif;
+  font-size: 15px; font-weight: 400; color: white;
+  line-height: 1.3;
+}
+/* Cat backgrounds — paleta moss con variaciones tonales */
+.cat-bg-1 { background: linear-gradient(145deg, #3A3001, #4A3802); }
+.cat-bg-2 { background: linear-gradient(145deg, #4A3A02, #3A4430); }
+.cat-bg-3 { background: linear-gradient(145deg, #736002, #4A3802); }
+.cat-bg-4 { background: linear-gradient(145deg, #6A5402, #736002); }
+.cat-bg-5 { background: linear-gradient(145deg, #8A7302, #D9BA1E); }
+.cat-bg-6 { background: linear-gradient(145deg, #736002, #506040); }
+.cat-bg-7 { background: linear-gradient(145deg, #7A6402, #5A4A02); }
+.cat-bg-8 { background: linear-gradient(145deg, #8A7830, #484E38); }
+
+/* Cat inner geometric ornament */
+.cat-ornament {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -60%);
+  width: 40px; height: 40px; opacity: 0.12;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.cat-card:hover .cat-ornament { opacity: 0.2; transform: translate(-50%, -62%) scale(1.1); }
+.cat-ornament::before, .cat-ornament::after {
+  content: ''; position: absolute; background: var(--gold-pale);
+}
+.cat-ornament::before { width: 1px; height: 100%; left: 50%; transform: translateX(-50%); }
+.cat-ornament::after  { width: 100%; height: 1px; top: 50%; transform: translateY(-50%); }
+
+/* ─── PRODUCTOS ─── */
+.productos-section { background: var(--white); }
+.productos-header {
+  display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 44px;
+}
+.ver-todos {
+  font-size: 12px; font-weight: 500; color: var(--moss);
+  text-decoration: none; display: flex; align-items: center; gap: 8px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding-bottom: 1px; border-bottom: 1px solid transparent;
+  transition: border-color 0.2s, color 0.2s;
+}
+.ver-todos:hover { border-bottom-color: var(--moss); }
+.ver-todos svg { width: 14px; height: 14px; }
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 24px;
+}
+.product-card {
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+  cursor: pointer;
+}
+.product-card.visible { opacity: 1; transform: translateY(0); }
+.product-card:nth-child(1) { transition-delay: 0.04s; }
+.product-card:nth-child(2) { transition-delay: 0.08s; }
+.product-card:nth-child(3) { transition-delay: 0.12s; }
+.product-card:nth-child(4) { transition-delay: 0.16s; }
+.product-card:nth-child(5) { transition-delay: 0.20s; }
+.product-card:nth-child(6) { transition-delay: 0.24s; }
+
+.product-img {
+  aspect-ratio: 2/3; position: relative; overflow: hidden;
+  background: linear-gradient(145deg, var(--beige-warm), var(--beige-mid));
+  margin-bottom: 12px; border-radius: 2px;
+  box-shadow: 2px 4px 16px rgba(58,48,1,0.09);
+  transition: box-shadow 0.35s, transform 0.35s cubic-bezier(0.22,1,0.36,1);
+}
+.product-card:hover .product-img {
+  transform: translateY(-4px);
+  box-shadow: 4px 10px 28px rgba(58,48,1,0.16);
+}
+.product-img-inner {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.product-img-inner img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.product-img-inner svg { width: 36px; height: 36px; opacity: 0.12; color: var(--moss); }
+.product-badge {
+  position: absolute; top: 8px; left: 8px;
+  background: var(--gold); color: white;
+  font-size: 8px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 1px;
+}
+.product-badge.oferta { background: var(--moss); }
+.product-overlay {
+  position: absolute; inset: 0; border-radius: 2px;
+  background: rgba(58,48,1,0.82);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.28s;
+}
+.product-card:hover .product-overlay { opacity: 1; }
+.btn-add {
+  background: var(--gold); color: white; border: none;
+  padding: 9px 18px; border-radius: 2px;
+  font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-add:hover { background: var(--gold-light); transform: scale(1.03); }
+.product-author { font-size: 10px; color: var(--text-light); margin-bottom: 3px; letter-spacing: 0.03em; }
+.product-title {
+  font-family: 'EB Garamond', serif; font-size: 14px; font-weight: 500;
+  color: var(--text); margin-bottom: 5px; line-height: 1.3;
+}
+.product-price { font-size: 14px; font-weight: 500; color: var(--gold); }
+
+/* ─── QUOTE ─── */
+.quote-section {
+  background: var(--moss);
+  padding: 100px 56px;
+  position: relative; overflow: hidden;
+}
+.quote-section::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(184,151,74,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(184,151,74,0.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+/* Decorative lines */
+.quote-section::after {
+  content: '';
+  position: absolute; top: 0; left: 56px; right: 56px; height: 1px;
+  background: linear-gradient(to right, transparent, rgba(184,151,74,0.25), transparent);
+}
+.quote-inner {
+  max-width: 640px; margin: 0 auto; text-align: center;
+  position: relative; z-index: 1;
+}
+.quote-mark {
+  font-family: 'EB Garamond', serif;
+  font-size: 100px; line-height: 0.6;
+  color: var(--gold); opacity: 0.25;
+  display: block; margin-bottom: 20px;
+}
+.quote-section blockquote {
+  font-family: 'EB Garamond', serif;
+  font-size: clamp(20px, 2.4vw, 30px);
+  font-weight: 400; font-style: italic;
+  line-height: 1.6; color: rgba(255,255,255,0.88);
+  margin-bottom: 28px; letter-spacing: 0.005em;
+}
+.quote-section cite {
+  font-size: 10px; letter-spacing: 0.28em;
+  text-transform: uppercase; color: var(--gold);
+  font-style: normal; font-family: 'DM Sans', sans-serif;
+}
+
+/* ─── INSTAGRAM ─── */
+.instagram-section { background: var(--beige); }
+.ig-header {
+  display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px;
+}
+.ig-follow {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 500; color: var(--gold);
+  text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase;
+  transition: color 0.2s;
+}
+.ig-follow:hover { color: var(--moss); }
+.ig-follow svg { width: 15px; height: 15px; }
+.ig-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+}
+.ig-post {
+  aspect-ratio: 1; position: relative; overflow: hidden;
+  border-radius: 2px; cursor: pointer;
+  opacity: 0; transform: scale(0.96);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.ig-post.visible { opacity: 1; transform: scale(1); }
+.ig-post:nth-child(1) { transition-delay: 0.05s; }
+.ig-post:nth-child(2) { transition-delay: 0.10s; }
+.ig-post:nth-child(3) { transition-delay: 0.15s; }
+.ig-post:nth-child(4) { transition-delay: 0.20s; }
+.ig-bg { width: 100%; height: 100%; transition: transform 0.45s cubic-bezier(0.22,1,0.36,1); }
+.ig-post:hover .ig-bg { transform: scale(1.07); }
+.ig-bg.p1 { background: linear-gradient(135deg, #5A4A02, #D9BA1E); }
+.ig-bg.p2 { background: linear-gradient(135deg, #3A3001, #8A7302); }
+.ig-bg.p3 { background: linear-gradient(145deg, #D9BA1E, #E3C83A); }
+.ig-bg.p4 { background: linear-gradient(145deg, #5A4A02, #8A7302); }
+.ig-hover {
+  position: absolute; inset: 0;
+  background: rgba(58,48,1,0.55);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.28s;
+}
+.ig-post:hover .ig-hover { opacity: 1; }
+.ig-hover svg { width: 24px; height: 24px; fill: white; }
+
+/* ─── FOOTER ─── */
+footer {
+  background: var(--moss);
+  padding: 60px 56px 36px;
+  color: rgba(255,255,255,0.55);
+  position: relative; overflow: hidden;
+}
+footer::before {
+  content: '';
+  position: absolute; top: 0; left: 56px; right: 56px; height: 1px;
+  background: linear-gradient(to right, transparent, rgba(184,151,74,0.3), transparent);
+}
+.footer-layout {
+  display: grid; grid-template-columns: 1.2fr 1fr 1fr 280px; gap: 48px;
+  margin-bottom: 48px;
+}
+.footer-brand .footer-logo-mark {
+  width: 32px; height: 32px; position: relative; margin-bottom: 16px;
+}
+.footer-brand .footer-logo-mark::before,
+.footer-brand .footer-logo-mark::after {
+  content: ''; position: absolute; background: var(--gold);
+}
+.footer-brand .footer-logo-mark::before { width: 1.5px; height: 100%; left: 50%; transform: translateX(-50%); }
+.footer-brand .footer-logo-mark::after  { width: 100%; height: 1.5px; top: 50%; transform: translateY(-50%); }
+.footer-brand-name {
+  font-family: 'EB Garamond', serif;
+  font-size: 20px; font-weight: 400; color: white; display: block; margin-bottom: 4px;
+}
+.footer-brand-tagline {
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gold); display: block; margin-bottom: 16px;
+}
+.footer-brand p {
+  font-size: 13px; line-height: 1.8; max-width: 220px; font-weight: 300;
+}
+.footer-col h4 {
+  font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 18px; font-family: 'DM Sans', sans-serif;
+}
+.footer-col ul { list-style: none; }
+.footer-col li { margin-bottom: 10px; }
+.footer-col a {
+  font-size: 13px; color: rgba(255,255,255,0.5); text-decoration: none;
+  transition: color 0.2s; font-weight: 300;
+}
+.footer-col a:hover { color: rgba(255,255,255,0.9); }
+.footer-map-col h4 {
+  font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 10px;
+}
+.footer-map-col > p { font-size: 12px; margin-bottom: 12px; color: rgba(255,255,255,0.45); font-weight: 300; }
+.footer-map-embed {
+  width: 100%; height: 160px; border-radius: 2px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  filter: grayscale(0.3) brightness(0.85);
+}
+.footer-map-embed iframe { width: 100%; height: 100%; border: 0; }
+.footer-bottom {
+  padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11px; letter-spacing: 0.02em;
+}
+.footer-bottom a {
+  color: rgba(255,255,255,0.28);
+  text-decoration: none; transition: color 0.2s;
+}
+.footer-bottom a:hover { color: var(--gold); }
+
+/* ─── ANIMATIONS ─── */
+.reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 1200px) {
+  .productos-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 1024px) {
+  .cats-grid { grid-template-columns: repeat(2, 1fr); }
+  .footer-layout { grid-template-columns: 1fr 1fr; gap: 32px; }
+  .libros-mes-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-links, .nav-search { display: none; }
+  .section { padding: 56px 24px; }
+  .hero-wrapper { padding: 10px; }
+  .hero { height: 82vh; }
+  .hero-content { padding: 0 20px; }
+  .ig-grid { grid-template-columns: repeat(2, 1fr); }
+  .footer-layout { grid-template-columns: 1fr; gap: 32px; padding-bottom: 0; }
+  footer { padding: 48px 24px 32px; }
+  .quote-section { padding: 64px 24px; }
+  .productos-grid { grid-template-columns: repeat(2, 1fr); }
+  .cats-grid { gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-cross"></div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+  <p class="loader-text">Crecer Librería</p>
+</div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo-mark"></div>
+    <div>
+      <span class="nav-brand-text">Crecer Librería</span>
+      <span class="nav-brand-sub">Librería Católica</span>
+    </div>
+  </a>
+  <div class="nav-search">
+    <input type="text" placeholder="Buscar libros, autores...">
+    <button class="nav-search-btn" aria-label="Buscar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+    </button>
+  </div>
+  <ul class="nav-links">
+    <li><a href="catalogo.html">Colección</a></li>
+    <li class="nav-dropdown-wrap">
+      <a href="#categorias">Categorías</a>
+      <ul class="nav-dropdown">
+        <li><a href="catalogo.html?cat=biblias">Biblias</a></li>
+        <li><a href="catalogo.html?cat=espiritualidad">Espiritualidad</a></li>
+        <li><a href="catalogo.html?cat=teologia">Teología · Antropología · Filosofía</a></li>
+        <li><a href="catalogo.html?cat=formacion">Formación · Acompañamiento</a></li>
+        <li><a href="catalogo.html?cat=santos">Santos · Testimonios · Oraciones</a></li>
+        <li><a href="catalogo.html?cat=pastoral">Pastoral · Eclesial</a></li>
+        <li><a href="catalogo.html?cat=artesania">Artesanía Religiosa</a></li>
+        <li><a href="catalogo.html?cat=tarjetas">Tarjetas</a></li>
+      </ul>
+    </li>
+    <li><a href="#libros-mes">Recomendados</a></li>
+    <li><a href="catalogo.html?cat=novedades">Novedades</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-cart-wrap">
+      <div class="nav-cart" id="cartToggle" role="button" aria-label="Ver carrito">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+        <span class="cart-badge" id="cartCount">0</span>
+      </div>
+
+      <!-- CART PANEL -->
+      <div class="cart-panel" id="cartPanel">
+        <div class="cart-panel-header">
+          <span class="cart-panel-title">Mi carrito</span>
+          <span class="cart-panel-count" id="cartPanelCount">0 productos</span>
+        </div>
+        <div class="cart-panel-items" id="cartPanelItems">
+          <!-- rendered by JS -->
+        </div>
+        <div class="cart-panel-footer">
+          <div class="cart-total-row">
+            <span class="cart-total-label">Total</span>
+            <span class="cart-total-amount" id="cartTotal">$0</span>
+          </div>
+          <a href="checkout.html" class="cart-checkout-btn" id="cartCheckoutBtn">
+            Ir al checkout
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero-wrapper">
+  <section class="hero">
+    <div class="hero-bg-fallback"></div>
+    <div class="hero-bg"></div>
+    <div class="hero-grain"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-tag">
+        <span class="hero-tag-dot"></span>
+        Librería Católica · Antofagasta
+        <span class="hero-tag-dot"></span>
+      </div>
+      <h1>Al servicio de la fe,<br><em>la educación y la cultura</em></h1>
+      <p class="hero-desc">Una cuidada selección de libros y textos para el crecimiento personal y comunitario en la sociedad actual.</p>
+      <div class="hero-actions">
+        <a href="catalogo.html" class="btn-primary">
+          Ver catálogo
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="hero-scroll-indicator">
+      Scroll
+      <span class="hero-scroll-line"></span>
+    </div>
+  </section>
+</div>
+
+<!-- LIBROS DEL MES -->
+<section class="section libros-mes" id="libros-mes">
+  <div class="libros-mes-layout">
+    <div>
+      <p class="section-eyebrow reveal">Selección especial</p>
+      <h2 class="section-title reveal">Libros<br>del mes</h2>
+      <p class="section-desc reveal">Una selección de obras particularmente relevantes e inspiradoras: desde estudios bíblicos y devocionales hasta biografías de figuras católicas.</p>
+      <div class="slider-controls reveal">
+        <button class="slider-btn" id="prevBtn" aria-label="Anterior">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="slider-btn" id="nextBtn" aria-label="Siguiente">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="libros-slider-wrap">
+      <div class="libros-slider" id="librosSlider">
+        <div class="libro-card">
+          <div class="libro-img"><div class="libro-img-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div></div>
+          <p class="libro-brand">Papa Francisco</p>
+          <h4 class="libro-title">Laudate Deum</h4>
+          <p class="libro-price">$12.990</p>
+        </div>
+        <div class="libro-card">
+          <div class="libro-img"><div class="libro-img-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div></div>
+          <p class="libro-brand">Thomas Merton</p>
+          <h4 class="libro-title">La Montaña de los Siete Círculos</h4>
+          <p class="libro-price">$18.500</p>
+        </div>
+        <div class="libro-card">
+          <div class="libro-img"><div class="libro-img-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div></div>
+          <p class="libro-brand">C.S. Lewis</p>
+          <h4 class="libro-title">Mero Cristianismo</h4>
+          <p class="libro-price">$14.990</p>
+        </div>
+        <div class="libro-card">
+          <div class="libro-img"><div class="libro-img-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div></div>
+          <p class="libro-brand">Santa Teresa de Ávila</p>
+          <h4 class="libro-title">El Castillo Interior</h4>
+          <p class="libro-price">$11.990</p>
+        </div>
+        <div class="libro-card">
+          <div class="libro-img"><div class="libro-img-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div></div>
+          <p class="libro-brand">Fulton J. Sheen</p>
+          <h4 class="libro-title">Paz del Alma</h4>
+          <p class="libro-price">$13.500</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORÍAS -->
+<section class="section categorias-section" id="categorias">
+  <div class="section-header reveal">
+    <p class="section-eyebrow">Explorar</p>
+    <h2 class="section-title">Categorías</h2>
+  </div>
+  <div class="cats-grid">
+    <a href="catalogo.html?cat=biblias" class="cat-card" style="text-decoration:none">
+      <div class="cat-bg cat-bg-1"></div>
+      <div class="cat-ornament"></div>
+      <div class="cat-overlay"></div>
+      <div class="cat-label">
+        <span class="cat-label-sub">Explorar</span>
+        <span class="cat-label-name">Biblias</span>
+      </div>
+    </a>
+    <a href="catalogo.html?cat=espiritualidad" class="cat-card" style="text-decoration:none">
+      <div class="cat-bg cat-bg-2"></div>
+      <div class="cat-ornament"></div>
+      <div class="cat-overlay"></div>
+      <div class="cat-label">
+        <span class="cat-label-sub">Explorar</span>
+        <span class="cat-label-name">Espiritualidad</span>
+      </div>
+    </a>
+    <a href="catalogo.html?cat=teologia" class="cat-card" style="text-decoration:none">
+      <div class="cat-bg cat-bg-3"></div>
+      <div class="cat-ornament"></div>
+      <div class="cat-overlay"></div>
+      <div class="cat-label">
+        <span class="cat-label-sub">Explorar</span>
+        <span class="cat-label-name">Teología · Antropología · Filosofía</span>
+      </div>
+    </a>
+    <a href="catalogo.html?cat=formacion" class="cat-card" style="text-decoration:none">
+      <div class="cat-bg cat-bg-4"></div>
+      <div class="cat-ornament"></div>
+      <div class="cat-overlay"></div>
+      <div class="cat-label">
+        <span class="cat-label-sub">Explorar</span>
+        <span class="cat-label-name">Formación · Acompañamiento</span>
+      </div>
+    </a>
+    <a href="catalogo.html?cat=santos" class="cat-card" style="text-decoration:none">
+      <div class="cat-bg cat-bg-5"></div>
+      <div class="cat-ornament"></div>
+      <div class="cat-overlay"></div>
+      <div class="cat-label">
+        <span class="cat-label-sub">Explorar</span>
+        <span class="cat-label-name">Santos · Testimonios · Oraciones</span>
+      </div>
+    </a>
+    <a href="catalogo.html?cat=pastoral" class="cat-card" style="text-decoration:none">
+      <div class="cat-bg cat-bg-6"></div>
+      <div class="cat-ornament"></div>
+      <div class="cat-overlay"></div>
+      <div class="cat-label">
+        <span class="cat-label-sub">Explorar</span>
+        <span class="cat-label-name">Pastoral · Eclesial</span>
+      </div>
+    </a>
+    <a href="catalogo.html?cat=artesania" class="cat-card" style="text-decoration:none">
+      <div class="cat-bg cat-bg-7"></div>
+      <div class="cat-ornament"></div>
+      <div class="cat-overlay"></div>
+      <div class="cat-label">
+        <span class="cat-label-sub">Explorar</span>
+        <span class="cat-label-name">Artesanía Religiosa</span>
+      </div>
+    </a>
+    <a href="catalogo.html?cat=tarjetas" class="cat-card" style="text-decoration:none">
+      <div class="cat-bg cat-bg-8"></div>
+      <div class="cat-ornament"></div>
+      <div class="cat-overlay"></div>
+      <div class="cat-label">
+        <span class="cat-label-sub">Explorar</span>
+        <span class="cat-label-name">Tarjetas</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- PRODUCTOS -->
+<section class="section productos-section">
+  <div class="productos-header">
+    <div>
+      <p class="section-eyebrow reveal">Colección</p>
+      <h2 class="section-title reveal">Algunos títulos</h2>
+    </div>
+    <a href="catalogo.html" class="ver-todos reveal">
+      Ver todos
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+  <div class="productos-grid">
+    <!-- 6 productos -->
+    <div class="product-card" data-title="Laudate Deum" data-price="12990" data-author="Papa Francisco">
+      <div class="product-img">
+        <div class="product-img-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        </div>
+        <span class="product-badge">Nuevo</span>
+        <div class="product-overlay"><button class="btn-add">Agregar</button></div>
+      </div>
+      <p class="product-author">Papa Francisco</p>
+      <h3 class="product-title">Laudate Deum</h3>
+      <p class="product-price">$12.990</p>
+    </div>
+
+    <div class="product-card" data-title="La Montaña de los Siete Círculos" data-price="18500" data-author="Thomas Merton">
+      <div class="product-img">
+        <div class="product-img-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        </div>
+        <div class="product-overlay"><button class="btn-add">Agregar</button></div>
+      </div>
+      <p class="product-author">Thomas Merton</p>
+      <h3 class="product-title">La Montaña de los Siete Círculos</h3>
+      <p class="product-price">$18.500</p>
+    </div>
+
+    <div class="product-card" data-title="Noche Oscura del Alma" data-price="9990" data-author="San Juan de la Cruz">
+      <div class="product-img">
+        <div class="product-img-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        </div>
+        <span class="product-badge oferta">Oferta</span>
+        <div class="product-overlay"><button class="btn-add">Agregar</button></div>
+      </div>
+      <p class="product-author">San Juan de la Cruz</p>
+      <h3 class="product-title">Noche Oscura del Alma</h3>
+      <p class="product-price">$9.990</p>
+    </div>
+
+    <div class="product-card" data-title="Mero Cristianismo" data-price="14990" data-author="C.S. Lewis">
+      <div class="product-img">
+        <div class="product-img-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        </div>
+        <div class="product-overlay"><button class="btn-add">Agregar</button></div>
+      </div>
+      <p class="product-author">C.S. Lewis</p>
+      <h3 class="product-title">Mero Cristianismo</h3>
+      <p class="product-price">$14.990</p>
+    </div>
+
+    <div class="product-card" data-title="El Castillo Interior" data-price="11990" data-author="Santa Teresa de Ávila">
+      <div class="product-img">
+        <div class="product-img-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        </div>
+        <div class="product-overlay"><button class="btn-add">Agregar</button></div>
+      </div>
+      <p class="product-author">Santa Teresa de Ávila</p>
+      <h3 class="product-title">El Castillo Interior</h3>
+      <p class="product-price">$11.990</p>
+    </div>
+
+    <div class="product-card" data-title="Jesús de Nazaret" data-price="22000" data-author="Joseph Ratzinger">
+      <div class="product-img">
+        <div class="product-img-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        </div>
+        <div class="product-overlay"><button class="btn-add">Agregar</button></div>
+      </div>
+      <p class="product-author">Joseph Ratzinger</p>
+      <h3 class="product-title">Jesús de Nazaret</h3>
+      <p class="product-price">$22.000</p>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote-section">
+  <div class="quote-inner reveal">
+    <span class="quote-mark">"</span>
+    <blockquote>Cuando rezamos hablamos con Dios, pero cuando leemos es Dios quien habla con nosotros.</blockquote>
+    <cite>— San Agustín</cite>
+  </div>
+</section>
+
+<!-- INSTAGRAM -->
+<section class="section instagram-section" id="instagram">
+  <div class="ig-header reveal">
+    <div>
+      <p class="section-eyebrow">Síguenos</p>
+      <h2 class="section-title">@crecerlibreria</h2>
+    </div>
+    <a href="https://instagram.com/crecerlibreria" target="_blank" class="ig-follow">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      Ver perfil
+    </a>
+  </div>
+  <div class="ig-grid">
+    <div class="ig-post">
+      <div class="ig-bg p1"></div>
+      <div class="ig-hover"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
+    </div>
+    <div class="ig-post">
+      <div class="ig-bg p2"></div>
+      <div class="ig-hover"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
+    </div>
+    <div class="ig-post">
+      <div class="ig-bg p3"></div>
+      <div class="ig-hover"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
+    </div>
+    <div class="ig-post">
+      <div class="ig-bg p4"></div>
+      <div class="ig-hover"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="footer-layout">
+    <div class="footer-brand">
+      <div class="footer-logo-mark"></div>
+      <span class="footer-brand-name">Crecer Librería</span>
+      <span class="footer-brand-tagline">Librería Católica · Antofagasta</span>
+      <p>Comprometidos con el crecimiento espiritual e intelectual de nuestra comunidad desde Antofagasta.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Catálogo</h4>
+      <ul>
+        <li><a href="catalogo.html">Todos los libros</a></li>
+        <li><a href="catalogo.html?cat=biblias">Biblias</a></li>
+        <li><a href="catalogo.html?cat=espiritualidad">Espiritualidad</a></li>
+        <li><a href="catalogo.html?cat=artesania">Artesanía Religiosa</a></li>
+        <li><a href="catalogo.html?cat=tarjetas">Tarjetas</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Información</h4>
+      <ul>
+        <li><a href="#">Sobre Nosotros</a></li>
+        <li><a href="#">Envíos</a></li>
+        <li><a href="#">Devoluciones</a></li>
+        <li><a href="https://instagram.com/crecerlibreria" target="_blank">Instagram</a></li>
+        <li><a href="#">Contacto</a></li>
+      </ul>
+    </div>
+    <div class="footer-map-col">
+      <h4>Encuéntranos</h4>
+      <p>Arturo Prat 470, Antofagasta</p>
+      <div class="footer-map-embed">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3557.1!2d-70.3975!3d-23.6524!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sArturo+Prat+470%2C+Antofagasta%2C+Chile!5e0!3m2!1ses!2scl!4v1!5m2!1ses!2scl" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Crecer Librería. Todos los derechos reservados.</span>
+    <a href="https://hultur.studio" target="_blank">Diseño y desarrollo: Hultur Studio</a>
+  </div>
+</footer>
+
+<script>
+// ── CART STATE ──────────────────────────────────────────────
+const cart = JSON.parse(localStorage.getItem('crecer_cart') || '[]');
+
+function saveCart() {
+  localStorage.setItem('crecer_cart', JSON.stringify(cart));
+  renderCartPanel();
+}
+
+function formatPrice(n) {
+  return '$' + n.toLocaleString('es-CL');
+}
+
+function renderCartPanel() {
+  const itemsEl   = document.getElementById('cartPanelItems');
+  const countEl   = document.getElementById('cartPanelCount');
+  const totalEl   = document.getElementById('cartTotal');
+  const badgeEl   = document.getElementById('cartCount');
+  const checkBtn  = document.getElementById('cartCheckoutBtn');
+
+  const totalQty   = cart.reduce((s, i) => s + i.qty, 0);
+  const totalPrice = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+  badgeEl.textContent  = totalQty;
+  countEl.textContent  = totalQty === 0 ? 'Vacío'
+                       : totalQty === 1 ? '1 producto'
+                       : `${totalQty} productos`;
+  totalEl.textContent  = formatPrice(totalPrice);
+
+  if (checkBtn) {
+    checkBtn.style.pointerEvents = cart.length === 0 ? 'none' : '';
+    checkBtn.style.opacity       = cart.length === 0 ? '0.38' : '';
+  }
+
+  if (cart.length === 0) {
+    itemsEl.innerHTML = `
+      <div class="cart-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+        <p>Tu carrito está vacío</p>
+      </div>`;
+    return;
+  }
+
+  itemsEl.innerHTML = cart.map((item, idx) => `
+    <div class="cart-item">
+      <div class="cart-item-cover">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+        </svg>
+      </div>
+      <div class="cart-item-info">
+        <div class="cart-item-title">${item.title}</div>
+        <div class="cart-item-author">${item.author}</div>
+      </div>
+      <div class="cart-item-right">
+        <span class="cart-item-price">${formatPrice(item.price)}</span>
+        <div class="cart-item-qty-wrap">
+          <button class="cart-qty-btn" onclick="changeQty(${idx}, -1)">−</button>
+          <span class="cart-item-qty">${item.qty}</span>
+          <button class="cart-qty-btn" onclick="changeQty(${idx}, 1)">+</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function changeQty(idx, delta) {
+  cart[idx].qty += delta;
+  if (cart[idx].qty <= 0) cart.splice(idx, 1);
+  saveCart();
+}
+
+function addToCart(title, price, author) {
+  const existing = cart.find(i => i.title === title);
+  if (existing) existing.qty++;
+  else cart.push({ title, price, author, qty: 1 });
+  saveCart();
+  showToast(`"${title}" agregado`);
+}
+
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = `
+      position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px);
+      background:var(--moss); color:white; padding:10px 22px; border-radius:2px;
+      font-family:'DM Sans',sans-serif; font-size:13px; font-weight:400;
+      letter-spacing:0.04em; z-index:9000; opacity:0;
+      transition:opacity 0.3s ease, transform 0.3s ease;
+      white-space:nowrap; pointer-events:none;
+    `;
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(10px)';
+  }, 2400);
+}
+
+// ── CART TOGGLE ─────────────────────────────────────────────
+const cartToggle = document.getElementById('cartToggle');
+const cartPanel  = document.getElementById('cartPanel');
+
+cartToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  cartPanel.classList.toggle('open');
+});
+
+document.addEventListener('click', (e) => {
+  if (!cartPanel.contains(e.target) && !cartToggle.contains(e.target)) {
+    cartPanel.classList.remove('open');
+  }
+});
+
+// Close on Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') cartPanel.classList.remove('open');
+});
+
+// Wire up "Agregar" buttons
+document.querySelectorAll('.btn-add').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const card = btn.closest('.product-card');
+    if (!card) return;
+    const title  = card.dataset.title  || 'Libro';
+    const price  = parseInt(card.dataset.price || '0');
+    const author = card.dataset.author || '';
+    addToCart(title, price, author);
+    btn.textContent = '✓ Agregado';
+    btn.style.background = 'var(--moss)';
+    setTimeout(() => {
+      btn.textContent = 'Agregar';
+      btn.style.background = '';
+    }, 1800);
+  });
+});
+
+// Init
+renderCartPanel();
+
+// ── LOADER ──────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  setTimeout(() => document.getElementById('loader').classList.add('hide'), 1800);
+});
+
+// ── NAV SCROLL ──────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 40);
+}, { passive: true });
+
+// ── SCROLL REVEAL ───────────────────────────────────────────
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.07, rootMargin: '0px 0px -36px 0px' });
+
+document.querySelectorAll(
+  '.reveal, .product-card, .cat-card, .ig-post, .libro-card'
+).forEach(el => {
+  el.classList.add('reveal');
+  revealObs.observe(el);
+});
+
+// ── SLIDER ──────────────────────────────────────────────────
+const slider = document.getElementById('librosSlider');
+const CARD_W = 180;
+document.getElementById('nextBtn').addEventListener('click', () => {
+  slider.scrollBy({ left: CARD_W, behavior: 'smooth' });
+});
+document.getElementById('prevBtn').addEventListener('click', () => {
+  slider.scrollBy({ left: -CARD_W, behavior: 'smooth' });
+});
+</script>
+</body>
+</html>

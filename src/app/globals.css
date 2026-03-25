@@ -1,0 +1,211 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #f5f3e8;
+  --color-foreground: #3a3001;
+  --color-beige: #f5f3e8;
+  --color-beige-warm: #ede9d4;
+  --color-beige-mid: #e0dbb8;
+  --color-white: #faf9f4;
+  --color-moss: #736002;
+  --color-moss-mid: #8a7302;
+  --color-gold: #c8a830;
+  --color-gold-light: #d4b840;
+  --color-gold-pale: #e8d060;
+  --color-text: #3a3001;
+  --color-text-mid: #6b5a04;
+  --color-text-light: #8a7830;
+  --color-border: rgba(115, 96, 2, 0.13);
+  --color-border-gold: rgba(200, 168, 48, 0.3);
+  --color-success: #27ae60;
+  --color-error: #c0392b;
+  --color-info: #2980b9;
+  --color-warning: #e67e22;
+  --font-serif: var(--font-eb-garamond);
+  --font-sans: var(--font-dm-sans);
+  --font-mono: var(--font-geist-mono);
+  --radius: 2px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-hero: 16px;
+  --text-eyebrow: 9px;
+}
+
+:root {
+  --background: #f5f3e8;
+  --foreground: #3a3001;
+  --beige: #f5f3e8;
+  --beige-warm: #ede9d4;
+  --beige-mid: #e0dbb8;
+  --white: #faf9f4;
+  --moss: #736002;
+  --moss-mid: #8a7302;
+  --gold: #c8a830;
+  --gold-light: #d4b840;
+  --gold-pale: #e8d060;
+  --text: #3a3001;
+  --text-mid: #6b5a04;
+  --text-light: #8a7830;
+  --border: rgba(115, 96, 2, 0.13);
+  --border-gold: rgba(200, 168, 48, 0.3);
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+  background: var(--beige);
+  color: var(--text);
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 2px;
+  background: var(--beige-mid);
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Libros del mes: una sola escala tipográfica y espacial según el ancho del panel (container queries) */
+@layer components {
+  .libros-mes-panel {
+    container-type: inline-size;
+    container-name: libros;
+    /* Una “misma talla” para todo lo que vive en la sección: todo deriva de cqi del panel */
+    --lm-pad-x: clamp(1rem, 2.2cqi + 0.75rem, 3.5rem);
+    --lm-pad-y: clamp(2.25rem, 4cqi + 1.5rem, 5rem);
+    --lm-sidebar: clamp(12rem, 28cqi, 17.5rem);
+    --lm-gap: clamp(1.5rem, 3.5cqi, 4rem);
+    --lm-gap-row: clamp(1.75rem, 3cqi, 3rem);
+    --lm-title: clamp(1.35rem, 0.25rem + 3.6cqi, 2.625rem);
+    --lm-eyebrow: clamp(0.5rem, 0.28rem + 0.55cqi, 0.5625rem);
+    --lm-body: clamp(0.8125rem, 0.5rem + 0.85cqi, 0.9375rem);
+    --lm-body-max: clamp(17rem, 58cqi, 25rem);
+    --lm-brand: clamp(0.5625rem, 0.32rem + 0.6cqi, 0.625rem);
+    /* Alineado con ProductCard (novedades): título y precio ~14px */
+    --lm-libro-title: clamp(0.8125rem, 0.45rem + 0.9cqi, 0.875rem);
+    --lm-price: clamp(0.8125rem, 0.45rem + 0.85cqi, 0.875rem);
+    /* Portada más grande: la grilla de novedades usa ~1/4 del ancho (~220–260px); antes max 10rem (~160px) */
+    --lm-card-w: clamp(9rem, 19cqi, 15rem);
+    --lm-card-gap: clamp(0.85rem, 2.2cqi, 1.35rem);
+    --lm-card-mb: clamp(0.5rem, 1.2cqi, 0.875rem);
+    --lm-btn: clamp(1.55rem, 3.8cqi, 2.25rem);
+    --lm-icon: clamp(0.65rem, 1.5cqi, 0.9375rem);
+    --lm-radius: clamp(0.625rem, 1.1cqi, 1rem);
+    --lm-eyebrow-line: clamp(0.875rem, 2.4cqi, 1.5rem);
+    --lm-eyebrow-mb: clamp(0.35rem, 1cqi, 0.625rem);
+    /* Altura según contenido: el padding ya da aire; no forzar min-height con cqi (ancho) ni 88vh como el hero */
+  }
+
+  .libros-mes-inner {
+    width: 100%;
+    max-width: min(100%, 87.5rem);
+    margin-inline: auto;
+    padding: var(--lm-pad-y) var(--lm-pad-x);
+  }
+
+  .libros-mes-grid {
+    display: grid;
+    gap: var(--lm-gap-row);
+  }
+
+  @container libros (min-width: 64rem) {
+    .libros-mes-grid {
+      grid-template-columns: var(--lm-sidebar) minmax(0, 1fr);
+      align-items: start;
+      gap: var(--lm-gap);
+    }
+  }
+
+  .libros-mes-eyebrow {
+    margin-bottom: var(--lm-eyebrow-mb);
+    font-size: var(--lm-eyebrow);
+  }
+
+  .libros-mes-eyebrow-line {
+    width: var(--lm-eyebrow-line);
+  }
+
+  .libros-mes-title {
+    font-size: var(--lm-title);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  .libros-mes-body {
+    margin-top: clamp(0.4rem, 1.2cqi, 0.75rem);
+    max-width: var(--lm-body-max);
+    font-size: var(--lm-body);
+    line-height: 1.75;
+    font-weight: 300;
+  }
+
+  .libros-mes-controls {
+    margin-top: clamp(1.25rem, 3cqi, 2rem);
+    gap: clamp(0.35rem, 1cqi, 0.5rem);
+  }
+
+  .libros-mes-btn {
+    width: var(--lm-btn);
+    height: var(--lm-btn);
+  }
+
+  .libros-mes-track {
+    display: flex;
+    gap: var(--lm-card-gap);
+  }
+
+  .libros-mes-card {
+    width: var(--lm-card-w);
+    flex: 0 0 var(--lm-card-w);
+  }
+
+  .libros-mes-card-cover {
+    margin-bottom: var(--lm-card-mb);
+  }
+
+  .libros-mes-brand {
+    font-size: var(--lm-brand);
+  }
+
+  .libros-mes-libro-title {
+    font-size: var(--lm-libro-title);
+  }
+
+  .libros-mes-price {
+    font-size: var(--lm-price);
+  }
+}

@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hero Slider · Crecer Librería</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F2EFDF;--surface:#F8F5E6;--border:#DDD8B8;--border2:#CFC4A0;
+  --dark:#736002;--gold:#D9BA1E;--gold2:#E3C83A;--gold-bg:rgba(217,186,30,0.08);
+  --text:#3A3001;--text2:#736002;--text3:#9A8430;
+  --green:#2E7D52;--green-bg:rgba(46,125,82,0.08);--green-border:rgba(46,125,82,0.25);
+  --red:#C0392B;--red-bg:rgba(192,57,43,0.06);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ══════════════════════════════
+   HERO SLIDER — FRONTEND
+══════════════════════════════ */
+.hero{
+  position:relative;width:100%;
+  height:90vh;min-height:520px;max-height:820px;
+  overflow:hidden;background:var(--dark);
+}
+
+/* Slides */
+.slide{
+  position:absolute;inset:0;
+  opacity:0;transition:opacity .9s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+}
+.slide.active{opacity:1;pointer-events:auto}
+
+.slide-bg{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  transform:scale(1.04);
+  transition:transform 8s cubic-bezier(.25,.46,.45,.94);
+}
+.slide.active .slide-bg{transform:scale(1)}
+
+/* Overlay gradient */
+.slide-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(
+    105deg,
+    rgba(58,48,1,.82) 0%,
+    rgba(58,48,1,.5) 45%,
+    rgba(58,48,1,.1) 100%
+  );
+}
+
+/* Content */
+.slide-content{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 7% 9%;
+  max-width:680px;
+}
+.slide-eyebrow{
+  font-size:.72rem;font-weight:600;letter-spacing:3px;
+  text-transform:uppercase;color:var(--gold2);
+  margin-bottom:14px;
+  opacity:0;transform:translateY(16px);transition:all .7s .3s;
+}
+.slide.active .slide-eyebrow{opacity:1;transform:translateY(0)}
+
+.slide-title{
+  font-family:'EB Garamond',serif;
+  font-size:clamp(2.2rem,5vw,3.8rem);
+  font-weight:600;line-height:1.1;
+  color:white;margin-bottom:14px;
+  opacity:0;transform:translateY(20px);transition:all .7s .45s;
+}
+.slide.active .slide-title{opacity:1;transform:translateY(0)}
+
+.slide-subtitle{
+  font-size:clamp(.85rem,1.5vw,1rem);
+  color:rgba(255,255,255,.7);
+  line-height:1.6;margin-bottom:28px;
+  max-width:480px;
+  opacity:0;transform:translateY(16px);transition:all .7s .6s;
+}
+.slide.active .slide-subtitle{opacity:1;transform:translateY(0)}
+
+.slide-cta{
+  display:inline-flex;align-items:center;gap:9px;
+  background:var(--gold);color:white;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;
+  padding:13px 26px;border-radius:8px;border:none;
+  cursor:pointer;text-decoration:none;
+  transition:all .25s;letter-spacing:.3px;
+  opacity:0;transform:translateY(12px);transition:all .7s .75s, background .2s, transform .2s;
+  width:fit-content;
+}
+.slide.active .slide-cta{opacity:1;transform:translateY(0)}
+.slide-cta:hover{background:var(--gold2);transform:translateY(-2px)!important;box-shadow:0 8px 24px rgba(217,186,30,.4)}
+.slide-cta-arrow{font-size:1rem;transition:transform .2s}
+.slide-cta:hover .slide-cta-arrow{transform:translateX(4px)}
+
+/* Nav dots */
+.hero-dots{
+  position:absolute;bottom:32px;right:7%;
+  display:flex;gap:8px;z-index:10;
+}
+.dot{
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(255,255,255,.3);border:none;
+  cursor:pointer;transition:all .3s;padding:0;
+}
+.dot.active{background:var(--gold2);width:24px;border-radius:4px}
+.dot:hover{background:rgba(255,255,255,.6)}
+
+/* Prev/Next */
+.hero-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);
+  z-index:10;width:46px;height:46px;border-radius:50%;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  backdrop-filter:blur(8px);
+  color:white;font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.hero-arrow:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.4)}
+.arrow-prev{left:3%}
+.arrow-next{right:3%}
+
+/* Progress bar */
+.hero-progress{
+  position:absolute;bottom:0;left:0;right:0;height:2.5px;
+  background:rgba(255,255,255,.1);z-index:10;
+}
+.hero-progress-bar{
+  height:100%;background:var(--gold2);
+  transition:width .1s linear;width:0%;
+}
+
+/* Slide counter */
+.hero-counter{
+  position:absolute;top:28px;right:7%;
+  font-size:.72rem;color:rgba(255,255,255,.4);
+  letter-spacing:2px;z-index:10;
+  font-feature-settings:'tnum';
+}
+
+/* Announcement bar */
+.announcement{
+  background:var(--dark);color:rgba(255,255,255,.85);
+  text-align:center;padding:10px 20px;
+  font-size:.75rem;letter-spacing:.5px;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  position:relative;
+}
+.ann-text a{color:var(--gold2);text-decoration:none;font-weight:600}
+.ann-close{
+  position:absolute;right:16px;background:none;border:none;
+  color:rgba(255,255,255,.4);cursor:pointer;font-size:14px;
+  transition:color .2s;
+}
+.ann-close:hover{color:white}
+
+
+/* ══════════════════════════════
+   PANEL ADMIN EDITOR
+══════════════════════════════ */
+.admin-panel{
+  background:var(--surface);border-top:3px solid var(--gold);
+  padding:32px 40px;
+}
+.ap-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:28px;padding-bottom:16px;
+  border-bottom:1px solid var(--border);
+}
+.ap-title{
+  font-family:'EB Garamond',serif;
+  font-size:1.5rem;font-weight:600;color:var(--text);
+}
+.ap-sub{font-size:.76rem;color:var(--text3);margin-top:3px}
+.ap-actions{display:flex;gap:8px}
+
+.btn-gold{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#736002;border:none;border-radius:8px;
+  padding:9px 18px;color:white;font-family:'DM Sans',sans-serif;
+  font-size:.79rem;font-weight:600;cursor:pointer;transition:all .2s;
+}
+.btn-gold:hover{background:#8A7302;transform:translateY(-1px)}
+.btn-outline{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--bg);border:1.5px solid var(--border2);
+  border-radius:8px;padding:9px 16px;color:var(--text2);
+  font-family:'DM Sans',sans-serif;font-size:.79rem;font-weight:500;cursor:pointer;transition:all .2s;
+}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm{
+  background:var(--bg);border:1px solid var(--border2);
+  border-radius:6px;padding:5px 10px;font-family:'DM Sans',sans-serif;
+  font-size:.71rem;color:var(--text2);cursor:pointer;transition:all .18s;
+}
+.btn-sm:hover{border-color:var(--gold);color:var(--gold)}
+.btn-danger{
+  background:var(--red-bg);border:1px solid rgba(192,57,43,0.2);
+  border-radius:6px;padding:5px 10px;font-family:'DM Sans',sans-serif;
+  font-size:.71rem;color:var(--red);cursor:pointer;transition:all .18s;
+}
+.btn-icon{
+  width:30px;height:30px;border-radius:6px;
+  background:var(--bg);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;cursor:pointer;transition:all .18s;color:var(--text2);
+}
+.btn-icon:hover{border-color:var(--gold);color:var(--gold)}
+
+/* Announcement editor */
+.ann-editor{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:12px;padding:16px 20px;margin-bottom:20px;
+}
+.ae-title{font-size:.76rem;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.ae-row{display:flex;gap:10px;align-items:center}
+.f-inp{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:8px;padding:8px 12px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:.8rem;
+  outline:none;transition:border-color .2s;width:100%;
+}
+.f-inp:focus{border-color:var(--gold)}
+.f-inp::placeholder{color:var(--text3)}
+.f-label{font-size:.65rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:5px;display:block}
+.field{margin-bottom:10px}
+
+/* Toggle */
+.tg{position:relative;width:34px;height:19px;flex-shrink:0}
+.tg input{opacity:0;width:0;height:0}
+.tg-s{position:absolute;inset:0;border-radius:20px;background:var(--border2);cursor:pointer;transition:.25s}
+.tg-s::before{content:'';position:absolute;width:13px;height:13px;border-radius:50%;left:3px;bottom:3px;background:white;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.tg input:checked+.tg-s{background:var(--gold)}
+.tg input:checked+.tg-s::before{transform:translateX(15px)}
+.tg-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.tg-label{font-size:.79rem;color:var(--text2)}
+
+/* Slides list */
+.slides-list{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+
+.slide-editor-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:12px;overflow:hidden;
+  transition:border-color .2s;
+}
+.slide-editor-card.active-edit{border-color:var(--gold)}
+
+.sec-head{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;cursor:pointer;
+  background:var(--bg);border-bottom:1px solid var(--border);
+  transition:background .18s;
+}
+.sec-head:hover{background:var(--gold-bg)}
+.sec-num{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--dark);color:white;
+  font-size:.68rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.active-edit .sec-num{background:var(--gold)}
+.sec-preview-img{
+  width:60px;height:38px;border-radius:5px;
+  object-fit:cover;flex-shrink:0;
+  background:var(--dark);display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;overflow:hidden;
+}
+.sec-preview-title{font-size:.8rem;font-weight:500;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sec-preview-status{flex-shrink:0}
+.sec-actions{display:flex;gap:6px;flex-shrink:0}
+.sec-chevron{color:var(--text3);transition:transform .25s;flex-shrink:0;font-size:11px}
+.sec-head.open .sec-chevron{transform:rotate(180deg)}
+
+.sec-body{display:none;padding:18px 18px 16px}
+.sec-body.open{display:block}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* Image upload zone */
+.upload-zone{
+  border:2px dashed var(--border2);border-radius:10px;
+  padding:22px;text-align:center;cursor:pointer;
+  transition:all .2s;background:var(--bg);
+  margin-bottom:12px;
+}
+.upload-zone:hover{border-color:var(--gold);background:var(--gold-bg)}
+.uz-preview{
+  width:100%;height:120px;border-radius:8px;
+  object-fit:cover;margin-bottom:10px;
+  background:var(--dark);display:flex;align-items:center;justify-content:center;
+  font-size:2rem;opacity:.4;
+}
+.uz-text{font-size:.76rem;color:var(--text2)}
+.uz-sub{font-size:.65rem;color:var(--text3);margin-top:3px}
+
+/* Color picker row */
+.color-row{display:flex;align-items:center;gap:8px}
+.color-swatch{
+  width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);
+  cursor:pointer;flex-shrink:0;transition:transform .15s;
+}
+.color-swatch:hover{transform:scale(1.1)}
+.color-presets{display:flex;gap:5px}
+
+/* Pill status */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:.65rem;font-weight:600}
+.p-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.p-gray{background:var(--bg);color:var(--text3);border:1px solid var(--border)}
+.pill-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
+/* Add slide */
+.add-slide{
+  border:2px dashed var(--border2);border-radius:12px;
+  padding:16px;text-align:center;cursor:pointer;
+  transition:all .2s;
+}
+.add-slide:hover{border-color:var(--gold);background:var(--gold-bg)}
+.add-slide-text{font-size:.8rem;color:var(--text3);transition:color .2s}
+.add-slide:hover .add-slide-text{color:var(--gold)}
+
+/* toast */
+.toast{
+  position:fixed;bottom:22px;right:22px;z-index:999;
+  background:var(--dark);color:white;
+  padding:11px 17px;border-radius:9px;
+  font-size:.79rem;font-weight:500;
+  display:flex;align-items:center;gap:8px;
+  box-shadow:0 6px 24px rgba(58,48,1,.25);
+  transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* color type tabs */
+.type-tabs{display:flex;gap:0;background:var(--bg);border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:10px}
+.type-tab{flex:1;padding:7px;text-align:center;font-size:.73rem;font-weight:500;color:var(--text2);cursor:pointer;transition:all .18s;border:none;background:none;font-family:'DM Sans',sans-serif}
+.type-tab.active{background:var(--gold);color:white}
+</style>
+</head>
+<body>
+
+<!-- ══ ANNOUNCEMENT BAR ══ -->
+<div class="announcement" id="annBar">
+  <span class="ann-text" id="annText">
+    ✦ Envío gratis sobre $25.000 · Despacho a todo Chile · 
+    <a href="#">Ver novedades →</a>
+  </span>
+  <button class="ann-close" onclick="document.getElementById('annBar').style.display='none'">✕</button>
+</div>
+
+<!-- ══ HERO SLIDER ══ -->
+<div class="hero" id="hero">
+
+  <!-- Slide 1 -->
+  <div class="slide active" id="slide-0">
+    <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1600&q=80')"></div>
+    <div class="slide-overlay"></div>
+    <div class="slide-content">
+      <span class="slide-eyebrow" id="s0-eyebrow">Novedad · Febrero 2026</span>
+      <h2 class="slide-title" id="s0-title">La promesa no era un lugar,<br>sino un encuentro</h2>
+      <p class="slide-subtitle" id="s0-subtitle">Una historia que te invita a redescubrir la fe desde lo más profundo del alma.</p>
+      <a class="slide-cta" href="#" id="s0-cta">Ver más <span class="slide-cta-arrow">→</span></a>
+    </div>
+  </div>
+
+  <!-- Slide 2 -->
+  <div class="slide" id="slide-1">
+    <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1600&q=80')"></div>
+    <div class="slide-overlay" style="background:linear-gradient(105deg,rgba(20,35,55,.85) 0%,rgba(20,35,55,.5) 45%,rgba(20,35,55,.1) 100%)"></div>
+    <div class="slide-content">
+      <span class="slide-eyebrow" id="s1-eyebrow">Espiritualidad</span>
+      <h2 class="slide-title" id="s1-title">El poder del silencio</h2>
+      <p class="slide-subtitle" id="s1-subtitle">Card. Robert Sarah. Una meditación profunda sobre la presencia de Dios en el silencio.</p>
+      <a class="slide-cta" href="#" id="s1-cta">Ver más <span class="slide-cta-arrow">→</span></a>
+    </div>
+  </div>
+
+  <!-- Slide 3 -->
+  <div class="slide" id="slide-2">
+    <div class="slide-bg" style="background-image:url('https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=1600&q=80')"></div>
+    <div class="slide-overlay" style="background:linear-gradient(105deg,rgba(30,50,20,.85) 0%,rgba(30,50,20,.5) 45%,rgba(30,50,20,.1) 100%)"></div>
+    <div class="slide-content">
+      <span class="slide-eyebrow" id="s2-eyebrow">Oferta especial</span>
+      <h2 class="slide-title" id="s2-title">Biblias de Estudio<br>con 20% de descuento</h2>
+      <p class="slide-subtitle" id="s2-subtitle">Solo durante febrero. Ediciones de referencia para el estudio bíblico profundo.</p>
+      <a class="slide-cta" href="#" id="s2-cta">Ver oferta <span class="slide-cta-arrow">→</span></a>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <button class="hero-arrow arrow-prev" onclick="prevSlide()">‹</button>
+  <button class="hero-arrow arrow-next" onclick="nextSlide()">›</button>
+
+  <div class="hero-dots" id="heroDots">
+    <button class="dot active" onclick="goSlide(0)"></button>
+    <button class="dot" onclick="goSlide(1)"></button>
+    <button class="dot" onclick="goSlide(2)"></button>
+  </div>
+
+  <div class="hero-counter">
+    <span id="curSlide">01</span> / <span id="totSlide">03</span>
+  </div>
+
+  <div class="hero-progress"><div class="hero-progress-bar" id="progressBar"></div></div>
+</div>
+
+
+<!-- ══════════════════════════════
+     PANEL ADMIN EDITOR
+══════════════════════════════ -->
+<div class="admin-panel">
+
+  <div class="ap-header">
+    <div>
+      <div class="ap-title">🎛 Editor del Hero</div>
+      <div class="ap-sub">Los cambios se reflejan en el slider de arriba en tiempo real</div>
+    </div>
+    <div class="ap-actions">
+      <button class="btn-outline">Vista previa móvil</button>
+      <button class="btn-gold" onclick="toast('✓ Cambios guardados en Supabase')">Guardar cambios</button>
+    </div>
+  </div>
+
+  <!-- ANNOUNCEMENT EDITOR -->
+  <div class="ann-editor">
+    <div class="ae-title">
+      📢 Barra de anuncio
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="tg-label">Visible</span>
+        <label class="tg"><input type="checkbox" checked id="annVisible" onchange="toggleAnn()"><div class="tg-s"></div></label>
+      </div>
+    </div>
+    <div class="field-row" style="gap:10px">
+      <div class="field" style="margin:0">
+        <label class="f-label">Texto del anuncio</label>
+        <input class="f-inp" id="annInput" value="✦ Envío gratis sobre $25.000 · Despacho a todo Chile" oninput="updateAnn()">
+      </div>
+      <div class="field" style="margin:0">
+        <label class="f-label">Texto del enlace</label>
+        <input class="f-inp" id="annLinkText" value="Ver novedades →" oninput="updateAnn()">
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDES EDITOR -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div style="font-size:.76rem;font-weight:600;color:var(--text)">Slides del hero <span style="color:var(--text3);font-weight:400">(máx. 5)</span></div>
+    <div style="display:flex;gap:6px">
+      <span style="font-size:.7rem;color:var(--text3);align-self:center">Autoplay cada</span>
+      <select class="f-inp" style="width:90px;padding:5px 8px;font-size:.75rem">
+        <option>4 seg</option><option selected>6 seg</option><option>8 seg</option><option>10 seg</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="slides-list" id="slidesList">
+
+    <!-- SLIDE 1 EDITOR -->
+    <div class="slide-editor-card active-edit" id="sec-0">
+      <div class="sec-head open" onclick="toggleSec(0)">
+        <div class="sec-num">1</div>
+        <div class="sec-preview-img" style="background:linear-gradient(135deg,#1B3A5C,#0D2233)">📚</div>
+        <span class="sec-preview-title">La promesa no era un lugar...</span>
+        <span class="sec-preview-status"><span class="pill p-green"><span class="pill-dot"></span>Activo</span></span>
+        <div class="sec-actions">
+          <div class="btn-icon" title="Mover arriba">↑</div>
+          <div class="btn-icon" title="Mover abajo">↓</div>
+          <button class="btn-danger" onclick="event.stopPropagation();removeSlide(0)" title="Eliminar">🗑</button>
+        </div>
+        <span class="sec-chevron">▼</span>
+      </div>
+      <div class="sec-body open" id="body-0">
+        <div class="field-row" style="margin-bottom:12px">
+          <div>
+            <label class="f-label">Imagen de fondo</label>
+            <div class="upload-zone" onclick="toast('Abre selector de archivos...')">
+              <div class="uz-preview">🖼</div>
+              <div class="uz-text">Click para cambiar imagen</div>
+              <div class="uz-sub">JPG, PNG o WebP · Mín. 1600×900px</div>
+            </div>
+            <div style="margin-top:8px">
+              <label class="f-label">O pegar URL de imagen</label>
+              <input class="f-inp" placeholder="https://..." value="https://images.unsplash.com/photo-1481627834876..." oninput="updateSlideBg(0, this.value)">
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="field" style="margin:0">
+              <label class="f-label">Etiqueta superior (eyebrow)</label>
+              <input class="f-inp" value="Novedad · Febrero 2026" oninput="updateSlide(0,'eyebrow',this.value)">
+            </div>
+            <div class="field" style="margin:0">
+              <label class="f-label">Título principal</label>
+              <textarea class="f-inp" rows="2" oninput="updateSlide(0,'title',this.value)">La promesa no era un lugar, sino un encuentro</textarea>
+            </div>
+            <div class="field" style="margin:0">
+              <label class="f-label">Subtítulo / descripción</label>
+              <textarea class="f-inp" rows="2" oninput="updateSlide(0,'subtitle',this.value)">Una historia que te invita a redescubrir la fe desde lo más profundo del alma.</textarea>
+            </div>
+          </div>
+        </div>
+        <div class="field-row3">
+          <div class="field" style="margin:0">
+            <label class="f-label">Texto del botón</label>
+            <input class="f-inp" value="Ver más" oninput="updateSlide(0,'cta',this.value)">
+          </div>
+          <div class="field" style="margin:0">
+            <label class="f-label">Link del botón</label>
+            <input class="f-inp" value="/libro/el-pozo-de-la-promesa" placeholder="/catalogo">
+          </div>
+          <div class="field" style="margin:0">
+            <label class="f-label">Color overlay</label>
+            <div class="color-row">
+              <input type="color" class="color-swatch" value="#2C2018" oninput="updateOverlay(0,this.value)">
+              <div class="color-presets">
+                <div class="color-swatch" style="background:#2C2018" onclick="updateOverlay(0,'#2C2018')"></div>
+                <div class="color-swatch" style="background:#0D2233" onclick="updateOverlay(0,'#0D2233')"></div>
+                <div class="color-swatch" style="background:#1A2A0A" onclick="updateOverlay(0,'#1A2A0A')"></div>
+                <div class="color-swatch" style="background:#3D1A1A" onclick="updateOverlay(0,'#3D1A1A')"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tg-row" style="margin-top:8px;border-top:1px solid var(--border);padding-top:10px">
+          <span class="tg-label">Slide visible</span>
+          <label class="tg"><input type="checkbox" checked><div class="tg-s"></div></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 EDITOR -->
+    <div class="slide-editor-card" id="sec-1">
+      <div class="sec-head" onclick="toggleSec(1)">
+        <div class="sec-num">2</div>
+        <div class="sec-preview-img" style="background:linear-gradient(135deg,#142337,#0D2233)">🕊</div>
+        <span class="sec-preview-title">El poder del silencio</span>
+        <span class="sec-preview-status"><span class="pill p-green"><span class="pill-dot"></span>Activo</span></span>
+        <div class="sec-actions">
+          <div class="btn-icon">↑</div>
+          <div class="btn-icon">↓</div>
+          <button class="btn-danger" onclick="event.stopPropagation();removeSlide(1)">🗑</button>
+        </div>
+        <span class="sec-chevron">▼</span>
+      </div>
+      <div class="sec-body" id="body-1">
+        <div class="field-row" style="margin-bottom:12px">
+          <div>
+            <label class="f-label">Imagen de fondo</label>
+            <div class="upload-zone" onclick="toast('Abre selector de archivos...')">
+              <div class="uz-preview">🖼</div>
+              <div class="uz-text">Click para cambiar imagen</div>
+              <div class="uz-sub">JPG, PNG o WebP · Mín. 1600×900px</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="field" style="margin:0">
+              <label class="f-label">Etiqueta superior</label>
+              <input class="f-inp" value="Espiritualidad" oninput="updateSlide(1,'eyebrow',this.value)">
+            </div>
+            <div class="field" style="margin:0">
+              <label class="f-label">Título</label>
+              <textarea class="f-inp" rows="2" oninput="updateSlide(1,'title',this.value)">El poder del silencio</textarea>
+            </div>
+            <div class="field" style="margin:0">
+              <label class="f-label">Subtítulo</label>
+              <textarea class="f-inp" rows="2" oninput="updateSlide(1,'subtitle',this.value)">Card. Robert Sarah. Una meditación profunda sobre la presencia de Dios en el silencio.</textarea>
+            </div>
+          </div>
+        </div>
+        <div class="field-row3">
+          <div class="field" style="margin:0"><label class="f-label">Texto botón</label><input class="f-inp" value="Ver más" oninput="updateSlide(1,'cta',this.value)"></div>
+          <div class="field" style="margin:0"><label class="f-label">Link</label><input class="f-inp" value="/libro/el-poder-del-silencio"></div>
+          <div class="field" style="margin:0">
+            <label class="f-label">Color overlay</label>
+            <div class="color-row">
+              <input type="color" class="color-swatch" value="#142337">
+              <div class="color-presets">
+                <div class="color-swatch" style="background:#2C2018" onclick="updateOverlay(1,'#2C2018')"></div>
+                <div class="color-swatch" style="background:#0D2233" onclick="updateOverlay(1,'#0D2233')"></div>
+                <div class="color-swatch" style="background:#1A2A0A" onclick="updateOverlay(1,'#1A2A0A')"></div>
+                <div class="color-swatch" style="background:#3D1A1A" onclick="updateOverlay(1,'#3D1A1A')"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tg-row" style="margin-top:8px;border-top:1px solid var(--border);padding-top:10px">
+          <span class="tg-label">Slide visible</span>
+          <label class="tg"><input type="checkbox" checked><div class="tg-s"></div></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 EDITOR -->
+    <div class="slide-editor-card" id="sec-2">
+      <div class="sec-head" onclick="toggleSec(2)">
+        <div class="sec-num">3</div>
+        <div class="sec-preview-img" style="background:linear-gradient(135deg,#1A3A1A,#0A1E0A)">📖</div>
+        <span class="sec-preview-title">Biblias de Estudio con 20%...</span>
+        <span class="sec-preview-status"><span class="pill p-green"><span class="pill-dot"></span>Activo</span></span>
+        <div class="sec-actions">
+          <div class="btn-icon">↑</div>
+          <div class="btn-icon">↓</div>
+          <button class="btn-danger" onclick="event.stopPropagation();removeSlide(2)">🗑</button>
+        </div>
+        <span class="sec-chevron">▼</span>
+      </div>
+      <div class="sec-body" id="body-2">
+        <div class="field-row" style="margin-bottom:12px">
+          <div>
+            <label class="f-label">Imagen de fondo</label>
+            <div class="upload-zone" onclick="toast('Abre selector de archivos...')">
+              <div class="uz-preview">🖼</div>
+              <div class="uz-text">Click para cambiar imagen</div>
+              <div class="uz-sub">JPG, PNG o WebP · Mín. 1600×900px</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="field" style="margin:0"><label class="f-label">Etiqueta superior</label><input class="f-inp" value="Oferta especial" oninput="updateSlide(2,'eyebrow',this.value)"></div>
+            <div class="field" style="margin:0"><label class="f-label">Título</label><textarea class="f-inp" rows="2" oninput="updateSlide(2,'title',this.value)">Biblias de Estudio con 20% de descuento</textarea></div>
+            <div class="field" style="margin:0"><label class="f-label">Subtítulo</label><textarea class="f-inp" rows="2" oninput="updateSlide(2,'subtitle',this.value)">Solo durante febrero. Ediciones de referencia para el estudio bíblico profundo.</textarea></div>
+          </div>
+        </div>
+        <div class="field-row3">
+          <div class="field" style="margin:0"><label class="f-label">Texto botón</label><input class="f-inp" value="Ver oferta" oninput="updateSlide(2,'cta',this.value)"></div>
+          <div class="field" style="margin:0"><label class="f-label">Link</label><input class="f-inp" value="/catalogo?categoria=biblias"></div>
+          <div class="field" style="margin:0">
+            <label class="f-label">Color overlay</label>
+            <div class="color-row">
+              <input type="color" class="color-swatch" value="#1E3214">
+              <div class="color-presets">
+                <div class="color-swatch" style="background:#2C2018" onclick="updateOverlay(2,'#2C2018')"></div>
+                <div class="color-swatch" style="background:#0D2233" onclick="updateOverlay(2,'#0D2233')"></div>
+                <div class="color-swatch" style="background:#1A2A0A" onclick="updateOverlay(2,'#1A2A0A')"></div>
+                <div class="color-swatch" style="background:#3D1A1A" onclick="updateOverlay(2,'#3D1A1A')"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tg-row" style="margin-top:8px;border-top:1px solid var(--border);padding-top:10px">
+          <span class="tg-label">Slide visible</span>
+          <label class="tg"><input type="checkbox" checked><div class="tg-s"></div></label>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /slides-list -->
+
+  <!-- ADD SLIDE -->
+  <div class="add-slide" onclick="toast('+ Nuevo slide agregado')">
+    <div class="add-slide-text">+ Agregar nuevo slide</div>
+  </div>
+
+</div><!-- /admin-panel -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SLIDER LOGIC ──
+let current = 0;
+let total = 3;
+let autoTimer;
+let progressTimer;
+let progress = 0;
+const INTERVAL = 6000;
+
+function goSlide(n) {
+  document.getElementById('slide-' + current).classList.remove('active');
+  document.querySelectorAll('.dot')[current].classList.remove('active');
+  current = (n + total) % total;
+  document.getElementById('slide-' + current).classList.add('active');
+  document.querySelectorAll('.dot')[current].classList.add('active');
+  document.getElementById('curSlide').textContent = String(current + 1).padStart(2,'0');
+  // highlight editor card
+  document.querySelectorAll('.slide-editor-card').forEach((c,i) => {
+    c.classList.toggle('active-edit', i === current);
+    c.querySelector('.sec-num').style.background = i === current ? 'var(--gold)' : 'var(--dark)';
+  });
+  resetProgress();
+  clearInterval(autoTimer);
+  autoTimer = setInterval(nextSlide, INTERVAL);
+}
+
+function nextSlide(){ goSlide(current + 1) }
+function prevSlide(){ goSlide(current - 1) }
+
+function resetProgress(){
+  progress = 0;
+  clearInterval(progressTimer);
+  const bar = document.getElementById('progressBar');
+  bar.style.transition = 'none';
+  bar.style.width = '0%';
+  setTimeout(() => {
+    bar.style.transition = 'width ' + INTERVAL + 'ms linear';
+    bar.style.width = '100%';
+  }, 50);
+}
+
+autoTimer = setInterval(nextSlide, INTERVAL);
+resetProgress();
+
+// ── LIVE EDIT ──
+function updateSlide(idx, field, val) {
+  const map = { eyebrow: 's'+idx+'-eyebrow', title: 's'+idx+'-title', subtitle: 's'+idx+'-subtitle', cta: 's'+idx+'-cta' };
+  const el = document.getElementById(map[field]);
+  if(!el) return;
+  if(field === 'cta'){
+    el.innerHTML = val + ' <span class="slide-cta-arrow">→</span>';
+  } else {
+    el.textContent = val;
+  }
+}
+
+function updateSlideBg(idx, url){
+  const bg = document.querySelector('#slide-'+idx+' .slide-bg');
+  if(bg) bg.style.backgroundImage = 'url('+url+')';
+}
+
+function updateOverlay(idx, hex){
+  const ov = document.querySelector('#slide-'+idx+' .slide-overlay');
+  if(!ov) return;
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  ov.style.background = `linear-gradient(105deg,rgba(${r},${g},${b},.82) 0%,rgba(${r},${g},${b},.5) 45%,rgba(${r},${g},${b},.1) 100%)`;
+}
+
+// ── ANN ──
+function updateAnn(){
+  const text = document.getElementById('annInput').value;
+  const link = document.getElementById('annLinkText').value;
+  document.getElementById('annText').innerHTML = text + ' <a href="#">' + link + '</a>';
+}
+function toggleAnn(){
+  const bar = document.getElementById('annBar');
+  bar.style.display = document.getElementById('annVisible').checked ? 'flex' : 'none';
+}
+
+// ── SEC TOGGLE ──
+function toggleSec(idx){
+  const head = document.querySelector('#sec-'+idx+' .sec-head');
+  const body = document.getElementById('body-'+idx);
+  head.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+// ── REMOVE SLIDE ──
+function removeSlide(idx){
+  if(confirm('¿Eliminar este slide?')){
+    toast('✗ Slide eliminado');
+  }
+}
+
+// ── TOAST ──
+let tt;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(tt);
+  tt = setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

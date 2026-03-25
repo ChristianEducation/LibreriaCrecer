@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — Crecer Librería</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --beige:#F2EFDF; --beige-warm:#EAE6CC; --beige-mid:#DDD8B8;
+  --moss:#736002; --moss-mid:#8A7302; --moss-light:#A08C30;
+  --gold:#D9BA1E; --gold-light:#E3C83A; --gold-pale:#EDD96A;
+  --white:#F8F5E6; --text:#3A3001; --text-mid:#736002;
+  --text-light:#9A8430; --border:rgba(115,96,2,0.14); --border-gold:rgba(217,186,30,0.3);
+  --red:#C0392B;
+}
+html { scroll-behavior:smooth; }
+body { font-family:'DM Sans',sans-serif; background:var(--beige); color:var(--text); overflow-x:hidden; min-height:100vh; }
+
+/* ─── NAV ─── */
+nav { position:sticky; top:0; z-index:100; height:64px; padding:0 48px; display:flex; align-items:center; justify-content:space-between; gap:20px; background:rgba(242,239,223,0.95); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); }
+.nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0; }
+.nav-logo-mark { width:28px; height:28px; position:relative; flex-shrink:0; }
+.nav-logo-mark::before,.nav-logo-mark::after { content:''; position:absolute; background:var(--gold); }
+.nav-logo-mark::before { width:1.5px; height:100%; left:50%; transform:translateX(-50%); }
+.nav-logo-mark::after  { width:100%; height:1.5px; top:50%; transform:translateY(-50%); }
+.nav-brand-text { font-family:'EB Garamond',serif; font-size:18px; font-weight:500; color:var(--moss); letter-spacing:0.02em; line-height:1; }
+.nav-brand-sub  { font-size:9px; letter-spacing:0.22em; text-transform:uppercase; color:var(--gold); display:block; margin-top:2px; }
+.nav-back { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-light); text-decoration:none; letter-spacing:0.06em; text-transform:uppercase; transition:color 0.2s; }
+.nav-back:hover { color:var(--moss); }
+.nav-back svg { width:14px; height:14px; }
+
+/* ─── PROGRESS ─── */
+.checkout-progress { background:var(--white); border-bottom:1px solid var(--border); padding:0 56px; display:flex; align-items:center; justify-content:center; height:52px; }
+.progress-step { display:flex; align-items:center; gap:8px; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-light); padding:0 20px; }
+.progress-step.active { color:var(--moss); font-weight:500; }
+.progress-step.done { color:var(--gold); }
+.progress-step-num { width:20px; height:20px; border-radius:50%; border:1px solid currentColor; display:flex; align-items:center; justify-content:center; font-size:10px; flex-shrink:0; }
+.progress-step.done .progress-step-num { background:var(--gold); border-color:var(--gold); color:white; }
+.progress-step.active .progress-step-num { background:var(--moss); border-color:var(--moss); color:white; }
+.progress-sep { width:40px; height:1px; background:var(--border); flex-shrink:0; }
+
+/* ─── MAIN LAYOUT ─── */
+.checkout-main { max-width:1100px; margin:0 auto; padding:48px 56px 80px; display:grid; grid-template-columns:1fr 380px; gap:48px; align-items:start; }
+
+/* ─── FORM ─── */
+.form-section { margin-bottom:36px; }
+.form-section-title { font-family:'EB Garamond',serif; font-size:20px; font-weight:400; color:var(--moss); margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.form-section-num { width:24px; height:24px; border-radius:50%; background:var(--moss); color:white; font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+.form-row.full { grid-template-columns:1fr; }
+.form-group { display:flex; flex-direction:column; gap:5px; }
+.form-label { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-light); }
+.form-input { padding:10px 14px; border:1px solid var(--border); border-radius:2px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--text); background:var(--white); outline:none; transition:border-color 0.22s, box-shadow 0.22s; }
+.form-input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(217,186,30,0.1); }
+.form-input.error { border-color:var(--red); }
+.form-input::placeholder { color:var(--text-light); }
+select.form-input { cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239A8430' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px; }
+.form-error-msg { font-size:11px; color:var(--red); display:none; }
+.form-error-msg.show { display:block; }
+
+/* Delivery */
+.delivery-options { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+.delivery-opt { display:flex; align-items:center; gap:14px; padding:14px 16px; border:1px solid var(--border); border-radius:2px; cursor:pointer; transition:border-color 0.2s, background 0.2s; background:var(--white); }
+.delivery-opt:hover { border-color:var(--gold); }
+.delivery-opt.selected { border-color:var(--gold); background:rgba(217,186,30,0.05); }
+.delivery-opt input[type=radio] { display:none; }
+.delivery-radio { width:16px; height:16px; border-radius:50%; border:1.5px solid var(--border); flex-shrink:0; transition:border-color 0.2s; position:relative; }
+.delivery-opt.selected .delivery-radio { border-color:var(--gold); }
+.delivery-opt.selected .delivery-radio::after { content:''; position:absolute; inset:3px; border-radius:50%; background:var(--gold); }
+.delivery-opt-info { flex:1; }
+.delivery-opt-name { font-size:13px; font-weight:500; color:var(--text); margin-bottom:2px; }
+.delivery-opt-desc { font-size:11px; color:var(--text-light); }
+.delivery-opt-price { font-size:14px; font-weight:500; color:var(--gold); flex-shrink:0; }
+
+/* Payment */
+.payment-methods { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.pay-method { padding:8px 16px; border:1px solid var(--border); border-radius:2px; font-size:12px; color:var(--text-mid); cursor:pointer; background:var(--white); transition:all 0.18s; display:flex; align-items:center; gap:6px; }
+.pay-method:hover { border-color:var(--moss); }
+.pay-method.selected { border-color:var(--moss); background:var(--moss); color:white; }
+.pay-method svg { width:14px; height:14px; }
+.extra-fields { display:none; }
+.extra-fields.show { display:block; }
+.card-row-icons { display:flex; gap:6px; margin-top:6px; }
+.card-icon { width:36px; height:24px; border:1px solid var(--border); border-radius:2px; background:var(--white); display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:600; color:var(--text-light); }
+
+/* ─── ORDER SUMMARY ─── */
+.checkout-summary { background:var(--white); border-radius:2px; border:1px solid var(--border); position:sticky; top:80px; overflow:hidden; }
+.summary-header { padding:20px 24px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.summary-title { font-family:'EB Garamond',serif; font-size:18px; font-weight:400; color:var(--moss); }
+.summary-edit { font-size:11px; color:var(--gold); text-decoration:none; letter-spacing:0.06em; text-transform:uppercase; transition:opacity 0.2s; }
+.summary-edit:hover { opacity:0.7; }
+.summary-items { max-height:280px; overflow-y:auto; padding:8px 0; }
+.summary-items::-webkit-scrollbar { width:3px; }
+.summary-items::-webkit-scrollbar-thumb { background:var(--beige-mid); }
+.summary-item { display:flex; align-items:center; gap:12px; padding:10px 24px; transition:background 0.15s; }
+.summary-item:hover { background:var(--beige); }
+.summary-item-cover { width:36px; flex-shrink:0; aspect-ratio:2/3; background:linear-gradient(145deg,var(--beige-warm),var(--beige-mid)); border-radius:1px; display:flex; align-items:center; justify-content:center; position:relative; }
+.summary-item-cover svg { width:12px; height:12px; opacity:0.2; color:var(--moss); }
+.summary-item-qty-badge { position:absolute; top:-5px; right:-5px; width:16px; height:16px; border-radius:50%; background:var(--moss); color:white; font-size:9px; font-weight:600; display:flex; align-items:center; justify-content:center; }
+.summary-item-info { flex:1; min-width:0; }
+.summary-item-title { font-family:'EB Garamond',serif; font-size:13px; font-weight:500; color:var(--text); line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.summary-item-author { font-size:11px; color:var(--text-light); margin-top:1px; }
+.summary-item-price { font-size:13px; font-weight:500; color:var(--text-mid); flex-shrink:0; }
+.summary-empty { padding:40px 24px; text-align:center; }
+.summary-empty svg { width:28px; height:28px; opacity:0.12; color:var(--moss); margin:0 auto 12px; display:block; }
+.summary-empty p { font-size:13px; color:var(--text-light); }
+.summary-empty a { color:var(--gold); text-decoration:none; font-size:12px; display:inline-block; margin-top:8px; }
+.summary-totals { padding:16px 24px; border-top:1px solid var(--border); }
+.summary-line { display:flex; justify-content:space-between; align-items:center; margin-bottom:9px; }
+.summary-line-label { font-size:12px; color:var(--text-light); }
+.summary-line-value { font-size:13px; color:var(--text-mid); }
+.summary-line.total { margin-top:12px; padding-top:12px; border-top:1px solid var(--border); margin-bottom:0; }
+.summary-line.total .summary-line-label { font-size:13px; font-weight:500; color:var(--moss); }
+.summary-line.total .summary-line-value { font-family:'EB Garamond',serif; font-size:24px; font-weight:500; color:var(--moss); }
+.summary-line-value.free { color:var(--gold); }
+.summary-cta { padding:16px 24px; border-top:1px solid var(--border); }
+.btn-place-order { width:100%; padding:14px; background:var(--moss); color:white; border:none; border-radius:2px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; letter-spacing:0.12em; text-transform:uppercase; display:flex; align-items:center; justify-content:center; gap:10px; transition:background 0.22s, transform 0.15s; }
+.btn-place-order:hover:not(:disabled) { background:var(--moss-mid); transform:translateY(-1px); }
+.btn-place-order:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+.btn-place-order svg { width:15px; height:15px; }
+.summary-secure { display:flex; align-items:center; justify-content:center; gap:6px; font-size:10px; color:var(--text-light); margin-top:12px; letter-spacing:0.04em; }
+.summary-secure svg { width:12px; height:12px; color:var(--gold); }
+
+/* ─── SUCCESS ─── */
+.checkout-success { display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:80px 40px; max-width:560px; margin:0 auto; }
+.checkout-success.show { display:flex; }
+.success-cross { width:60px; height:60px; position:relative; margin-bottom:28px; }
+.success-cross::before,.success-cross::after { content:''; position:absolute; background:var(--gold); border-radius:1px; }
+.success-cross::before { width:2px; height:100%; left:50%; transform:translateX(-50%); }
+.success-cross::after  { width:100%; height:2px; top:50%; transform:translateY(-50%); }
+.success-title { font-family:'EB Garamond',serif; font-size:36px; font-weight:400; color:var(--moss); margin-bottom:12px; }
+.success-sub { font-size:14px; color:var(--text-light); line-height:1.7; max-width:380px; margin-bottom:32px; font-weight:300; }
+.success-order-num { font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:32px; }
+.btn-continue { display:inline-flex; align-items:center; gap:8px; padding:12px 28px; background:var(--moss); color:white; text-decoration:none; border-radius:2px; font-size:11px; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; transition:background 0.22s; }
+.btn-continue:hover { background:var(--moss-mid); }
+
+/* ─── RECOMMENDATIONS ─── */
+.reco-section { background:var(--beige); padding:72px 56px 80px; border-top:1px solid var(--border); }
+.reco-header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:40px; }
+.reco-eyebrow { font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--gold); margin-bottom:8px; display:flex; align-items:center; gap:10px; }
+.reco-eyebrow::before { content:''; width:20px; height:1px; background:var(--gold); }
+.reco-title { font-family:'EB Garamond',serif; font-size:clamp(24px,2.2vw,34px); font-weight:400; color:var(--moss); line-height:1.1; }
+.reco-link { font-size:12px; font-weight:500; color:var(--moss); text-decoration:none; letter-spacing:0.08em; text-transform:uppercase; border-bottom:1px solid transparent; padding-bottom:1px; display:flex; align-items:center; gap:6px; transition:border-color 0.2s; }
+.reco-link:hover { border-bottom-color:var(--moss); }
+.reco-link svg { width:13px; height:13px; }
+.reco-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:24px 18px; }
+.reco-card { cursor:pointer; opacity:0; transform:translateY(16px); transition:opacity 0.5s ease,transform 0.5s ease; }
+.reco-card.visible { opacity:1; transform:translateY(0); }
+.reco-card:nth-child(1){transition-delay:0.04s} .reco-card:nth-child(2){transition-delay:0.08s}
+.reco-card:nth-child(3){transition-delay:0.12s} .reco-card:nth-child(4){transition-delay:0.16s}
+.reco-card:nth-child(5){transition-delay:0.20s}
+.reco-img { aspect-ratio:2/3; position:relative; overflow:hidden; background:linear-gradient(145deg,var(--beige-warm),var(--beige-mid)); border-radius:2px; margin-bottom:12px; box-shadow:2px 4px 16px rgba(58,48,1,0.09); transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),box-shadow 0.35s; }
+.reco-card:hover .reco-img { transform:translateY(-5px); box-shadow:4px 12px 28px rgba(58,48,1,0.16); }
+.reco-img-inner { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+.reco-img-inner svg { width:32px; height:32px; opacity:0.12; color:var(--moss); }
+.reco-overlay { position:absolute; inset:0; border-radius:2px; background:rgba(58,48,1,0.82); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.28s; }
+.reco-card:hover .reco-overlay { opacity:1; }
+.btn-add-reco { background:var(--gold); color:white; border:none; padding:9px 16px; border-radius:2px; font-family:'DM Sans',sans-serif; font-size:10px; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:background 0.2s; }
+.btn-add-reco:hover { background:var(--gold-light); }
+.reco-badge { position:absolute; top:8px; left:8px; background:var(--gold); color:white; font-size:8px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:3px 8px; border-radius:1px; }
+.reco-badge.oferta { background:var(--moss); }
+.reco-author { font-size:10px; color:var(--text-light); margin-bottom:3px; }
+.reco-title-text { font-family:'EB Garamond',serif; font-size:14px; font-weight:500; color:var(--text); margin-bottom:4px; line-height:1.3; }
+.reco-price { font-size:13px; font-weight:500; color:var(--gold); }
+
+/* ─── FOOTER ─── */
+footer { background:var(--moss); padding:60px 56px 36px; color:rgba(255,255,255,0.55); position:relative; overflow:hidden; }
+footer::before { content:''; position:absolute; top:0; left:56px; right:56px; height:1px; background:linear-gradient(to right,transparent,rgba(217,186,30,0.3),transparent); }
+.footer-layout { display:grid; grid-template-columns:1.2fr 1fr 1fr 280px; gap:48px; margin-bottom:48px; }
+.footer-brand .footer-logo-mark { width:32px; height:32px; position:relative; margin-bottom:16px; }
+.footer-brand .footer-logo-mark::before,.footer-brand .footer-logo-mark::after { content:''; position:absolute; background:var(--gold); }
+.footer-brand .footer-logo-mark::before { width:1.5px; height:100%; left:50%; transform:translateX(-50%); }
+.footer-brand .footer-logo-mark::after  { width:100%; height:1.5px; top:50%; transform:translateY(-50%); }
+.footer-brand-name { font-family:'EB Garamond',serif; font-size:20px; font-weight:400; color:white; display:block; margin-bottom:4px; }
+.footer-brand-tagline { font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:16px; }
+.footer-brand p { font-size:13px; line-height:1.8; max-width:220px; font-weight:300; }
+.footer-col h4 { font-size:9px; letter-spacing:0.28em; text-transform:uppercase; color:var(--gold); margin-bottom:18px; }
+.footer-col ul { list-style:none; }
+.footer-col li { margin-bottom:10px; }
+.footer-col a { font-size:13px; color:rgba(255,255,255,0.5); text-decoration:none; transition:color 0.2s; font-weight:300; }
+.footer-col a:hover { color:rgba(255,255,255,0.9); }
+.footer-map-col h4 { font-size:9px; letter-spacing:0.28em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+.footer-map-col>p { font-size:12px; margin-bottom:12px; color:rgba(255,255,255,0.45); font-weight:300; }
+.footer-map-embed { width:100%; height:160px; border-radius:2px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); filter:grayscale(0.3) brightness(0.85); }
+.footer-map-embed iframe { width:100%; height:100%; border:0; }
+.footer-bottom { padding-top:24px; border-top:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; justify-content:space-between; font-size:11px; }
+.footer-bottom a { color:rgba(255,255,255,0.28); text-decoration:none; transition:color 0.2s; }
+.footer-bottom a:hover { color:var(--gold); }
+
+@media (max-width:900px) { .checkout-main { grid-template-columns:1fr; padding:32px 24px 60px; } .checkout-summary { position:static; order:-1; } .checkout-progress { padding:0 20px; } .reco-grid { grid-template-columns:repeat(3,1fr); } .footer-layout { grid-template-columns:1fr 1fr; gap:32px; } }
+@media (max-width:600px) { nav { padding:0 20px; } .form-row { grid-template-columns:1fr; } footer { padding:48px 24px 32px; } .reco-section { padding:56px 24px 60px; } .reco-grid { grid-template-columns:repeat(2,1fr); } .footer-layout { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo-mark"></div>
+    <div><span class="nav-brand-text">Crecer Librería</span><span class="nav-brand-sub">Librería Católica</span></div>
+  </a>
+  <a href="catalogo.html" class="nav-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Continuar comprando
+  </a>
+</nav>
+
+<!-- PROGRESS -->
+<div class="checkout-progress">
+  <div class="progress-step active" id="step1-indicator">
+    <div class="progress-step-num">1</div>Información
+  </div>
+  <div class="progress-sep"></div>
+  <div class="progress-step" id="step2-indicator">
+    <div class="progress-step-num">2</div>Envío
+  </div>
+  <div class="progress-sep"></div>
+  <div class="progress-step" id="step3-indicator">
+    <div class="progress-step-num">3</div>Pago
+  </div>
+</div>
+
+<!-- CHECKOUT MAIN -->
+<div class="checkout-main" id="checkoutMain">
+
+  <!-- FORM -->
+  <div class="checkout-form-col">
+
+    <!-- CONTACTO -->
+    <div class="form-section">
+      <h2 class="form-section-title"><span class="form-section-num">1</span>Información de contacto</h2>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" type="text" id="firstName" placeholder="María"></div>
+        <div class="form-group"><label class="form-label">Apellido</label><input class="form-input" type="text" id="lastName" placeholder="González"></div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label class="form-label">Correo electrónico</label>
+          <input class="form-input" type="email" id="email" placeholder="tu@correo.cl">
+          <span class="form-error-msg" id="emailError">Ingresa un correo válido</span>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" type="tel" id="phone" placeholder="+56 9 1234 5678"></div>
+      </div>
+    </div>
+
+    <!-- ENTREGA -->
+    <div class="form-section">
+      <h2 class="form-section-title"><span class="form-section-num">2</span>Método de entrega</h2>
+      <div class="delivery-options">
+        <label class="delivery-opt selected" id="opt-retiro">
+          <input type="radio" name="delivery" value="retiro" checked>
+          <div class="delivery-radio"></div>
+          <div class="delivery-opt-info"><div class="delivery-opt-name">Retiro en tienda</div><div class="delivery-opt-desc">Arturo Prat 470, Antofagasta · Lun–Sáb 9:00–19:00</div></div>
+          <span class="delivery-opt-price">Gratis</span>
+        </label>
+        <label class="delivery-opt" id="opt-starken">
+          <input type="radio" name="delivery" value="starken">
+          <div class="delivery-radio"></div>
+          <div class="delivery-opt-info"><div class="delivery-opt-name">Starken — Despacho a domicilio</div><div class="delivery-opt-desc">3–5 días hábiles · Todo Chile</div></div>
+          <span class="delivery-opt-price">$3.990</span>
+        </label>
+        <label class="delivery-opt" id="opt-chilexpress">
+          <input type="radio" name="delivery" value="chilexpress">
+          <div class="delivery-radio"></div>
+          <div class="delivery-opt-info"><div class="delivery-opt-name">Chilexpress — Despacho a domicilio</div><div class="delivery-opt-desc">2–3 días hábiles · Todo Chile</div></div>
+          <span class="delivery-opt-price">$4.990</span>
+        </label>
+      </div>
+      <div id="addressFields" style="display:none">
+        <div class="form-row full"><div class="form-group"><label class="form-label">Dirección</label><input class="form-input" type="text" id="address" placeholder="Calle y número"></div></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Ciudad</label><input class="form-input" type="text" id="city" placeholder="Antofagasta"></div>
+          <div class="form-group"><label class="form-label">Región</label>
+            <select class="form-input" id="region">
+              <option value="">Seleccionar...</option>
+              <option value="antofagasta" selected>Antofagasta</option>
+              <option value="tarapaca">Tarapacá</option><option value="atacama">Atacama</option>
+              <option value="coquimbo">Coquimbo</option><option value="valparaiso">Valparaíso</option>
+              <option value="metropolitana">Metropolitana</option><option value="ohiggins">O'Higgins</option>
+              <option value="maule">Maule</option><option value="biobio">Biobío</option>
+              <option value="araucania">Araucanía</option><option value="losrios">Los Ríos</option>
+              <option value="loslagos">Los Lagos</option><option value="aysen">Aysén</option>
+              <option value="magallanes">Magallanes</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGO -->
+    <div class="form-section">
+      <h2 class="form-section-title"><span class="form-section-num">3</span>Método de pago</h2>
+      <div class="payment-methods">
+        <button class="pay-method selected" data-method="tarjeta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Tarjeta
+        </button>
+        <button class="pay-method" data-method="transferencia">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Transferencia
+        </button>
+        <button class="pay-method" data-method="efectivo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Efectivo
+        </button>
+      </div>
+      <div class="extra-fields show" id="cardFields">
+        <div class="form-row full"><div class="form-group"><label class="form-label">Número de tarjeta</label><input class="form-input" type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19"><div class="card-row-icons"><div class="card-icon">VISA</div><div class="card-icon">MC</div><div class="card-icon">AMEX</div></div></div></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">Vencimiento</label><input class="form-input" type="text" id="cardExpiry" placeholder="MM / AA" maxlength="7"></div><div class="form-group"><label class="form-label">CVV</label><input class="form-input" type="text" id="cardCvv" placeholder="123" maxlength="4"></div></div>
+        <div class="form-row full"><div class="form-group"><label class="form-label">Nombre en la tarjeta</label><input class="form-input" type="text" id="cardName" placeholder="MARÍA GONZÁLEZ"></div></div>
+      </div>
+      <div class="extra-fields" id="transferenciaFields">
+        <div style="padding:16px;background:var(--beige);border-radius:2px;border:1px solid var(--border)"><p style="font-size:13px;color:var(--text-mid);line-height:1.8;font-weight:300">Realiza la transferencia a:<br><strong style="font-weight:500;color:var(--moss)">Crecer Librería SpA</strong><br>RUT: 76.123.456-7 · Banco Estado<br>Cta. corriente: 123-456789-0<br><span style="font-size:11px;color:var(--text-light);display:block;margin-top:6px">Envía el comprobante a pagos@crecerlibreria.cl</span></p></div>
+      </div>
+      <div class="extra-fields" id="efectivoFields">
+        <div style="padding:16px;background:var(--beige);border-radius:2px;border:1px solid var(--border)"><p style="font-size:13px;color:var(--text-mid);line-height:1.8;font-weight:300">Pago en efectivo disponible solo para retiro en tienda.<br><strong style="font-weight:500;color:var(--moss)">Arturo Prat 470, Antofagasta</strong><br><span style="font-size:11px;color:var(--text-light)">Lun–Sáb 9:00–19:00 hrs.</span></p></div>
+      </div>
+    </div>
+
+    <!-- NOTAS -->
+    <div class="form-section">
+      <h2 class="form-section-title" style="font-size:16px;margin-bottom:12px">Notas del pedido <span style="font-size:13px;color:var(--text-light);font-family:'DM Sans',sans-serif;font-weight:300">(opcional)</span></h2>
+      <textarea class="form-input" id="notes" rows="3" placeholder="Instrucciones especiales, dedicatorias, etc." style="resize:vertical;min-height:80px;font-family:'DM Sans',sans-serif"></textarea>
+    </div>
+
+  </div><!-- /form -->
+
+  <!-- RESUMEN -->
+  <div class="checkout-summary">
+    <div class="summary-header">
+      <span class="summary-title">Tu pedido</span>
+      <a href="catalogo.html" class="summary-edit">Editar</a>
+    </div>
+    <div class="summary-items" id="summaryItems"></div>
+    <div class="summary-totals" id="summaryTotals"></div>
+    <div class="summary-cta">
+      <button class="btn-place-order" id="btnPlaceOrder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Confirmar pedido
+      </button>
+      <div class="summary-secure">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Compra 100% segura · SSL
+      </div>
+    </div>
+  </div>
+
+</div><!-- /checkout-main -->
+
+<!-- SUCCESS -->
+<div class="checkout-success" id="checkoutSuccess">
+  <div class="success-cross"></div>
+  <h2 class="success-title">¡Pedido confirmado!</h2>
+  <p class="success-sub">Gracias por tu compra. Te enviaremos un correo con los detalles de tu pedido a la brevedad.</p>
+  <p class="success-order-num" id="successOrderNum">Pedido #CL-2026-0001</p>
+  <a href="catalogo.html" class="btn-continue">Seguir explorando <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+</div>
+
+<!-- RECOMENDACIONES -->
+<section class="reco-section" id="recoSection">
+  <div class="reco-header">
+    <div>
+      <p class="reco-eyebrow">Mientras finalizas tu compra</p>
+      <h2 class="reco-title">También podría interesarte</h2>
+    </div>
+    <a href="catalogo.html" class="reco-link">Ver colección <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+  </div>
+  <div class="reco-grid" id="recoGrid"></div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-layout">
+    <div class="footer-brand">
+      <div class="footer-logo-mark"></div>
+      <span class="footer-brand-name">Crecer Librería</span>
+      <span class="footer-brand-tagline">Librería Católica · Antofagasta</span>
+      <p>Comprometidos con el crecimiento espiritual e intelectual de nuestra comunidad desde Antofagasta.</p>
+    </div>
+    <div class="footer-col"><h4>Catálogo</h4><ul><li><a href="catalogo.html">Todos los libros</a></li><li><a href="catalogo.html?cat=biblias">Biblias</a></li><li><a href="catalogo.html?cat=espiritualidad">Espiritualidad</a></li><li><a href="catalogo.html?cat=artesania">Artesanía Religiosa</a></li><li><a href="catalogo.html?cat=tarjetas">Tarjetas</a></li></ul></div>
+    <div class="footer-col"><h4>Información</h4><ul><li><a href="#">Sobre Nosotros</a></li><li><a href="#">Envíos</a></li><li><a href="#">Devoluciones</a></li><li><a href="https://instagram.com/crecerlibreria" target="_blank">Instagram</a></li><li><a href="#">Contacto</a></li></ul></div>
+    <div class="footer-map-col">
+      <h4>Encuéntranos</h4><p>Arturo Prat 470, Antofagasta</p>
+      <div class="footer-map-embed"><iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3557.1!2d-70.3975!3d-23.6524!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sArturo+Prat+470%2C+Antofagasta%2C+Chile!5e0!3m2!1ses!2scl!4v1!5m2!1ses!2scl" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Crecer Librería. Todos los derechos reservados.</span>
+    <a href="https://hultur.studio" target="_blank">Diseño y desarrollo: Hultur Studio</a>
+  </div>
+</footer>
+
+<script>
+const cart = JSON.parse(localStorage.getItem('crecer_cart') || '[]');
+function fmt(n) { return '$' + n.toLocaleString('es-CL'); }
+let deliveryCost = 0, selectedDelivery = 'retiro', selectedPayment = 'tarjeta';
+
+// ── RESUMEN ──
+function renderSummary() {
+  const itemsEl = document.getElementById('summaryItems');
+  const totalsEl = document.getElementById('summaryTotals');
+  if (cart.length === 0) {
+    itemsEl.innerHTML = `<div class="summary-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg><p>Tu carrito está vacío</p><a href="catalogo.html">Ver colección →</a></div>`;
+    totalsEl.innerHTML = '';
+    document.getElementById('btnPlaceOrder').disabled = true;
+    return;
+  }
+  const subtotal = cart.reduce((s,i) => s + i.price * i.qty, 0);
+  const total    = subtotal + deliveryCost;
+  itemsEl.innerHTML = cart.map(item => `
+    <div class="summary-item">
+      <div class="summary-item-cover">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        <span class="summary-item-qty-badge">${item.qty}</span>
+      </div>
+      <div class="summary-item-info">
+        <div class="summary-item-title">${item.title}</div>
+        <div class="summary-item-author">${item.author}</div>
+      </div>
+      <span class="summary-item-price">${fmt(item.price * item.qty)}</span>
+    </div>`).join('');
+  totalsEl.innerHTML = `
+    <div class="summary-line"><span class="summary-line-label">Subtotal</span><span class="summary-line-value">${fmt(subtotal)}</span></div>
+    <div class="summary-line"><span class="summary-line-label">Envío</span><span class="summary-line-value ${deliveryCost===0?'free':''}">${deliveryCost===0?'Gratis':fmt(deliveryCost)}</span></div>
+    <div class="summary-line total"><span class="summary-line-label">Total</span><span class="summary-line-value">${fmt(total)}</span></div>`;
+  document.getElementById('btnPlaceOrder').disabled = false;
+}
+
+// ── DELIVERY ──
+document.querySelectorAll('.delivery-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.delivery-opt').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    selectedDelivery = opt.querySelector('input').value;
+    const addr = document.getElementById('addressFields');
+    deliveryCost = selectedDelivery==='retiro' ? 0 : selectedDelivery==='starken' ? 3990 : 4990;
+    addr.style.display = selectedDelivery==='retiro' ? 'none' : 'block';
+    renderSummary();
+  });
+});
+
+// ── PAYMENT ──
+document.querySelectorAll('.pay-method').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pay-method').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedPayment = btn.dataset.method;
+    document.getElementById('cardFields').classList.toggle('show', selectedPayment==='tarjeta');
+    document.getElementById('transferenciaFields').classList.toggle('show', selectedPayment==='transferencia');
+    document.getElementById('efectivoFields').classList.toggle('show', selectedPayment==='efectivo');
+  });
+});
+
+// ── CARD FORMATTING ──
+document.getElementById('cardNumber').addEventListener('input', e => {
+  let v = e.target.value.replace(/\D/g,'').substring(0,16);
+  e.target.value = v.match(/.{1,4}/g)?.join(' ') || v;
+});
+document.getElementById('cardExpiry').addEventListener('input', e => {
+  let v = e.target.value.replace(/\D/g,'').substring(0,4);
+  if (v.length >= 2) v = v.substring(0,2)+' / '+v.substring(2);
+  e.target.value = v;
+});
+
+// ── VALIDATION ──
+function validate() {
+  let ok = true;
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const email = document.getElementById('email');
+  const emailErr = document.getElementById('emailError');
+  if (!emailRe.test(email.value.trim())) { email.classList.add('error'); emailErr.classList.add('show'); ok=false; }
+  else { email.classList.remove('error'); emailErr.classList.remove('show'); }
+  ['firstName','lastName','email','phone'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) { el.classList.add('error'); ok=false; }
+    else el.classList.remove('error');
+  });
+  if (selectedDelivery !== 'retiro') {
+    ['address','city'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) { el.classList.add('error'); ok=false; }
+      else el.classList.remove('error');
+    });
+  }
+  return ok;
+}
+
+// ── PLACE ORDER ──
+document.getElementById('btnPlaceOrder').addEventListener('click', () => {
+  if (!validate()) { document.querySelector('.form-input.error')?.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  if (!cart.length) return;
+  const btn = document.getElementById('btnPlaceOrder');
+  btn.disabled = true;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="20 6 9 17 4 12"/></svg> Procesando...`;
+  setTimeout(() => {
+    cart.length = 0;
+    localStorage.removeItem('crecer_cart');
+    const num = 'CL-2026-' + String(Math.floor(Math.random()*9000)+1000);
+    document.getElementById('successOrderNum').textContent = `Pedido #${num}`;
+    document.getElementById('checkoutMain').style.display = 'none';
+    document.getElementById('checkoutSuccess').classList.add('show');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }, 1600);
+});
+
+// ── RECOMMENDATIONS ──
+const RECO_PRODUCTS = [
+  {title:'La Imitación de Cristo',        author:'Tomás de Kempis',        price:11500, badge:''},
+  {title:'Historia del Alma',             author:'Santa Teresa de Lisieux', price:13500, badge:'recomendado'},
+  {title:'Laudato Si',                    author:'Papa Francisco',          price:10990, badge:'recomendado'},
+  {title:'Mero Cristianismo',             author:'C.S. Lewis',              price:14990, badge:''},
+  {title:'Biblia Latinoamérica',          author:'Equipo Editorial',        price:19990, badge:'nuevo'},
+];
+
+function renderReco() {
+  const grid = document.getElementById('recoGrid');
+  grid.innerHTML = RECO_PRODUCTS.map(p => {
+    const badge = p.badge==='nuevo' ? `<span class="reco-badge">Nuevo</span>`
+                : p.badge==='recomendado' ? `<span class="reco-badge oferta">Recom.</span>` : '';
+    return `<div class="reco-card" data-title="${p.title}" data-price="${p.price}" data-author="${p.author}">
+      <div class="reco-img">
+        <div class="reco-img-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
+        ${badge}
+        <div class="reco-overlay"><button class="btn-add-reco">Agregar</button></div>
+      </div>
+      <p class="reco-author">${p.author}</p>
+      <p class="reco-title-text">${p.title}</p>
+      <p class="reco-price">${fmt(p.price)}</p>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.btn-add-reco').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const card = btn.closest('.reco-card');
+      const title = card.dataset.title, price = parseInt(card.dataset.price), author = card.dataset.author;
+      const ex = cart.find(i => i.title===title);
+      if (ex) ex.qty++; else cart.push({title,price,author,qty:1});
+      localStorage.setItem('crecer_cart', JSON.stringify(cart));
+      renderSummary();
+      btn.textContent = '✓';
+      setTimeout(() => { btn.textContent = 'Agregar'; }, 1600);
+    });
+  });
+
+  // Animate
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, {threshold:0.07});
+  grid.querySelectorAll('.reco-card').forEach(c => obs.observe(c));
+}
+
+// ── PROGRESS ──
+function updateProgress() {
+  const s1 = document.getElementById('firstName').value && document.getElementById('email').value;
+  document.getElementById('step1-indicator').classList.toggle('done', !!s1);
+  document.getElementById('step2-indicator').classList.toggle('active', !!s1);
+  document.getElementById('step3-indicator').classList.toggle('active', !!s1 && selectedDelivery !== '');
+}
+document.querySelectorAll('.form-input').forEach(el => el.addEventListener('input', updateProgress));
+
+// ── INIT ──
+renderSummary();
+renderReco();
+</script>
+</body>
+</html>

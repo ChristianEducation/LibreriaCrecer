@@ -1,0 +1,284 @@
+import { and, asc, eq, inArray } from "drizzle-orm";
+
+import { db } from "@/integrations/drizzle";
+import { banners, featuredProducts, heroSlides, products } from "@/integrations/drizzle/schema";
+import { deleteImage, STORAGE_BUCKETS, uploadBannerImage as uploadBannerImageToStorage } from "@/integrations/supabase";
+
+import type {
+  BannerInput,
+  CuratedProductInput,
+  FooterBannerMetadataInput,
+  HeroSlideInput,
+  UpdateBannerInput,
+  UpdateCuratedProductInput,
+  UpdateHeroSlideInput,
+} from "../schemas/landing-schemas";
+
+function extractStoragePathFromPublicUrl(url: string | null): string | null {
+  if (!url) return null;
+
+  const marker = `/storage/v1/object/public/${STORAGE_BUCKETS.BANNERS}/`;
+  const markerIndex = url.indexOf(marker);
+  if (markerIndex >= 0) {
+    return url.substring(markerIndex + marker.length);
+  }
+
+  const genericMarker = `/${STORAGE_BUCKETS.BANNERS}/`;
+  const genericIndex = url.indexOf(genericMarker);
+  if (genericIndex >= 0) {
+    return url.substring(genericIndex + genericMarker.length);
+  }
+
+  return null;
+}
+
+export async function getHeroSlidesAdmin() {
+  return db
+    .select({
+      id: heroSlides.id,
+      title: heroSlides.title,
+      subtitle: heroSlides.subtitle,
+      imageUrl: heroSlides.imageUrl,
+      linkUrl: heroSlides.linkUrl,
+      displayOrder: heroSlides.displayOrder,
+      isActive: heroSlides.isActive,
+      createdAt: heroSlides.createdAt,
+      updatedAt: heroSlides.updatedAt,
+    })
+    .from(heroSlides)
+    .orderBy(asc(heroSlides.displayOrder), asc(heroSlides.createdAt));
+}
+
+export async function createHeroSlide(data: HeroSlideInput & { imageUrl: string }) {
+  const [created] = await db
+    .insert(heroSlides)
+    .values({
+      title: data.title ?? null,
+      subtitle: data.subtitle ?? null,
+      imageUrl: data.imageUrl,
+      linkUrl: data.link_url ?? null,
+      displayOrder: data.display_order,
+      isActive: data.is_active,
+    })
+    .returning();
+
+  return created;
+}
+
+export async function updateHeroSlide(id: string, data: UpdateHeroSlideInput & { imageUrl?: string }) {
+  const updateData: Record<string, unknown> = { updatedAt: new Date() };
+
+  if ("title" in data) updateData.title = data.title ?? null;
+  if ("subtitle" in data) updateData.subtitle = data.subtitle ?? null;
+  if ("link_url" in data) updateData.linkUrl = data.link_url ?? null;
+  if ("display_order" in data && typeof data.display_order === "number")
+    updateData.displayOrder = data.display_order;
+  if ("is_active" in data && typeof data.is_active === "boolean") updateData.isActive = data.is_active;
+  if ("imageUrl" in data && data.imageUrl) updateData.imageUrl = data.imageUrl;
+
+  const [updated] = await db.update(heroSlides).set(updateData).where(eq(heroSlides.id, id)).returning();
+  return updated ?? null;
+}
+
+export async function deleteHeroSlide(id: string) {
+  const [row] = await db.select({ imageUrl: heroSlides.imageUrl }).from(heroSlides).where(eq(heroSlides.id, id)).limit(1);
+  if (!row) return false;
+
+  const path = extractStoragePathFromPublicUrl(row.imageUrl);
+  if (path) {
+    await deleteImage(STORAGE_BUCKETS.BANNERS, path);
+  }
+
+  await db.delete(heroSlides).where(eq(heroSlides.id, id));
+  return true;
+}
+
+export async function uploadHeroImage(file: File) {
+  const uploadResult = await uploadBannerImageToStorage(file, "hero");
+  if (uploadResult.success) {
+    return { url: uploadResult.publicUrl };
+  }
+
+  throw new Error(uploadResult.error.message);
+}
+
+export async function reorderHeroSlides(slideIds: string[]) {
+  await db.transaction(async (tx) => {
+    for (let index = 0; index < slideIds.length; index += 1) {
+      await tx
+        .update(heroSlides)
+        .set({ displayOrder: index, updatedAt: new Date() })
+        .where(eq(heroSlides.id, slideIds[index]));
+    }
+  });
+
+  return true;
+}
+
+export async function getBannersAdmin() {
+  return db
+    .select({
+      id: banners.id,
+      title: banners.title,
+      description: banners.description,
+      imageUrl: banners.imageUrl,
+      linkUrl: banners.linkUrl,
+      position: banners.position,
+      metadata: banners.metadata,
+      isActive: banners.isActive,
+      createdAt: banners.createdAt,
+      updatedAt: banners.updatedAt,
+    })
+    .from(banners)
+    .orderBy(asc(banners.position), asc(banners.createdAt));
+}
+
+export async function createBanner(data: BannerInput & { imageUrl: string }) {
+  const [created] = await db
+    .insert(banners)
+    .values({
+      title: data.title ?? null,
+      description: data.description ?? null,
+      imageUrl: data.imageUrl,
+      linkUrl: data.link_url ?? null,
+      position: data.position,
+      metadata: (data.metadata as FooterBannerMetadataInput | undefined) ?? null,
+      isActive: data.is_active,
+    })
+    .returning();
+
+  return created;
+}
+
+export async function updateBanner(id: string, data: UpdateBannerInput & { imageUrl?: string }) {
+  const updateData: Record<string, unknown> = { updatedAt: new Date() };
+
+  if ("title" in data) updateData.title = data.title ?? null;
+  if ("description" in data) updateData.description = data.description ?? null;
+  if ("link_url" in data) updateData.linkUrl = data.link_url ?? null;
+  if ("position" in data && typeof data.position === "string") updateData.position = data.position;
+  if ("metadata" in data) updateData.metadata = data.metadata ?? null;
+  if ("is_active" in data && typeof data.is_active === "boolean") updateData.isActive = data.is_active;
+  if ("imageUrl" in data && data.imageUrl) updateData.imageUrl = data.imageUrl;
+
+  const [updated] = await db.update(banners).set(updateData).where(eq(banners.id, id)).returning();
+  return updated ?? null;
+}
+
+export async function deleteBanner(id: string) {
+  const [row] = await db.select({ imageUrl: banners.imageUrl }).from(banners).where(eq(banners.id, id)).limit(1);
+  if (!row) return false;
+
+  const path = extractStoragePathFromPublicUrl(row.imageUrl);
+  if (path) {
+    await deleteImage(STORAGE_BUCKETS.BANNERS, path);
+  }
+
+  await db.delete(banners).where(eq(banners.id, id));
+  return true;
+}
+
+export async function uploadBannerImage(file: File) {
+  const uploadResult = await uploadBannerImageToStorage(file, "promo");
+  if (uploadResult.success) {
+    return { url: uploadResult.publicUrl };
+  }
+
+  throw new Error(uploadResult.error.message);
+}
+
+export async function getCuratedProductsAdmin(section?: string) {
+  const whereClause = section ? eq(featuredProducts.section, section) : undefined;
+
+  const rows = await db
+    .select({
+      id: featuredProducts.id,
+      productId: featuredProducts.productId,
+      section: featuredProducts.section,
+      description: featuredProducts.description,
+      displayOrder: featuredProducts.displayOrder,
+      isActive: featuredProducts.isActive,
+      createdAt: featuredProducts.createdAt,
+      updatedAt: featuredProducts.updatedAt,
+      productTitle: products.title,
+      productAuthor: products.author,
+      productImage: products.mainImageUrl,
+      productPrice: products.price,
+      productSalePrice: products.salePrice,
+      productIsActive: products.isActive,
+    })
+    .from(featuredProducts)
+    .innerJoin(products, eq(products.id, featuredProducts.productId))
+    .where(whereClause)
+    .orderBy(asc(featuredProducts.section), asc(featuredProducts.displayOrder), asc(featuredProducts.createdAt));
+
+  return rows;
+}
+
+export async function addCuratedProduct(data: CuratedProductInput) {
+  const [created] = await db
+    .insert(featuredProducts)
+    .values({
+      productId: data.product_id,
+      section: data.section,
+      description: data.description ?? null,
+      displayOrder: data.display_order,
+      isActive: data.is_active,
+    })
+    .returning();
+
+  const [withProduct] = await getCuratedProductsAdmin().then((rows) => rows.filter((row) => row.id === created.id));
+  return withProduct ?? created;
+}
+
+export async function updateCuratedProduct(id: string, data: UpdateCuratedProductInput) {
+  const updateData: Record<string, unknown> = { updatedAt: new Date() };
+
+  if ("product_id" in data && data.product_id) updateData.productId = data.product_id;
+  if ("section" in data && data.section) updateData.section = data.section;
+  if ("description" in data) updateData.description = data.description ?? null;
+  if ("display_order" in data && typeof data.display_order === "number")
+    updateData.displayOrder = data.display_order;
+  if ("is_active" in data && typeof data.is_active === "boolean") updateData.isActive = data.is_active;
+
+  const [updated] = await db
+    .update(featuredProducts)
+    .set(updateData)
+    .where(eq(featuredProducts.id, id))
+    .returning({ id: featuredProducts.id });
+
+  if (!updated) return null;
+
+  const rows = await getCuratedProductsAdmin();
+  return rows.find((row) => row.id === updated.id) ?? null;
+}
+
+export async function removeCuratedProduct(id: string) {
+  const [removed] = await db
+    .delete(featuredProducts)
+    .where(eq(featuredProducts.id, id))
+    .returning({ id: featuredProducts.id });
+  return Boolean(removed);
+}
+
+export async function reorderCuratedProducts(section: string, productIds: string[]) {
+  const rows = await db
+    .select({ id: featuredProducts.id })
+    .from(featuredProducts)
+    .where(and(eq(featuredProducts.section, section), inArray(featuredProducts.id, productIds)));
+
+  const ids = new Set(rows.map((row) => row.id));
+
+  await db.transaction(async (tx) => {
+    for (let index = 0; index < productIds.length; index += 1) {
+      if (!ids.has(productIds[index])) continue;
+
+      await tx
+        .update(featuredProducts)
+        .set({ displayOrder: index, updatedAt: new Date() })
+        .where(eq(featuredProducts.id, productIds[index]));
+    }
+  });
+
+  return true;
+}
