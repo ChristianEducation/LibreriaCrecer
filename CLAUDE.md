@@ -19,6 +19,7 @@ E-commerce completo para una librería católica ubicada en Antofagasta, Chile. 
 | Pagos | Getnet Web Checkout (actualmente en TEST) |
 | Emails | Resend (pendiente de integrar) |
 | Inventario | VESSI (pendiente — esperando respuesta de API) |
+| Instagram feed | Elfsight widget (`NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID`) |
 | Estilos | Tailwind CSS v4 |
 | Deploy | Vercel |
 
@@ -239,6 +240,7 @@ GETNET_LOGIN=                        # dejar vacío para usar credenciales TEST
 GETNET_SECRET_KEY=                   # dejar vacío para usar credenciales TEST
 GETNET_ENDPOINT=                     # dejar vacío para usar TEST
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID=   # UUID del widget de Elfsight para Instagram
 ```
 
 > **Importante:** El `DATABASE_URL` usa Session Pooler de Supabase con un punto en el username (`postgres.projectref`). El cliente de Drizzle en `client.ts` parsea la URL manualmente para evitar que `postgres.js` lo maneje incorrectamente. No cambiar ese parsing.
@@ -276,9 +278,41 @@ npm run seed:admin   # Crear primer usuario admin
 ## Estado actual del proyecto
 
 - **Fases 1–4 completas** — backend, APIs, admin panel y frontend público implementados
+- **Fase 4B en curso** — mejoras al landing para dejarlo fiel al diseñador
 - `npx tsc --noEmit` y `npm run lint` pasan sin errores
 - **Pendiente:** Integración VESSI (esperando respuesta de API), Resend emails, Fase 5 (SEO, testing, deploy)
 - **Getnet en TEST** — credenciales de producción se configuran post-validación con Getnet
+- **Instagram** — usar Elfsight widget, requiere `NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID` en `.env.local`
+
+### Progreso Fase 4B
+
+**✅ Tarea 4B.1 — LibrosMesSection completada y corregida:**
+- Eliminado wrapper doble (panel beige redondeado sobre fondo blanco)
+- Título cambiado a "Selección del mes"
+- Container queries (`cqi`) reemplazados por `clamp()` con `vw` en `globals.css`
+- Flechas prev/next movidas al área de portadas (flanquean las portadas, no el sidebar)
+- Sidebar limpio: eyebrow + título + descripción sin botones
+- Portadas más grandes: `--lm-card-w: clamp(11rem, 16vw, 16rem)`
+- Sección con `min-height: 75vh` para tener personalidad propia al hacer scroll
+- Placeholder elegante cuando no hay productos curados
+- Pendiente ajuste fino: padding-left del sidebar (`clamp(2.5rem, 5vw, 5rem)`)
+
+**⏳ Pendientes de ejecutar:**
+- Tarea 4B.2 — Carrusel "Recién llegados" (prompt listo en `docs/`)
+- Tarea 4B.3 — Categorías en carrusel de una fila (prompt listo en `docs/`)
+- Tarea 4B.4 — Banner superior + Hero intermedio desde BD (prompt listo en `docs/`)
+- Tarea 4B.5 — Instagram embed Elfsight + Placeholders + Seed de 10 libros (prompt listo en `docs/`)
+
+### Componentes nuevos de Fase 4B (por crear)
+- `src/features/catalogo/components/RecentProductsCarousel.tsx` — carrusel recién llegados
+- `src/features/catalogo/components/CategoryCarousel.tsx` — categorías en fila
+- `src/shared/ui/TopBanner.tsx` — banda superior editable desde admin
+
+### Convenciones Fase 4B
+- Cada sección del landing tiene `min-height` propio para verse con personalidad al hacer scroll
+- Toda sección sin datos muestra un placeholder elegante (borde punteado, ícono tenue, texto serif)
+- Colores **nunca** se tocan — están aprobados y son definitivos
+- Después de cada tarea: `npx tsc --noEmit` y `npm run lint` deben pasar sin errores
 
 ---
 

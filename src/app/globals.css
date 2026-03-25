@@ -99,50 +99,43 @@ body {
   transform: translateY(0);
 }
 
-/* Libros del mes: una sola escala tipográfica y espacial según el ancho del panel (container queries) */
+/* Libros del mes: escala tipográfica y espacial con vw (sin container queries) */
 @layer components {
-  .libros-mes-panel {
-    container-type: inline-size;
-    container-name: libros;
-    /* Una “misma talla” para todo lo que vive en la sección: todo deriva de cqi del panel */
-    --lm-pad-x: clamp(1rem, 2.2cqi + 0.75rem, 3.5rem);
-    --lm-pad-y: clamp(2.25rem, 4cqi + 1.5rem, 5rem);
-    --lm-sidebar: clamp(12rem, 28cqi, 17.5rem);
-    --lm-gap: clamp(1.5rem, 3.5cqi, 4rem);
-    --lm-gap-row: clamp(1.75rem, 3cqi, 3rem);
-    --lm-title: clamp(1.35rem, 0.25rem + 3.6cqi, 2.625rem);
-    --lm-eyebrow: clamp(0.5rem, 0.28rem + 0.55cqi, 0.5625rem);
-    --lm-body: clamp(0.8125rem, 0.5rem + 0.85cqi, 0.9375rem);
-    --lm-body-max: clamp(17rem, 58cqi, 25rem);
-    --lm-brand: clamp(0.5625rem, 0.32rem + 0.6cqi, 0.625rem);
-    /* Alineado con ProductCard (novedades): título y precio ~14px */
-    --lm-libro-title: clamp(0.8125rem, 0.45rem + 0.9cqi, 0.875rem);
-    --lm-price: clamp(0.8125rem, 0.45rem + 0.85cqi, 0.875rem);
-    /* Portada más grande: la grilla de novedades usa ~1/4 del ancho (~220–260px); antes max 10rem (~160px) */
-    --lm-card-w: clamp(9rem, 19cqi, 15rem);
-    --lm-card-gap: clamp(0.85rem, 2.2cqi, 1.35rem);
-    --lm-card-mb: clamp(0.5rem, 1.2cqi, 0.875rem);
-    --lm-btn: clamp(1.55rem, 3.8cqi, 2.25rem);
-    --lm-icon: clamp(0.65rem, 1.5cqi, 0.9375rem);
-    --lm-radius: clamp(0.625rem, 1.1cqi, 1rem);
-    --lm-eyebrow-line: clamp(0.875rem, 2.4cqi, 1.5rem);
-    --lm-eyebrow-mb: clamp(0.35rem, 1cqi, 0.625rem);
-    /* Altura según contenido: el padding ya da aire; no forzar min-height con cqi (ancho) ni 88vh como el hero */
-  }
-
   .libros-mes-inner {
+    display: flex;
+    align-items: center;
+    min-height: inherit;
     width: 100%;
-    max-width: min(100%, 87.5rem);
+    max-width: 87.5rem;
     margin-inline: auto;
-    padding: var(--lm-pad-y) var(--lm-pad-x);
+    padding: clamp(2rem, 4vw, 3.5rem) clamp(2.5rem, 5vw, 5rem);
+    /* Tokens que escalan con el viewport */
+    --lm-sidebar: clamp(12rem, 20vw, 17.5rem);
+    --lm-gap: clamp(2rem, 4vw, 5rem);
+    --lm-gap-row: clamp(1.75rem, 3vw, 3rem);
+    --lm-title: clamp(2rem, 3.5vw, 3.5rem);
+    --lm-eyebrow: clamp(0.5rem, 0.6vw, 0.5625rem);
+    --lm-body: clamp(0.8125rem, 0.9vw, 0.9375rem);
+    --lm-body-max: clamp(17rem, 25vw, 25rem);
+    --lm-brand: clamp(0.5625rem, 0.65vw, 0.625rem);
+    --lm-libro-title: clamp(0.8125rem, 0.95vw, 0.875rem);
+    --lm-price: clamp(0.8125rem, 0.9vw, 0.875rem);
+    --lm-card-w: clamp(9rem, 13vw, 13rem);
+    --lm-card-gap: clamp(0.85rem, 1.5vw, 1.35rem);
+    --lm-card-mb: clamp(0.5rem, 0.8vw, 0.875rem);
+    --lm-btn: clamp(1.55rem, 2.5vw, 2.25rem);
+    --lm-icon: clamp(0.65rem, 1vw, 0.9375rem);
+    --lm-eyebrow-line: clamp(0.875rem, 1.5vw, 1.5rem);
+    --lm-eyebrow-mb: clamp(0.35rem, 0.6vw, 0.625rem);
   }
 
   .libros-mes-grid {
     display: grid;
     gap: var(--lm-gap-row);
+    width: 100%;
   }
 
-  @container libros (min-width: 64rem) {
+  @media (min-width: 64rem) {
     .libros-mes-grid {
       grid-template-columns: var(--lm-sidebar) minmax(0, 1fr);
       align-items: start;
@@ -166,16 +159,16 @@ body {
   }
 
   .libros-mes-body {
-    margin-top: clamp(0.4rem, 1.2cqi, 0.75rem);
+    margin-top: clamp(0.4rem, 0.8vw, 0.75rem);
     max-width: var(--lm-body-max);
-    font-size: var(--lm-body);
-    line-height: 1.75;
+    font-size: clamp(0.875rem, 1vw, 1rem);
+    line-height: 1.85;
     font-weight: 300;
   }
 
   .libros-mes-controls {
-    margin-top: clamp(1.25rem, 3cqi, 2rem);
-    gap: clamp(0.35rem, 1cqi, 0.5rem);
+    margin-top: clamp(1.25rem, 2vw, 2rem);
+    gap: clamp(0.35rem, 0.5vw, 0.5rem);
   }
 
   .libros-mes-btn {
