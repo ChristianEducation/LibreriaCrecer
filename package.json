@@ -11,7 +11,8 @@
     "format:check": "prettier --check .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "seed:admin": "npx tsx src/scripts/seed-admin.ts"
+    "seed:admin": "npx tsx src/scripts/seed-admin.ts",
+    "seed:products": "npx tsx src/scripts/seed-products.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

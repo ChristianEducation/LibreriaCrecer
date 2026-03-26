@@ -1,13 +1,7 @@
+import Script from "next/script";
 import Link from "next/link";
 
 import { SectionHeader } from "@/shared/ui";
-
-const placeholderBackgrounds = [
-  "linear-gradient(135deg, #5A4A02, #C8A830)",
-  "linear-gradient(135deg, #3A3001, #8A7302)",
-  "linear-gradient(145deg, #C8A830, #D4B840)",
-  "linear-gradient(145deg, #5A4A02, #8A7302)",
-] as const;
 
 function InstagramIcon() {
   return (
@@ -20,9 +14,11 @@ function InstagramIcon() {
 }
 
 export function InstagramSection() {
+  const appId = process.env.NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID;
+
   return (
-    <section className="bg-beige px-5 py-16 md:px-10 md:py-20 lg:px-14">
-      <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+    <section className="page-px bg-beige" style={{ paddingTop: "5rem", paddingBottom: "5rem" }}>
+      <div style={{ marginBottom: "1rem", display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: "1.25rem" }}>
         <SectionHeader
           description="Un mural visual para anunciar lectura, comunidad y lanzamientos sin perder la textura editorial del sitio."
           eyebrow="Instagram"
@@ -31,7 +27,7 @@ export function InstagramSection() {
         />
         <Link
           className="inline-flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.12em] text-moss transition-colors hover:text-gold"
-          href="https://www.instagram.com/"
+          href="https://www.instagram.com/crecerlibreria"
           target="_blank"
         >
           <InstagramIcon />
@@ -39,27 +35,40 @@ export function InstagramSection() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-[10px] lg:grid-cols-4">
-        {placeholderBackgrounds.map((background, index) => (
-          <a
-            className="group relative block aspect-square overflow-hidden rounded"
-            href="https://www.instagram.com/"
-            key={index}
-            rel="noreferrer"
-            target="_blank"
+      {appId ? (
+        <>
+          <Script
+            src="https://static.elfsight.com/platform/platform.js"
+            strategy="lazyOnload"
+          />
+          <div className={`elfsight-app-${appId}`} data-elfsight-app-lazy />
+        </>
+      ) : (
+        <div
+          className="flex flex-col items-center justify-center gap-3 rounded-[2px] border border-dashed border-border bg-beige-warm/40 text-center"
+          style={{ minHeight: "220px", padding: "2.5rem 1.5rem" }}
+        >
+          <svg
+            aria-hidden="true"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.8"
+            style={{ width: "48px", height: "48px", opacity: 0.12 }}
+            viewBox="0 0 24 24"
           >
-            <div
-              className="h-full w-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.07]"
-              style={{ background }}
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-[rgba(58,48,1,0.12)] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/35 bg-[rgba(58,48,1,0.55)] text-white">
-                <InstagramIcon />
-              </div>
-            </div>
-          </a>
-        ))}
-      </div>
+            <rect height="14" rx="4" width="14" x="5" y="5" />
+            <circle cx="12" cy="12" r="3.25" />
+            <circle cx="16.75" cy="7.25" fill="currentColor" r="1" />
+          </svg>
+          <p className="font-serif text-lg font-normal text-text-mid">Feed de Instagram</p>
+          <p
+            className="font-sans font-light leading-relaxed text-text-light"
+            style={{ fontSize: "0.875rem", maxWidth: "22rem" }}
+          >
+            Configurar <code className="font-mono text-xs">NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID</code> para mostrar el feed.
+          </p>
+        </div>
+      )}
     </section>
   );
 }

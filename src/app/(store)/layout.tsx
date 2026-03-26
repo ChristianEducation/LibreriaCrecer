@@ -3,6 +3,7 @@ import { asc, eq } from "drizzle-orm";
 import { db, schema } from "@/integrations/drizzle";
 import { Footer } from "@/shared/ui/Footer";
 import { Navbar } from "@/shared/ui";
+import { TopBanner } from "@/shared/ui/TopBanner";
 
 type StoreLayoutProps = {
   children: React.ReactNode;
@@ -21,6 +22,7 @@ export default async function StoreLayout({ children }: StoreLayoutProps) {
 
   return (
     <>
+      <TopBanner />
       <Navbar categories={categories} />
       {children}
       <Footer />

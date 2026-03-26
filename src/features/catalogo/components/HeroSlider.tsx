@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { cx } from "class-variance-authority";
 
 type HeroSlide = {
@@ -19,8 +20,8 @@ type HeroSliderProps = {
 
 const fallbackSlide: HeroSlide = {
   id: "fallback",
-  title: "Hero fallback",
-  subtitle: "Hero fallback",
+  title: "Crecer Librería Cristiana",
+  subtitle: "Librería Católica · Antofagasta",
   imageUrl: "",
   linkUrl: "/productos",
   displayOrder: 0,
@@ -123,7 +124,7 @@ export function HeroSlider({ slides }: HeroSliderProps) {
             </p>
 
             <div className="flex items-center justify-center gap-4">
-              <a
+              <Link
                 className="inline-flex items-center gap-2 border border-white/35 text-[13px] uppercase tracking-[0.14em] text-white/85 transition-colors duration-200 hover:border-gold hover:text-gold"
                 href="/productos"
                 style={{ padding: "0.45rem 1.1rem" }}
@@ -132,7 +133,7 @@ export function HeroSlider({ slides }: HeroSliderProps) {
                 <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
-              </a>
+              </Link>
             </div>
           </div>
 

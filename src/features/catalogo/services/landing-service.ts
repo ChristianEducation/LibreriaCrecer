@@ -41,6 +41,11 @@ export async function getBanners(position?: string) {
     .orderBy(asc(banners.position), asc(banners.createdAt));
 }
 
+export async function getHeroIntermedio() {
+  const result = await getBanners("hero_intermedio");
+  return result[0] ?? null;
+}
+
 export async function getCuratedProducts(section?: string): Promise<CuratedProduct[]> {
   const whereClause = section
     ? and(

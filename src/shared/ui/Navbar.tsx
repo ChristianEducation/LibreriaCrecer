@@ -151,10 +151,7 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
 
               <nav className="flex items-center gap-7">
                 {navLinks.map((link) => {
-                  const isActive =
-                    link.href === "/"
-                      ? pathname === link.href
-                      : pathname === link.href || pathname.startsWith(`${link.href}/`);
+                  const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
 
                   return (
                     <Link

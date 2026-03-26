@@ -1,20 +1,19 @@
 import {
-  CategoryCard,
+  CategoryCarousel,
   HeroSlider,
   InstagramSection,
   LibrosMesSection,
-  ProductGrid,
   QuoteSection,
+  RecentProductsCarousel,
 } from "@/features/catalogo/components";
-import { getCuratedProducts, getFeaturedCategories, getHeroSlides, getNewProducts } from "@/features/catalogo";
-import { Button, SectionHeader } from "@/shared/ui";
-
+import { getCuratedProducts, getFeaturedCategories, getHeroIntermedio, getHeroSlides, getNewProducts } from "@/features/catalogo";
 export default async function HomePage() {
-  const [heroSlides, novedades, categorias, seleccion] = await Promise.all([
+  const [heroSlides, novedades, categorias, seleccion, heroIntermedio] = await Promise.all([
     getHeroSlides(),
-    getNewProducts(6),
+    getNewProducts(10),
     getFeaturedCategories(),
     getCuratedProducts(),
+    getHeroIntermedio(),
   ]);
 
   return (
@@ -23,52 +22,14 @@ export default async function HomePage() {
 
       <LibrosMesSection items={seleccion} />
 
-      <section className="page-px bg-beige py-16 md:py-20">
-        <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <SectionHeader
-            description="Cada categoria funciona como una puerta de entrada a una mesa distinta: estudio, familia, devocion y formacion."
-            eyebrow="Categorias"
-            title="Una libreria pensada"
-            titleEm="por recorridos"
-          />
-          <Button as="a" href="/productos" size="sm" variant="ghost">
-            Ver todo el catalogo
-          </Button>
-        </div>
+      <CategoryCarousel categories={categorias} />
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-          {categorias.map((category, index) => (
-            <CategoryCard
-              imageUrl={category.imageUrl}
-              index={index}
-              key={category.id}
-              name={category.name}
-              slug={category.slug}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section className="page-px bg-white py-16 md:py-20">
-        <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <SectionHeader
-            description="Novedades editoriales seleccionadas para quienes buscan lectura contemporanea sin perder densidad teologica y belleza material."
-            eyebrow="Novedades"
-            title="Titulos recien"
-            titleEm="llegados"
-          />
-          <Button as="a" href="/productos" size="sm" variant="ghost">
-            Ver todos
-          </Button>
-        </div>
-
-        <ProductGrid products={novedades} />
-      </section>
+      <RecentProductsCarousel products={novedades} />
 
       <QuoteSection
-        author="Crecer Libreria Cristiana"
-        backgroundImageUrl={heroSlides[0]?.imageUrl ?? null}
-        quote="Creemos en libros que no solo informan, sino que acompanan. Textos que permanecen abiertos sobre la mesa, vuelven a la conversacion y se convierten en habito."
+        author={heroIntermedio?.description ?? "Crecer Librería Cristiana"}
+        backgroundImageUrl={heroIntermedio?.imageUrl ?? heroSlides[0]?.imageUrl ?? null}
+        quote={heroIntermedio?.title ?? "Creemos en libros que no solo informan, sino que acompañan. Textos que permanecen abiertos sobre la mesa, vuelven a la conversación y se convierten en hábito."}
       />
 
       <InstagramSection />

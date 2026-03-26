@@ -27,6 +27,14 @@ export default function AdminLandingPage() {
           <p className="font-medium text-text">Footer</p>
           <p className="mt-2 text-sm font-light text-text-light">Ilustracion, opacidad y fade del pie del sitio.</p>
         </Link>
+        <Link href="/admin/landing/banners" className="rounded-[10px] border border-border bg-white p-5 transition-colors hover:border-gold/40 hover:bg-gold/5">
+          <p className="font-medium text-text">Banner superior</p>
+          <p className="mt-2 text-sm font-light text-text-light">Banda informativa sobre el header. Usar position &ldquo;top_banner&rdquo;.</p>
+        </Link>
+        <Link href="/admin/landing/banners" className="rounded-[10px] border border-border bg-white p-5 transition-colors hover:border-gold/40 hover:bg-gold/5">
+          <p className="font-medium text-text">Hero intermedio</p>
+          <p className="mt-2 text-sm font-light text-text-light">Frase inspiradora entre secciones. Usar position &ldquo;hero_intermedio&rdquo;.</p>
+        </Link>
       </div>
     </section>
   );

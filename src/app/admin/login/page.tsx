@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 import { AdminLoginForm } from "@/features/admin/components/admin-login-form";
 import { ADMIN_SESSION_COOKIE } from "@/features/admin/constants";
@@ -29,12 +30,12 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
       <div className="absolute left-12 top-12 h-12 w-12 opacity-[0.06] before:absolute before:left-1/2 before:top-0 before:h-full before:w-px before:-translate-x-1/2 before:bg-gold before:content-[''] after:absolute after:left-0 after:top-1/2 after:h-px after:w-full after:-translate-y-1/2 after:bg-gold after:content-['']" />
       <div className="absolute bottom-12 right-12 h-8 w-8 opacity-[0.06] before:absolute before:left-1/2 before:top-0 before:h-full before:w-px before:-translate-x-1/2 before:bg-gold before:content-[''] after:absolute after:left-0 after:top-1/2 after:h-px after:w-full after:-translate-y-1/2 after:bg-gold after:content-['']" />
 
-      <a
+      <Link
         className="absolute top-7 text-[11px] tracking-[0.08em] text-white/30 transition-colors hover:text-white/60"
         href="/"
       >
         Volver al sitio
-      </a>
+      </Link>
 
       <AdminLoginForm nextPath={nextPath} />
     </main>

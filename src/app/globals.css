@@ -104,6 +104,35 @@ body {
   padding-inline: clamp(1.25rem, 5vw, 3.5rem);
 }
 
+/* Botón de navegación prev/next para carruseles */
+.carousel-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: background 220ms, border-color 220ms, color 220ms;
+}
+.carousel-nav-btn:hover {
+  background: var(--moss);
+  border-color: var(--moss);
+  color: var(--white);
+}
+
+/* Track con scrollbar oculto (carrusel categorías) */
+.cat-track-scroll {
+  scrollbar-width: none;
+}
+.cat-track-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* Hero flotante — wrapper con espacio en 4 lados + esquinas redondeadas en el card */
 .hero-wrapper {
   background: var(--white);

@@ -1,5 +1,6 @@
 export { AddToCartButton } from "./AddToCartButton";
 export { CategoryCard } from "./CategoryCard";
+export { CategoryCarousel } from "./CategoryCarousel";
 export { FilterBar } from "./FilterBar";
 export { HeroSlider } from "./HeroSlider";
 export { InstagramSection } from "./InstagramSection";
@@ -9,4 +10,5 @@ export { Pagination } from "./Pagination";
 export { ProductCard } from "./ProductCard";
 export { ProductGallery } from "./ProductGallery";
 export { ProductGrid } from "./ProductGrid";
+export { RecentProductsCarousel } from "./RecentProductsCarousel";
 export { QuoteSection } from "./QuoteSection";
