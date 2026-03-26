@@ -30,7 +30,7 @@ function SearchIcon() {
 
 function CartIcon() {
   return (
-    <svg aria-hidden="true" className="size-[17px]" fill="none" viewBox="0 0 24 24">
+    <svg aria-hidden="true" className="size-[22px]" fill="none" viewBox="0 0 24 24">
       <path
         d="M3.75 5.25h1.7c.39 0 .73.27.82.65l1.48 6.35c.09.38.43.65.82.65h7.82c.39 0 .73-.26.82-.63l1.35-5.41H7.06"
         stroke="currentColor"
@@ -45,8 +45,10 @@ function CartIcon() {
 }
 
 const navLinks = [
-  { href: "/", label: "Inicio" },
-  { href: "/productos", label: "Coleccion" },
+  { href: "/productos", label: "Colección" },
+  { href: "/#categorias", label: "Categorías" },
+  { href: "/#libros-mes", label: "Selección del mes" },
+  { href: "/#recien-llegados", label: "Recién llegados" },
 ] as const;
 
 export interface NavbarProps {
@@ -114,7 +116,7 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
           isScrolled ? "shadow-[0_2px_24px_rgba(58,48,1,0.08)]" : "",
         )}
       >
-        <div className="flex h-16 items-center justify-between gap-5 px-12">
+        <div className="page-px flex h-16 items-center justify-between gap-5">
           <Link className="flex shrink-0 items-center gap-[10px]" href="/">
             <BrandMark />
             <span className="flex flex-col">
@@ -132,9 +134,9 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
             </Link>
           ) : (
             <>
-              <div className="relative hidden w-full max-w-[300px] flex-1 lg:block">
+              <div className="relative hidden w-full max-w-[420px] flex-1 lg:block">
                 <input
-                  className="h-10 w-full rounded border border-border bg-beige-warm py-2 pl-4 pr-10 text-[13px] text-text transition-[border-color,background-color] duration-200 placeholder:text-text-light focus:border-gold focus:bg-white focus:outline-none"
+                  className="h-10 w-full rounded border border-border bg-beige-warm py-2 pl-4 pr-10 text-[14px] text-text transition-[border-color,background-color] duration-200 placeholder:text-text-light focus:border-gold focus:bg-white focus:outline-none"
                   placeholder="Buscar libros, autores..."
                   type="search"
                 />

@@ -99,16 +99,27 @@ body {
   transform: translateY(0);
 }
 
+/* Margen lateral de página — aplicar a toda sección y al inner del Navbar */
+.page-px {
+  padding-inline: clamp(1.25rem, 5vw, 3.5rem);
+}
+
+/* Hero flotante — wrapper con espacio en 4 lados + esquinas redondeadas en el card */
+.hero-wrapper {
+  background: var(--white);
+  padding: 14px;
+}
+.hero-wrapper > div:first-child {
+  border-radius: var(--radius-hero);
+  overflow: hidden;
+}
+
 /* Libros del mes: escala tipográfica y espacial con vw (sin container queries) */
 @layer components {
-  .libros-mes-inner {
-    display: flex;
-    align-items: center;
-    min-height: inherit;
+  .libros-mes-grid {
+    display: grid;
+    gap: var(--lm-gap-row);
     width: 100%;
-    max-width: 87.5rem;
-    margin-inline: auto;
-    padding: 5rem 3.5rem;
     /* Tokens que escalan con el viewport */
     --lm-sidebar: clamp(12rem, 20vw, 17.5rem);
     --lm-gap: clamp(2rem, 4vw, 5rem);
@@ -127,12 +138,6 @@ body {
     --lm-icon: clamp(0.65rem, 1vw, 0.9375rem);
     --lm-eyebrow-line: clamp(0.875rem, 1.5vw, 1.5rem);
     --lm-eyebrow-mb: clamp(0.35rem, 0.6vw, 0.625rem);
-  }
-
-  .libros-mes-grid {
-    display: grid;
-    gap: var(--lm-gap-row);
-    width: 100%;
   }
 
   @media (min-width: 64rem) {

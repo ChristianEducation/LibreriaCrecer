@@ -23,7 +23,7 @@ export default async function HomePage() {
 
       <LibrosMesSection items={seleccion} />
 
-      <section className="bg-beige px-5 py-16 md:px-10 md:py-20 lg:px-14">
+      <section className="page-px bg-beige py-16 md:py-20">
         <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <SectionHeader
             description="Cada categoria funciona como una puerta de entrada a una mesa distinta: estudio, familia, devocion y formacion."
@@ -49,7 +49,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white px-5 py-16 md:px-10 md:py-20 lg:px-14">
+      <section className="page-px bg-white py-16 md:py-20">
         <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <SectionHeader
             description="Novedades editoriales seleccionadas para quienes buscan lectura contemporanea sin perder densidad teologica y belleza material."

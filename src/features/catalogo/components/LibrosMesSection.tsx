@@ -115,8 +115,7 @@ export function LibrosMesSection({ items }: LibrosMesSectionProps) {
   }
 
   return (
-    <section className="flex min-h-[75vh] flex-col justify-center bg-white" id="libros-mes">
-      <div className="libros-mes-inner">
+    <section className="page-px flex min-h-[75vh] flex-col justify-center bg-white py-16 md:py-20" id="libros-mes">
         <div className="libros-mes-grid">
           <div>
             <p className="libros-mes-eyebrow flex items-center gap-2 font-sans uppercase tracking-[0.35em] text-gold">
@@ -171,7 +170,6 @@ export function LibrosMesSection({ items }: LibrosMesSectionProps) {
             )}
           </div>
         </div>
-      </div>
     </section>
   );
 }

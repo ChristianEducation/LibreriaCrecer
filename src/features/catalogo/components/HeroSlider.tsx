@@ -87,9 +87,9 @@ export function HeroSlider({ slides }: HeroSliderProps) {
   const activeSlide = items[activeIndex] ?? fallbackSlide;
 
   return (
-    <section className="bg-white p-[14px] max-md:p-2.5">
+    <section className="hero-wrapper">
       {/* Alturas y paddings alineados con docs/index.html: .hero-wrapper, .hero, .hero-content */}
-      <div className="relative flex h-[82vh] min-h-[580px] items-center justify-center overflow-hidden rounded-[16px] bg-moss text-center md:h-[88vh]">
+      <div className="relative flex h-[82vh] min-h-[580px] items-center justify-center bg-moss text-center md:h-[88vh]">
         {activeSlide.imageUrl ? (
           <Image
             alt={activeSlide.title ?? "Hero principal"}
@@ -118,17 +118,20 @@ export function HeroSlider({ slides }: HeroSliderProps) {
               <br />
               <em className="font-normal text-[rgba(232,210,140,0.9)]">{heroCopy.titleEmphasis}</em>
             </h1>
-            <p className="mb-11 max-w-[420px] text-[15px] font-light leading-[1.8] tracking-[0.01em] text-white/72">
+            <p className="max-w-[420px] text-[15px] font-light leading-[1.8] tracking-[0.01em] text-white/72" style={{ marginBottom: "4rem" }}>
               {heroCopy.description}
             </p>
 
             <div className="flex items-center justify-center gap-4">
               <a
-                className="group relative z-[4] inline-flex min-w-[10rem] items-center justify-center overflow-hidden rounded-[2px] border border-[color-mix(in_srgb,var(--color-gold)_48%,rgba(255,255,255,0.2))] bg-[linear-gradient(165deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.04)_45%,rgba(58,48,1,0.15)_100%)] px-10 py-3 font-serif text-[clamp(17px,2.35vw,24px)] font-normal leading-none tracking-[-0.01em] text-white no-underline shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_10px_40px_rgba(58,48,1,0.35)] backdrop-blur-[12px] transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] [text-shadow:0_2px_20px_rgba(58,48,1,0.5)] after:pointer-events-none after:absolute after:inset-0 after:rounded-[2px] after:shadow-[inset_0_-1px_0_rgba(58,48,1,0.28)] hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--color-gold)_68%,rgba(255,255,255,0.32))] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.26),0_16px_48px_rgba(58,48,1,0.4)] md:px-11 md:py-[14px]"
+                className="inline-flex items-center gap-2 border border-white/35 text-[13px] uppercase tracking-[0.14em] text-white/85 transition-colors duration-200 hover:border-gold hover:text-gold"
                 href="/productos"
+                style={{ padding: "0.45rem 1.1rem" }}
               >
-                <span className="relative z-[1] text-white/96 transition-colors duration-300 group-hover:text-white">Coleccion</span>
-                <span className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[radial-gradient(ellipse_120%_90%_at_50%_-30%,rgba(232,210,140,0.12),transparent_60%)]" />
+                Ver colección
+                <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
               </a>
             </div>
           </div>
