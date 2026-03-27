@@ -278,41 +278,47 @@ npm run seed:admin   # Crear primer usuario admin
 ## Estado actual del proyecto
 
 - **Fases 1–4 completas** — backend, APIs, admin panel y frontend público implementados
-- **Fase 4B en curso** — mejoras al landing para dejarlo fiel al diseñador
+- **Fase 4B completa** — landing fiel al diseñador ✅
 - `npx tsc --noEmit` y `npm run lint` pasan sin errores
-- **Pendiente:** Integración VESSI (esperando respuesta de API), Resend emails, Fase 5 (SEO, testing, deploy)
+- **Pendiente:** seed de productos (`npm run seed:products`), VESSI, Resend, Fase 5
 - **Getnet en TEST** — credenciales de producción se configuran post-validación con Getnet
-- **Instagram** — usar Elfsight widget, requiere `NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID` en `.env.local`
+- **Instagram** — Elfsight activo, `NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID=1e93ffdc-0e7e-4160-b103-98c5a444c896`
 
-### Progreso Fase 4B
+### Fase 4B — todo completado
 
-**✅ Tarea 4B.1 — LibrosMesSection completada y corregida:**
-- Eliminado wrapper doble (panel beige redondeado sobre fondo blanco)
-- Título cambiado a "Selección del mes"
-- Container queries (`cqi`) reemplazados por `clamp()` con `vw` en `globals.css`
-- Flechas prev/next movidas al área de portadas (flanquean las portadas, no el sidebar)
-- Sidebar limpio: eyebrow + título + descripción sin botones
-- Portadas más grandes: `--lm-card-w: clamp(11rem, 16vw, 16rem)`
-- Sección con `min-height: 75vh` para tener personalidad propia al hacer scroll
-- Placeholder elegante cuando no hay productos curados
-- Pendiente ajuste fino: padding-left del sidebar (`clamp(2.5rem, 5vw, 5rem)`)
+**✅ 4B.1 — LibrosMesSection**
+- Título: "Selección del mes", flechas flanquean portadas, `min-height: 75vh`
+- Padding unificado con `.page-px`
 
-**⏳ Pendientes de ejecutar:**
-- Tarea 4B.2 — Carrusel "Recién llegados" (prompt listo en `docs/`)
-- Tarea 4B.3 — Categorías en carrusel de una fila (prompt listo en `docs/`)
-- Tarea 4B.4 — Banner superior + Hero intermedio desde BD (prompt listo en `docs/`)
-- Tarea 4B.5 — Instagram embed Elfsight + Placeholders + Seed de 10 libros (prompt listo en `docs/`)
+**✅ 4B.2 — RecentProductsCarousel**
+- Eyebrow: "Recién llegados", título: "Lo último *en tienda*"
+- ≤6 productos estáticos, 7-10 carrusel automático
 
-### Componentes nuevos de Fase 4B (por crear)
-- `src/features/catalogo/components/RecentProductsCarousel.tsx` — carrusel recién llegados
-- `src/features/catalogo/components/CategoryCarousel.tsx` — categorías en fila
-- `src/shared/ui/TopBanner.tsx` — banda superior editable desde admin
+**✅ 4B.3 — CategoryCarousel**
+- ≤6 categorías estáticas, 7+ carrusel con prev/next
 
-### Convenciones Fase 4B
-- Cada sección del landing tiene `min-height` propio para verse con personalidad al hacer scroll
-- Toda sección sin datos muestra un placeholder elegante (borde punteado, ícono tenue, texto serif)
-- Colores **nunca** se tocan — están aprobados y son definitivos
-- Después de cada tarea: `npx tsc --noEmit` y `npm run lint` deben pasar sin errores
+**✅ 4B.4 — Banner superior + Hero intermedio**
+- `TopBanner.tsx` + `TopBannerClient.tsx` — importado directo en `layout.tsx` (no en barrel)
+- Hero intermedio conectado a `banners` con `position="hero_intermedio"`
+
+**✅ 4B.5 — Instagram + placeholders**
+- Elfsight widget en `InstagramSection.tsx` — solo link "VER PERFIL" + widget
+- Seed pendiente: `npm run seed:products`
+
+### Sistema de padding — `.page-px`
+```css
+.page-px { padding-inline: clamp(1.25rem, 5vw, 3.5rem); }
+```
+**Nunca usar `px-5 md:px-10 lg:px-14` — reemplazado por `.page-px`.**
+Aplicado en: Navbar inner div, todas las secciones del landing.
+
+### Navbar
+Links: Colección, Categorías (dropdown), Selección del mes (`/#libros-mes`), Recién llegados (`/#recien-llegados`)
+
+### Componentes nuevos Fase 4B
+- `src/features/catalogo/components/RecentProductsCarousel.tsx`
+- `src/features/catalogo/components/CategoryCarousel.tsx`
+- `src/shared/ui/TopBanner.tsx` (Server) + `TopBannerClient.tsx` (Client)
 
 ---
 
