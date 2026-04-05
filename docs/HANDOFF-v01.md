@@ -1,8 +1,8 @@
 # Crecer Librería Cristiana — Handoff v01
-**Última actualización:** Abril 2026 — Sesión: Migración al sistema de documentación versionada  
+**Última actualización:** Abril 2026 — Sesión: Flujo de pago Getnet completo + checkout simplificado  
 **Stack:** Next.js 15.2.4 · Drizzle ORM · Supabase PostgreSQL · Zustand 5 · Tailwind v4 · Getnet  
 **Estado del build:** ✅ `npx tsc --noEmit` limpio · ✅ `npm run lint` limpio  
-**Líneas de código:** ~16.250 · 64 `.tsx` · 118 `.ts`
+**Líneas de código:** ~16.250 · 185 archivos `.ts`/`.tsx`
 
 ---
 
@@ -69,7 +69,7 @@ src/
 │   ├── (checkout)/           # Layout propio sin Navbar/Footer de la tienda
 │   │   └── checkout/
 │   │       ├── page.tsx      # Formulario de compra ✅
-│   │       └── confirmacion/ # Página post-pago ✅ (sin polling activo aún)
+│   │       └── confirmacion/ # Página post-pago ✅ (polling 3s/30s activo)
 │   ├── admin/
 │   │   ├── login/            # Pública — no protegida por middleware ✅
 │   │   └── (panel)/          # Protegido — AdminLayout con sidebar ✅
@@ -141,7 +141,7 @@ Store en `localStorage` (`crecer-cart`). La hidratación usa `useCartHydration()
 ---
 
 ### Feature 3: Checkout y Pagos
-**Estado:** ✅ Completa (en ambiente TEST)  
+**Estado:** ✅ Completa (en ambiente TEST — flujo end-to-end verificado)  
 **Archivos clave:**
 - `src/features/checkout/services/order-service.ts` — transacción atómica
 - `src/features/checkout/services/payment-service.ts` — flujo Getnet
@@ -150,10 +150,16 @@ Store en `localStorage` (`crecer-cart`). La hidratación usa `useCartHydration()
 - `src/app/(checkout)/checkout/confirmacion/page.tsx`
 
 **Cómo funciona:**
-1. Usuario completa el formulario → `POST /api/ordenes` crea la orden en `pending` (transacción atómica: valida stock, snapshot de precios, descuenta stock solo al confirmar `paid`)
-2. Si paga con tarjeta → `POST /api/pagos/crear-sesion` → redirige a Getnet
-3. Getnet redirige a `GET /api/pagos/retorno` → actualiza estado → redirige a `/checkout/confirmacion`
+1. Usuario completa el formulario → `POST /api/ordenes` crea la orden en `pending` (transacción atómica: valida stock, snapshot de precios)
+2. Siempre usa Getnet → `POST /api/pagos/crear-sesion` → redirige a Getnet Web Checkout
+3. Getnet redirige a `GET /api/pagos/retorno` (tanto en aprobación como en cancelación) → actualiza estado en BD → redirige a `/checkout/confirmacion?order=...&status=...`
 4. Getnet también envía `POST /api/pagos/notificacion` (webhook async) — tiene guard idempotente
+5. `/checkout/confirmacion` hace polling a `GET /api/ordenes/[orderNumber]` cada 3s si el estado inicial es `pending`, hasta 10 intentos (30s), luego muestra mensaje de timeout
+6. Si el pago fue cancelado, la página muestra un botón "Agregar al carrito y reintentar" que recarga los items desde el snapshot de la orden
+
+**Opciones de entrega disponibles:**
+- Retiro en tienda (Arturo Prat 470) — sin costo
+- Despacho a domicilio vía Chilexpress — costo se paga al recibir (`shippingCost: 0` en BD)
 
 **IMPORTANTE:** El stock se descuenta únicamente cuando el estado pasa de `pending` a `paid`. El guard AND `status = 'pending'` evita doble procesamiento entre retorno y webhook.
 
@@ -370,6 +376,12 @@ console.log("debug"); // falla ESLint
 | 12 | Stock descontado antes de confirmar pago | `decrementStock()` dentro de `createOrder()` (status `pending`) | Mover a `processPaymentResult()` al confirmar `paid` |
 | 13 | Doble procesamiento: retorno + webhook simultáneos descontaban stock 2 veces | Ambos endpoints marcaban `paid` y descontaban stock | Guard `AND status = 'pending'` en la transacción — idempotente |
 | 14 | Clases Tailwind arbitrarias/responsivas no compilaban | Turbopack + Tailwind v4 no detecta estas clases de forma confiable | `.page-px` en globals.css, `style={{}}` para valores únicos |
+| 15 | Getnet rechazaba todas las sesiones de pago silenciosamente | `tranKey` calculado con `Base64(nonce)` como string en vez de bytes crudos — fórmula de producción es `SHA256(nonceBytes \|\| seed_utf8 \|\| secretKey_utf8)` → Base64 | `Buffer.concat([nonceBytes, Buffer.from(seed,"utf8"), Buffer.from(secretKey,"utf8")])` en `auth.ts` |
+| 16 | `paymentStatus=[object Object]` en URL de retorno | `GetnetPaymentEntry.status` tipado como `string` pero Getnet devuelve objeto `{status, reason, message, date}` | Actualizar tipo a objeto anidado; acceder con `.status?.status` en `payment-service.ts` |
+| 17 | Orden quedaba `pending` en BD cuando el cliente cancelaba el pago en Getnet | `cancelUrl` apuntaba directo a `/checkout/confirmacion` saltándose `/api/pagos/retorno` — el servidor nunca marcaba la orden como `cancelled` | `cancelUrl = appUrl/api/pagos/retorno?reference=...` (mismo endpoint que `returnUrl`) |
+| 18 | UI del admin quedaba en estado loading permanente si el fetch lanzaba | `setLoading(false)` dentro del `try` — nunca se ejecutaba al ocurrir una excepción | `finally { setLoading(false) }` en todas las funciones de fetch de Client Components |
+| 19 | Pool de conexiones agotado en desarrollo — queries del layout competían con API routes | `max: 1` conexión en desarrollo causaba que layout y API route se bloquearan mutuamente | `max: 3` en desarrollo, `max: 5` en producción en `client.ts` |
+| 20 | Post-guardar en formulario de producto admin no navegaba | `router.push("/admin/productos")` + `router.refresh()` se cancelaban mutuamente (mismo patrón que bug #11) | `window.location.href = "/admin/productos"` en `product-admin-form.tsx` |
 
 ---
 
@@ -386,12 +398,17 @@ console.log("debug"); // falla ESLint
 - [ ] **Búsqueda textual en UI** — agregar input en `/productos`, conectar al query param `?search=`. La API ya está lista.
 - [x] **Cron job de cancelación** — pedidos `pending` de +24h → `cancelled`, revertir cupones. Requiere `vercel.json` + API Route protegida
 - [x] **Polling en confirmación de pago** — ciclo 3s / 30s timeout hacia `GET /api/ordenes/[orderNumber]`
+- [x] **Flujo completo de Getnet** — pago aprobado, rechazo, cancelación y botón "Agregar al carrito y reintentar" implementados y verificados en TEST
+- [x] **Seed de productos actualizado** — 20 libros católicos reales y 9 categorías (`npm run seed:products` es idempotente)
+- [x] **Checkout simplificado** — único método de pago (Getnet), dos opciones de entrega (Retiro en tienda / Despacho Chilexpress por pagar al recibir)
+- [ ] **Auditoría completa del e-commerce** — revisar que no falte ninguna funcionalidad típica de tienda online antes del lanzamiento
+- [ ] **API Chilexpress** — cotización de despacho en tiempo real y búsqueda de sucursales (pendiente de credenciales del cliente)
 - [ ] **VESSI** — pendiente de respuesta de la API. Integración en `src/integrations/inventory/`
 
 ### P2 — Lanzamiento / Fase 5
 - [ ] SEO: `generateMetadata` en producto y categoría, Open Graph, sitemap.xml
 - [ ] Optimización de imágenes: `priority` en LCP (HeroSlider), lazy en galería
-- [ ] Testing end-to-end del flujo de compra con tarjeta TEST Getnet
+- [ ] **Playwright** — testing automatizado end-to-end del flujo de compra (incluyendo tarjeta TEST de Getnet `4111 1111 1111 1111`)
 - [ ] UI de admin para cupones (actualmente solo vía BD directa)
 - [ ] UI de admin para usuarios admin adicionales (actualmente solo `seed:admin`)
 - [ ] Páginas legales: política de privacidad, términos y condiciones
@@ -462,4 +479,19 @@ NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID=1e93ffdc-0e7e-4160-b103-98c5a444c896
 
 ---
 
-*Handoff v01 — Abril 2026 — Estado post Fases 1–4B completas. Próximo: Resend, búsqueda UI, `/categorias`, cron job.*
+---
+
+## 🟢 ESTADO ACTUAL DEL PROYECTO
+
+**Fases 1–4C completas.** El flujo de compra funciona end-to-end en ambiente TEST de Getnet:
+
+- Cliente agrega productos → va al carrito → completa el checkout → es redirigido a Getnet Web Checkout
+- Pago aprobado: Getnet redirige a `/api/pagos/retorno` → orden pasa a `paid` → stock descontado → `/checkout/confirmacion?status=paid`
+- Pago cancelado: mismo retorno, orden pasa a `cancelled` → `/checkout/confirmacion?status=cancelled` con botón para reintentar
+- Webhook de Getnet (`POST /api/pagos/notificacion`) con guard idempotente contra doble procesamiento
+- Página de confirmación hace polling si el estado inicial es `pending` (max 10 intentos / 30s)
+- Cron job cancela órdenes `pending` de más de 24h, hora a hora
+
+**Pendiente para producción:** Resend (emails), credenciales Getnet de producción, variables en Vercel, ejecutar seed en producción.
+
+*Handoff v01 — Abril 2026*
