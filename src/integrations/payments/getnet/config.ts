@@ -30,5 +30,5 @@ export function getGetnetReturnUrl(reference: string): string {
 
 export function getGetnetCancelUrl(reference: string): string {
   const encodedReference = encodeURIComponent(reference);
-  return `${getnetConfig.appUrl}/checkout/confirmacion?order=${encodedReference}&status=cancelled`;
+  return `${getnetConfig.appUrl}/api/pagos/retorno?reference=${encodedReference}`;
 }

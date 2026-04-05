@@ -8,8 +8,6 @@ import { useCartHydration } from "@/features/carrito/useCartHydration";
 import { CheckoutForm } from "@/features/checkout/components";
 import type { CreateOrderSchemaInput } from "@/features/checkout/schemas";
 
-type PaymentMethod = "tarjeta" | "transferencia" | "efectivo";
-
 function CheckoutSkeleton() {
   return (
     <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "48px 56px 80px", display: "grid", gridTemplateColumns: "1fr 380px", gap: "48px", alignItems: "start" }}>
@@ -30,12 +28,8 @@ export default function CheckoutPage() {
     }
   }, [hydrated, items.length, router]);
 
-  async function handleSubmit(formData: CreateOrderSchemaInput, selectedPaymentMethod: PaymentMethod) {
+  async function handleSubmit(formData: CreateOrderSchemaInput) {
     try {
-      if (selectedPaymentMethod === "efectivo" && formData.deliveryMethod !== "pickup") {
-        return "El pago en efectivo solo esta disponible para retiro en tienda.";
-      }
-
       const orderBody = {
         items: items.map((item) => ({
           productId: item.productId,
@@ -81,36 +75,29 @@ export default function CheckoutPage() {
         return "La orden se creo con un formato inesperado.";
       }
 
-      if (selectedPaymentMethod === "tarjeta") {
-        const payRes = await fetch("/api/pagos/crear-sesion", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ orderId: order.orderId }),
-        });
+      const payRes = await fetch("/api/pagos/crear-sesion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ orderId: order.orderId }),
+      });
 
-        const payPayload = (await payRes.json().catch(() => null)) as
-          | {
-              message?: string;
-              data?: {
-                processUrl?: string;
-              };
-            }
-          | null;
+      const payPayload = (await payRes.json().catch(() => null)) as
+        | {
+            message?: string;
+            data?: {
+              processUrl?: string;
+            };
+          }
+        | null;
 
-        if (!payRes.ok || !payPayload?.data?.processUrl) {
-          return payPayload?.message ?? "No se pudo iniciar la sesion de pago.";
-        }
-
-        clearCart();
-        window.location.href = payPayload.data.processUrl;
-        return;
+      if (!payRes.ok || !payPayload?.data?.processUrl) {
+        return payPayload?.message ?? "No se pudo iniciar la sesion de pago.";
       }
 
       clearCart();
-      router.push(`/checkout/confirmacion?order=${encodeURIComponent(order.orderNumber)}&status=pending`);
-      return;
+      window.location.href = payPayload.data.processUrl;
     } catch {
       return "Ocurrio un error inesperado al procesar tu pedido.";
     }

@@ -170,7 +170,7 @@ export async function processPaymentResult(
 
     const paymentInfo = await getPaymentStatus(requestId);
     const paymentStatus =
-      paymentInfo.request?.status?.status ?? paymentInfo.payment?.[0]?.status ?? "UNKNOWN";
+      paymentInfo.request?.status?.status ?? paymentInfo.payment?.[0]?.status?.status ?? "UNKNOWN";
     const mappedStatus = mapGetnetStatusToInternal(
       paymentStatus === "UNKNOWN" ? undefined : paymentStatus,
     );

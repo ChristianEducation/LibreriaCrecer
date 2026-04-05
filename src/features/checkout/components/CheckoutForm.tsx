@@ -12,14 +12,10 @@ import { CreateOrderSchema, type CreateOrderSchemaInput } from "@/features/check
 import { Button, Input, Textarea } from "@/shared/ui";
 import { formatCLP } from "@/shared/utils/formatters";
 
-type PaymentMethod = "tarjeta" | "transferencia" | "efectivo";
-type DeliveryOptionId = "pickup" | "starken" | "chilexpress";
+type DeliveryOptionId = "pickup" | "chilexpress";
 
 export interface CheckoutFormProps {
-  onSubmit: (
-    data: CreateOrderSchemaInput,
-    selectedPaymentMethod: PaymentMethod,
-  ) => Promise<string | void>;
+  onSubmit: (data: CreateOrderSchemaInput) => Promise<string | void>;
 }
 
 const fieldClassName =
@@ -36,19 +32,11 @@ const deliveryOptions = [
     deliveryMethod: "pickup" as const,
   },
   {
-    id: "starken" as const,
-    label: "Starken",
-    description: "3-5 dias habiles · Todo Chile",
-    priceLabel: "$3.990",
-    shippingCost: 3990,
-    deliveryMethod: "shipping" as const,
-  },
-  {
     id: "chilexpress" as const,
-    label: "Chilexpress",
-    description: "2-3 dias habiles · Todo Chile",
-    priceLabel: "$4.990",
-    shippingCost: 4990,
+    label: "Despacho a domicilio vía Chilexpress",
+    description: "2-3 días hábiles · Todo Chile",
+    priceLabel: "Por pagar al recibir",
+    shippingCost: 0,
     deliveryMethod: "shipping" as const,
   },
 ];
@@ -71,32 +59,6 @@ const chileanRegions = [
   "Aysen",
   "Magallanes y la Antartica Chilena",
 ] as const;
-
-function CreditCardIcon() {
-  return (
-    <svg aria-hidden="true" className="size-[14px]" fill="none" viewBox="0 0 24 24">
-      <rect height="16" rx="2" stroke="currentColor" strokeWidth="1.5" width="22" x="1" y="4" />
-      <path d="M1 10h22" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function TransferIcon() {
-  return (
-    <svg aria-hidden="true" className="size-[14px]" fill="none" viewBox="0 0 24 24">
-      <rect height="14" rx="2" stroke="currentColor" strokeWidth="1.5" width="20" x="2" y="5" />
-      <path d="M2 10h20" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function CashIcon() {
-  return (
-    <svg aria-hidden="true" className="size-[14px]" fill="none" viewBox="0 0 24 24">
-      <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
 
 function ShieldIcon() {
   return (
@@ -174,12 +136,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
   const { items, couponCode, couponDiscount } = useCart();
   const { subtotal, total } = useCartSummary();
   const [selectedDeliveryOption, setSelectedDeliveryOption] = useState<DeliveryOptionId>("pickup");
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>("tarjeta");
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
-  const [cardName, setCardName] = useState("");
 
   const form = useForm<CreateOrderSchemaInput>({
     resolver: zodResolver(CreateOrderSchema),
@@ -283,12 +240,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
   async function handleValidSubmit(values: CreateOrderSchemaInput) {
     setSubmitError(null);
 
-    if (selectedPaymentMethod === "efectivo" && values.deliveryMethod !== "pickup") {
-      setSubmitError("El pago en efectivo solo esta disponible para retiro en tienda.");
-      return;
-    }
-
-    const result = await onSubmit(values, selectedPaymentMethod);
+    const result = await onSubmit(values);
 
     if (typeof result === "string" && result) {
       setSubmitError(result);
@@ -304,12 +256,6 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
           number={2}
           label="Envío"
           status={stepOneDone ? (stepTwoReady ? "done" : "active") : "pending"}
-        />
-        <div style={{ width: "40px", height: "1px", background: "var(--color-border)" }} />
-        <CheckoutStep
-          number={3}
-          label="Pago"
-          status={stepOneDone && stepTwoReady ? "active" : "pending"}
         />
       </div>
 
@@ -473,125 +419,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
           </section>
 
           <section>
-            <SectionTitle number={3}>Metodo de pago</SectionTitle>
-
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "20px" }}>
-              {[
-                { id: "tarjeta" as const, label: "Tarjeta", icon: <CreditCardIcon /> },
-                { id: "transferencia" as const, label: "Transferencia", icon: <TransferIcon /> },
-                { id: "efectivo" as const, label: "Efectivo", icon: <CashIcon /> },
-              ].map((method) => {
-                const isSelected = selectedPaymentMethod === method.id;
-
-                return (
-                  <button
-                    key={method.id}
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod(method.id)}
-                    style={{ padding: "8px 16px", border: `1px solid ${isSelected ? "var(--color-moss)" : "var(--color-border)"}`, borderRadius: "2px", fontSize: "12px", color: isSelected ? "white" : "var(--color-moss)", background: isSelected ? "var(--color-moss)" : "var(--color-white)", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.18s" }}
-                  >
-                    {method.icon}
-                    <span>{method.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {selectedPaymentMethod === "tarjeta" ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                <div>
-                  <label className="mb-2 block text-[10px] font-medium uppercase tracking-[0.18em] text-text-light">
-                    Numero de tarjeta
-                  </label>
-                  <input
-                    autoComplete="off"
-                    className={fieldClassName}
-                    inputMode="numeric"
-                    onChange={(event) => {
-                      const value = event.target.value.replace(/\D/g, "").slice(0, 16);
-                      setCardNumber(value.match(/.{1,4}/g)?.join(" ") ?? value);
-                    }}
-                    placeholder="4444 4444 4444 4444"
-                    value={cardNumber}
-                  />
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-                  <div>
-                    <label className="mb-2 block text-[10px] font-medium uppercase tracking-[0.18em] text-text-light">
-                      Vencimiento
-                    </label>
-                    <input
-                      autoComplete="off"
-                      className={fieldClassName}
-                      inputMode="numeric"
-                      onChange={(event) => {
-                        const value = event.target.value.replace(/\D/g, "").slice(0, 4);
-                        setCardExpiry(value.length > 2 ? `${value.slice(0, 2)}/${value.slice(2)}` : value);
-                      }}
-                      placeholder="MM/AA"
-                      value={cardExpiry}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-[10px] font-medium uppercase tracking-[0.18em] text-text-light">
-                      CVV
-                    </label>
-                    <input
-                      autoComplete="off"
-                      className={fieldClassName}
-                      inputMode="numeric"
-                      onChange={(event) => setCardCvv(event.target.value.replace(/\D/g, "").slice(0, 4))}
-                      placeholder="123"
-                      value={cardCvv}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-[10px] font-medium uppercase tracking-[0.18em] text-text-light">
-                    Nombre
-                  </label>
-                  <input
-                    autoComplete="off"
-                    className={fieldClassName}
-                    onChange={(event) => setCardName(event.target.value.toUpperCase())}
-                    placeholder="NOMBRE EN LA TARJETA"
-                    value={cardName}
-                  />
-                </div>
-
-                <p className="text-[11px] leading-relaxed text-text-light">
-                  Estos campos son solo referenciales. Al confirmar, continuaras el pago en el entorno seguro de
-                  Getnet.
-                </p>
-              </div>
-            ) : null}
-
-            {selectedPaymentMethod === "transferencia" ? (
-              <div style={{ borderRadius: "2px", border: "1px solid var(--color-border)", background: "var(--color-beige)", padding: "16px", fontSize: "13px", lineHeight: 1.8, color: "var(--color-text)" }}>
-                <strong className="font-medium text-moss">Crecer Libreria SpA</strong>
-                <br />
-                RUT: 76.123.456-7 · Banco Estado
-                <br />
-                Cta. corriente: 123-456789-0
-                <br />
-                <span className="text-[11px] text-text-light">Envia el comprobante a pagos@crecerlibreria.cl</span>
-              </div>
-            ) : null}
-
-            {selectedPaymentMethod === "efectivo" ? (
-              <div style={{ borderRadius: "2px", border: "1px solid var(--color-border)", background: "var(--color-beige)", padding: "16px", fontSize: "13px", lineHeight: 1.8, color: "var(--color-text)" }}>
-                Pago disponible solo para retiro en tienda.
-                <br />
-                <strong className="font-medium text-moss">Arturo Prat 470, Antofagasta</strong>
-              </div>
-            ) : null}
-          </section>
-
-          <section>
-            <SectionTitle number={4}>Notas del pedido</SectionTitle>
+            <SectionTitle number={3}>Notas del pedido</SectionTitle>
             <Textarea
               label="Notas"
               placeholder="Instrucciones especiales, dedicatorias, etc."
@@ -652,8 +480,8 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
             )}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
               <span style={{ fontSize: "12px", color: "var(--color-text-light)" }}>Envío</span>
-              <span style={{ fontSize: "13px", color: shippingCost === 0 ? "var(--color-gold)" : "var(--color-text-light)" }}>
-                {shippingCost === 0 ? "Gratis" : formatCLP(shippingCost)}
+              <span style={{ fontSize: "13px", color: "var(--color-gold)" }}>
+                {selectedDelivery.id === "pickup" ? "Gratis" : "Por pagar al recibir"}
               </span>
             </div>
             <div style={{ borderTop: "1px solid var(--color-border)", marginTop: "12px", paddingTop: "12px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>

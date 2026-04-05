@@ -1,10 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
+import { useCart } from "@/features/carrito/hooks";
+
 type OrderStatus = "paid" | "pending" | "cancelled";
+
+type OrderItemData = {
+  productId: string | null;
+  productTitle: string;
+  unitPrice: number;
+  quantity: number;
+  sku: string | null;
+};
 
 const primaryButtonStyle: React.CSSProperties = {
   display: "inline-flex",
@@ -29,11 +40,66 @@ function ConfirmacionContent() {
   const initialStatus: OrderStatus =
     rawStatus === "paid" || rawStatus === "cancelled" ? rawStatus : "pending";
 
+  const router = useRouter();
+  const { addItem, updateQuantity } = useCart();
+
   const [status, setStatus] = useState<OrderStatus>(initialStatus);
   const [timedOut, setTimedOut] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const attemptsRef = useRef(0);
   const MAX_ATTEMPTS = 10;
+
+  const [retryLoading, setRetryLoading] = useState(false);
+  const [retryError, setRetryError] = useState<string | null>(null);
+
+  async function handleRetry() {
+    if (!orderNumber || retryLoading) return;
+    setRetryLoading(true);
+    setRetryError(null);
+
+    try {
+      const res = await fetch(`/api/ordenes/${orderNumber}`);
+      const data = (await res.json().catch(() => null)) as
+        | { data?: { items?: OrderItemData[] } }
+        | null;
+
+      if (!res.ok || !data?.data?.items) {
+        setRetryError("No se pudieron cargar los productos del pedido.");
+        return;
+      }
+
+      const validItems = data.data.items.filter(
+        (item): item is OrderItemData & { productId: string } => item.productId !== null,
+      );
+
+      if (validItems.length === 0) {
+        setRetryError("Los productos de este pedido ya no están disponibles.");
+        return;
+      }
+
+      for (const item of validItems) {
+        addItem({
+          productId: item.productId,
+          title: item.productTitle,
+          slug: "",
+          author: null,
+          price: item.unitPrice,
+          originalPrice: null,
+          imageUrl: null,
+          sku: item.sku,
+        });
+        if (item.quantity > 1) {
+          updateQuantity(item.productId, item.quantity);
+        }
+      }
+
+      router.push("/checkout");
+    } catch {
+      setRetryError("Ocurrió un error al cargar el pedido. Intenta nuevamente.");
+    } finally {
+      setRetryLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (initialStatus !== "pending" || !orderNumber) return;
@@ -170,10 +236,27 @@ function ConfirmacionContent() {
             <p style={{ fontSize: "14px", color: "var(--color-text-light)", lineHeight: 1.7, maxWidth: "380px", margin: "0 auto 24px", fontWeight: 300 }}>
               El pago no pudo completarse. Puedes intentarlo nuevamente o contactarnos si el problema persiste.
             </p>
+            {orderNumber && (
+              <p style={{ fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--color-gold)", marginBottom: "32px" }}>
+                Pedido #{orderNumber}
+              </p>
+            )}
             <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-              <Link href="/checkout" style={primaryButtonStyle}>
-                Intentar nuevamente
-              </Link>
+              {orderNumber && (
+                <button
+                  disabled={retryLoading}
+                  onClick={() => { void handleRetry(); }}
+                  style={{
+                    ...primaryButtonStyle,
+                    border: "none",
+                    cursor: retryLoading ? "not-allowed" : "pointer",
+                    opacity: retryLoading ? 0.7 : 1,
+                  }}
+                  type="button"
+                >
+                  {retryLoading ? "Cargando..." : "Agregar al carrito y reintentar"}
+                </button>
+              )}
               <Link href="/productos" style={{
                 display: "inline-flex", alignItems: "center", gap: "8px",
                 padding: "12px 28px", background: "transparent",
@@ -184,6 +267,11 @@ function ConfirmacionContent() {
                 Volver a la tienda
               </Link>
             </div>
+            {retryError && (
+              <p style={{ marginTop: "16px", fontSize: "12px", color: "var(--color-error, #c0392b)" }}>
+                {retryError}
+              </p>
+            )}
           </>
         )}
       </div>

@@ -7,15 +7,17 @@ export function buildGetnetAuth(): GetnetAuthObject {
   const nonceBytes = randomBytes(16);
   const seed = new Date().toISOString();
 
-  const nonceBase64 = nonceBytes.toString("base64");
-  const tranKey = createHash("sha256")
-    .update(`${nonceBase64}${seed}${getnetConfig.secretKey}`)
-    .digest("base64");
+  const tranKeyInput = Buffer.concat([
+    nonceBytes,
+    Buffer.from(seed, "utf8"),
+    Buffer.from(getnetConfig.secretKey, "utf8"),
+  ]);
+  const tranKey = createHash("sha256").update(tranKeyInput).digest("base64");
 
   return {
     login: getnetConfig.login,
     tranKey,
-    nonce: nonceBase64,
+    nonce: nonceBytes.toString("base64"),
     seed,
   };
 }

@@ -45,7 +45,12 @@ export type GetnetCreateSessionResponse = {
 };
 
 export type GetnetPaymentEntry = {
-  status: GetnetSessionStatus;
+  status: {
+    status: GetnetSessionStatus;
+    reason?: string;
+    message?: string;
+    date?: string;
+  };
   internalReference?: string;
   paymentMethod?: string;
   franchise?: string;
