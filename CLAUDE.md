@@ -103,7 +103,7 @@ src/
 │
 ├── scripts/
 │   ├── seed-admin.ts         # Crea el primer usuario admin
-│   └── seed-products.ts      # Seed de 10 libros, 6 categorías, selección del mes, hero slide
+│   └── seed-products.ts      # Seed de 20 libros, 9 categorías, selección del mes, hero slide
 │
 ├── shared/
 │   ├── ui/                   # Navbar, Footer, CartPanel, Button, Input, Badge, Toast, SectionHeader, Separator
@@ -476,7 +476,7 @@ npx tsc --noEmit     # Verificar tipos sin compilar
 npm run db:generate  # Generar migración Drizzle
 npm run db:migrate   # Aplicar migraciones
 npm run seed:admin   # Crear primer usuario admin
-npm run seed:products # Seed de 10 libros, 6 categorías, selección del mes y hero slide
+npm run seed:products # Seed de 20 libros, 9 categorías, selección del mes y hero slide
 ```
 
 ---
@@ -497,6 +497,8 @@ npm run seed:products # Seed de 10 libros, 6 categorías, selección del mes y h
 
 - **Fases 1–4C completas** — backend, APIs, admin panel, landing y todas las páginas interiores implementados ✅
 - `npx tsc --noEmit` y `npm run lint` pasan sin errores
+- **Flujo de pago Getnet funcionando end-to-end en TEST** — pago aprobado, rechazo, cancelación, polling en confirmación y botón "reintentar" implementados y verificados ✅
+- **Checkout simplificado** — único método de pago (Getnet), dos opciones de entrega: Retiro en tienda (gratis) y Despacho Chilexpress (por pagar al recibir, `shippingCost: 0` en BD) ✅
 - **Pendiente:** ejecutar `npm run seed:products` en producción, VESSI, Resend, Fase 5
 - **Getnet en TEST** — credenciales de producción se configuran post-validación con Getnet
 - **Instagram** — Elfsight activo, `NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID=1e93ffdc-0e7e-4160-b103-98c5a444c896`
@@ -524,7 +526,7 @@ npm run seed:products # Seed de 10 libros, 6 categorías, selección del mes y h
 **✅ 4B.5 — Instagram + placeholders + seed**
 - `InstagramSection.tsx` — eyebrow "Sé parte de nuestra comunidad" + widget Elfsight
 - Widget condicionado a `NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID`; si no está configurado, sección vacía
-- `src/scripts/seed-products.ts` — 10 libros católicos, 6 categorías, 3 en selección del mes, 1 hero slide
+- `src/scripts/seed-products.ts` — 20 libros católicos reales, 9 categorías, 3 en selección del mes, 1 hero slide
 - Seed es idempotente (usa `onConflictDoNothing`)
 
 ### Navbar
@@ -577,6 +579,33 @@ Referencia visual del diseñador: `docs/catalogo.html`, `docs/producto.html`, `d
 
 ---
 
+## Bugs resueltos — historial
+
+| # | Síntoma | Causa raíz | Fix permanente |
+|---|---|---|---|
+| 1 | `productId: string \| null` no asignable a `CreateOrderItemInput` | Schema Drizzle devuelve `string \| null`, el tipo espera `string` | Filtrar con type guard `(r): r is {...}` antes de `decrementStock` |
+| 2 | `Module not found: Can't resolve 'fs'` en Client Components | `TopBanner` importado vía barrel `shared/ui/index.ts` arrastra Drizzle al cliente | Importar siempre directo: `@/shared/ui/TopBanner` |
+| 3 | `jsonwebtoken` incompatible con Edge Runtime | Usa APIs de Node.js no disponibles en Edge | Usar `jose` en su lugar |
+| 4 | `console.log` bloqueado por ESLint | Regla `no-console` del proyecto | Usar `console.warn` / `console.error` |
+| 5 | `useRouter` importado sin usar tras cambiar a `window.location.href` | Se olvidó eliminar import y declaración | Eliminar import de `next/navigation` y el `const router` |
+| 6 | SSL no activaba — conexiones colgando | `ssl` condicional a `?sslmode=require` en la URL; Supabase siempre requiere SSL | `ssl: "require"` siempre, sin condición |
+| 7 | Páginas cargando indefinidamente sin error | Sin `connect_timeout` en el cliente postgres | Agregar `connect_timeout: 10` |
+| 8 | Error de BD crasheaba toda la tienda | `StoreLayout` sin try/catch en la query de categorías | try/catch con fallback `categories = []` |
+| 9 | Username de Supabase (`postgres.projectref`) — parseo incorrecto | `postgres.js` mal maneja el punto al recibir URL directa | Parseo manual con `new URL()` — no cambiar `client.ts` |
+| 10 | Fallo silencioso de conexión en `.env.local` | Variables en una sola línea → valores corruptos | Una variable por línea sin excepción |
+| 11 | Login admin no redirigía | `router.push()` + `router.refresh()` se cancelan mutuamente | `window.location.href = nextPath ?? "/admin"` |
+| 12 | Stock descontado antes de confirmar pago | `decrementStock()` dentro de `createOrder()` (status `pending`) | Mover a `processPaymentResult()` al confirmar `paid` |
+| 13 | Doble procesamiento: retorno + webhook simultáneos descontaban stock 2 veces | Ambos endpoints marcaban `paid` y descontaban stock | Guard `AND status = 'pending'` en la transacción — idempotente |
+| 14 | Clases Tailwind arbitrarias/responsivas no compilaban | Turbopack + Tailwind v4 no detecta estas clases de forma confiable | `.page-px` en globals.css, `style={{}}` para valores únicos |
+| 15 | Getnet rechazaba todas las sesiones de pago silenciosamente | `tranKey` calculado con `Base64(nonce)` como string en vez de bytes crudos — fórmula correcta: `SHA256(nonceBytes \|\| seed_utf8 \|\| secretKey_utf8)` → Base64 | `Buffer.concat([nonceBytes, Buffer.from(seed,"utf8"), Buffer.from(secretKey,"utf8")])` en `auth.ts` |
+| 16 | `paymentStatus=[object Object]` en URL de retorno | `GetnetPaymentEntry.status` tipado como `string` pero Getnet devuelve objeto `{status, reason, message, date}` | Actualizar tipo a objeto anidado; acceder con `.status?.status` en `payment-service.ts` |
+| 17 | Orden quedaba `pending` en BD cuando el cliente cancelaba el pago | `cancelUrl` apuntaba directo a `/checkout/confirmacion`, saltándose `/api/pagos/retorno` | `cancelUrl = appUrl/api/pagos/retorno?reference=...` (mismo endpoint que `returnUrl`) |
+| 18 | UI del admin quedaba en loading permanente si el fetch lanzaba | `setLoading(false)` dentro del `try` — nunca ejecutado al ocurrir excepción | `finally { setLoading(false) }` en todas las funciones de fetch de Client Components |
+| 19 | Pool de conexiones agotado en desarrollo | `max: 1` causaba que el layout y la API route se bloquearan mutuamente | `max: 3` en desarrollo, `max: 5` en producción en `client.ts` |
+| 20 | Post-guardar en formulario de producto admin no navegaba | `router.push("/admin/productos")` + `router.refresh()` se cancelaban mutuamente (mismo patrón que bug #11) | `window.location.href = "/admin/productos"` en `product-admin-form.tsx` |
+
+---
+
 ## Lo que NO hacer
 
 - No usar el cliente de Supabase para queries a la BD — solo para Storage
@@ -595,6 +624,9 @@ Referencia visual del diseñador: `docs/catalogo.html`, `docs/producto.html`, `d
 - **No omitir `finally { setLoading(false) }` en fetch de Client Components** — sin finally, la UI queda permanentemente en estado de carga si el fetch lanza
 - **No pasar la `DATABASE_URL` directa a `postgres()`** — parsear manualmente (el punto en el username del Session Pooler de Supabase se maneja incorrectamente)
 - **No descontar stock en `createOrder()`** — el descuento ocurre únicamente en `processPaymentResult()` cuando el status pasa a `"paid"`
+- **No calcular `tranKey` de Getnet concatenando strings** — la fórmula correcta usa bytes crudos: `Buffer.concat([nonceBytes, Buffer.from(seed, "utf8"), Buffer.from(secretKey, "utf8")])` → SHA-256 → Base64. Concatenar `base64(nonce) + seed + secretKey` como string produce un `tranKey` inválido que Getnet rechaza silenciosamente.
+- **No acceder a `payment[0].status` directamente como string** — Getnet devuelve un objeto `{status, reason, message, date}`; el valor string está en `payment[0].status.status`
+- **No apuntar `cancelUrl` directo a `/checkout/confirmacion`** — siempre pasar por `/api/pagos/retorno` igual que `returnUrl`, para que el servidor actualice el estado de la orden en BD (pending → cancelled) antes de redirigir
 
 ---
 
