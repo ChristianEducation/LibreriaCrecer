@@ -384,8 +384,8 @@ console.log("debug"); // falla ESLint
 ### P1 — Alta prioridad
 - [ ] **Página `/categorias`** — actualmente `<h1>Categorias</h1>`, implementar listado real
 - [ ] **Búsqueda textual en UI** — agregar input en `/productos`, conectar al query param `?search=`. La API ya está lista.
-- [ ] **Cron job de cancelación** — pedidos `pending` de +24h → `cancelled`, revertir cupones. Requiere `vercel.json` + API Route protegida
-- [ ] **Polling en confirmación de pago** — ciclo 3s / 30s timeout hacia `GET /api/ordenes/[orderNumber]`
+- [x] **Cron job de cancelación** — pedidos `pending` de +24h → `cancelled`, revertir cupones. Requiere `vercel.json` + API Route protegida
+- [x] **Polling en confirmación de pago** — ciclo 3s / 30s timeout hacia `GET /api/ordenes/[orderNumber]`
 - [ ] **VESSI** — pendiente de respuesta de la API. Integración en `src/integrations/inventory/`
 
 ### P2 — Lanzamiento / Fase 5
