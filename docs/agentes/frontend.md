@@ -188,9 +188,9 @@ import { Badge } from "@/shared/ui";
 ```tsx
 import { useToast } from "@/shared/hooks";
 
-const { showToast } = useToast();
-showToast("Producto agregado al carrito", "success");
-showToast("Error al guardar", "error");
+const { toast } = useToast();
+toast({ message: "Producto agregado al carrito", variant: "success" });
+toast({ message: "Error al guardar", variant: "error" });
 ```
 
 **SectionHeader**

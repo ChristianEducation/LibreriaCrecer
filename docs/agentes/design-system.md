@@ -231,10 +231,10 @@ import { Separator } from "@/shared/ui";
 ```tsx
 import { useToast } from "@/shared/hooks";
 
-const { showToast } = useToast();
-showToast("Guardado correctamente", "success");
-showToast("No se pudo guardar", "error");
-showToast("Revisa los datos", "warning");
+const { toast } = useToast();
+toast({ message: "Guardado correctamente", variant: "success" });
+toast({ message: "No se pudo guardar", variant: "error" });
+toast({ message: "Revisa los datos", variant: "warning" });
 ```
 
 ---

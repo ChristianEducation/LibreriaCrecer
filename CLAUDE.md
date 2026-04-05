@@ -112,7 +112,7 @@ src/
 │   ├── config/
 │   │   └── brand.ts          # Constante BRAND: name, tagline, logoSrc, address, email, instagram
 │   └── utils/
-│       └── formatters.ts     # formatCLP() → "$12.500" | formatDate() → "5 de abril de 2026" (es-CL)
+│       └── formatters.ts     # formatCLP() → "$12.500" | formatDate() → "14/03/2026 15:30" (es-CL corto)
 │
 └── integrations/
     ├── drizzle/
@@ -138,7 +138,7 @@ Todas las queries van por Drizzle ORM. Nunca usar el cliente de Supabase para qu
 
 **product_categories** — PK compuesto (`product_id`, `category_id`)
 
-**product_images** — `id`, `product_id` (nullable FK → set null on product delete), `url`, `alt_text`, `display_order`, `created_at`
+**product_images** — `id`, `product_id` (uuid NOT NULL → FK a products.id, CASCADE on delete), `url`, `alt_text`, `display_order`, `created_at`
 
 **orders** — `id`, `order_number` (unique, ej: "ORD-0001"), `status`, `subtotal`, `shipping_cost`, `total`, `delivery_method` ("pickup"|"shipping"), `payment_method`, `payment_reference`, `coupon_id`, `discount_amount`, `admin_notes`, timestamps
 
@@ -240,7 +240,6 @@ Esto evita doble descuento si el webhook de Getnet y el retorno del usuario lleg
 
 **FKs nullable en órdenes:**
 - `order_items.productId` — nullable FK (set null si el producto es eliminado, preserva historial)
-- `product_images.productId` — nullable FK (mismo motivo)
 
 ### Getnet (Pagos)
 - Ambiente actual: **TEST** (`https://checkout.test.getnet.cl`)
@@ -317,6 +316,13 @@ Genera el efecto "flotante" del hero con `border-radius: 16px`.
 ### Componentes compartidos (`src/shared/ui/`)
 `Button`, `Input` (incluye Textarea), `Badge`, `Navbar`, `Footer`, `CartPanel`, `Toast`, `SectionHeader`, `Separator`
 
+`useToast` — API correcta:
+```typescript
+const { toast } = useToast();
+toast({ message: "Guardado correctamente", variant: "success" });
+toast({ message: "Error al guardar", variant: "error" });
+```
+
 > **Importante:** `TopBanner` NO está en el barrel `index.ts`. Importar directamente:
 > ```typescript
 > import { TopBanner } from "@/shared/ui/TopBanner";
@@ -377,14 +383,15 @@ CRON_SECRET=                         # secreto para autenticar llamadas al cron 
 
 ## Supabase Storage
 
-Buckets configurados:
-- `product-images` — imágenes de productos (portadas + galería)
-- `category-images` — imágenes de categorías
-- `banner-images` — imágenes de banners (top, hero, footer, etc.)
-- `hero-images` — imágenes de hero slides
+Buckets configurados (nombres exactos en Supabase):
+- `products` — imágenes de productos (portadas + galería)
+- `banners` — hero slides + banners intermedios y promocionales
+- `categories` — imágenes de categorías (cover + header)
+
+Usar siempre las constantes `STORAGE_BUCKETS.*` de `@/integrations/supabase/types` — nunca strings hardcodeados.
 
 Funciones en `src/integrations/supabase/storage.ts`:
-`uploadProductImage()`, `uploadCategoryImage()`, `uploadBannerImage()`, `uploadHeroImage()`, `deleteImage()`
+`uploadProductImage()`, `uploadCategoryImage()`, `uploadBannerImage()`, `deleteImage()`
 
 ---
 
