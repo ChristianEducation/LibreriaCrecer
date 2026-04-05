@@ -12,7 +12,7 @@ import type {
   ServiceResult,
 } from "../types";
 import { validateCoupon } from "./coupon-service";
-import { decrementStock, validateStock } from "./stock-service";
+import { validateStock } from "./stock-service";
 
 const MAX_ORDER_NUMBER_ATTEMPTS = 3;
 type DbTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -325,15 +325,6 @@ export async function createOrder(data: CreateOrderInput): Promise<ServiceResult
             zipCode: data.address.zipCode,
             deliveryInstructions: data.address.deliveryInstructions,
           });
-        }
-
-        const decrementResult = await decrementStock(normalizedItems, tx);
-        if (!decrementResult.valid) {
-          throw new CheckoutServiceError(
-            "stock_insufficient",
-            "Stock changed during checkout.",
-            decrementResult.errors,
-          );
         }
 
         if (couponId) {

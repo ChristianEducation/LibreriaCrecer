@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -58,7 +57,6 @@ const schema = CreateProductSchema.extend({
 type SchemaInput = z.input<typeof schema>;
 
 export function ProductAdminForm({ mode, productId, initialData }: ProductAdminFormProps) {
-  const router = useRouter();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -190,8 +188,7 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
       }
 
       toast({ message: "Producto guardado correctamente." });
-      router.push("/admin/productos");
-      router.refresh();
+      window.location.href = "/admin/productos";
     } catch {
       const message = "Ocurrio un error inesperado.";
       setError(message);

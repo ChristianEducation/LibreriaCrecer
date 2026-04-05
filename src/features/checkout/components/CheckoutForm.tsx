@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { cx } from "class-variance-authority";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -138,23 +139,19 @@ function CheckoutStep({
   label: string;
   status: "pending" | "active" | "done";
 }) {
+  const color =
+    status === "active" ? "var(--color-moss)" :
+    status === "done" ? "var(--color-gold)" :
+    "var(--color-text-light)";
+  const circleBg =
+    status === "active" ? "var(--color-moss)" :
+    status === "done" ? "var(--color-gold)" :
+    "transparent";
+  const circleColor = status === "pending" ? color : "white";
+
   return (
-    <div
-      className={cx(
-        "flex items-center gap-2 px-5 text-[11px] uppercase tracking-[0.08em]",
-        status === "pending" ? "text-text-light" : "",
-        status === "active" ? "font-medium text-moss" : "",
-        status === "done" ? "font-medium text-gold" : "",
-      )}
-    >
-      <span
-        className={cx(
-          "flex size-5 items-center justify-center rounded-full border text-[10px]",
-          status === "pending" ? "border-current" : "",
-          status === "active" ? "border-moss bg-moss text-white" : "",
-          status === "done" ? "border-gold bg-gold text-white" : "",
-        )}
-      >
+    <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "0 20px", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", color, fontWeight: status !== "pending" ? 500 : 400 }}>
+      <span style={{ width: "20px", height: "20px", borderRadius: "50%", border: `1.5px solid ${color}`, background: circleBg, color: circleColor, fontSize: "10px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         {number}
       </span>
       <span>{label}</span>
@@ -164,11 +161,11 @@ function CheckoutStep({
 
 function SectionTitle({ number, children }: { number: number; children: React.ReactNode }) {
   return (
-    <h2 className="mb-5 flex items-center gap-2.5 border-b border-border pb-3 font-serif text-[20px] text-moss">
-      <span className="flex size-6 items-center justify-center rounded-full bg-moss font-sans text-[11px] text-white">
+    <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "20px", fontWeight: 400, color: "var(--color-moss)", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid var(--color-border)", display: "flex", alignItems: "center", gap: "10px" }}>
+      <span style={{ width: "24px", height: "24px", borderRadius: "50%", background: "var(--color-moss)", color: "white", fontFamily: "var(--font-sans)", fontSize: "11px", fontWeight: 500, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         {number}
       </span>
-      <span>{children}</span>
+      {children}
     </h2>
   );
 }
@@ -300,15 +297,15 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
 
   return (
     <div>
-      <div className="flex h-[52px] items-center justify-center border-b border-border bg-white px-5 md:px-10 lg:px-14">
-        <CheckoutStep number={1} label="Datos" status={stepOneDone ? "done" : "active"} />
-        <div className="h-px w-10 bg-border" />
+      <div style={{ height: "52px", display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "1px solid var(--color-border)", background: "var(--color-white)", gap: 0 }}>
+        <CheckoutStep number={1} label="Información" status={stepOneDone ? "done" : "active"} />
+        <div style={{ width: "40px", height: "1px", background: "var(--color-border)" }} />
         <CheckoutStep
           number={2}
-          label="Entrega"
+          label="Envío"
           status={stepOneDone ? (stepTwoReady ? "done" : "active") : "pending"}
         />
-        <div className="h-px w-10 bg-border" />
+        <div style={{ width: "40px", height: "1px", background: "var(--color-border)" }} />
         <CheckoutStep
           number={3}
           label="Pago"
@@ -317,14 +314,14 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
       </div>
 
       <form
-        className="mx-auto grid max-w-[1100px] gap-10 px-5 py-12 md:px-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-12 lg:px-14 lg:py-16"
         onSubmit={handleSubmit(handleValidSubmit)}
+        style={{ maxWidth: "1100px", margin: "0 auto", padding: "48px 56px 80px", display: "grid", gridTemplateColumns: "1fr 380px", gap: "48px", alignItems: "start" }}
       >
-        <div className="space-y-9">
+        <div style={{ display: "flex", flexDirection: "column", gap: "36px" }}>
           <section>
             <SectionTitle number={1}>Informacion de contacto</SectionTitle>
 
-            <div className="grid gap-[14px] md:grid-cols-2">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
               <Input
                 error={errors.customer?.firstName?.message}
                 label="Nombre"
@@ -339,7 +336,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
               />
             </div>
 
-            <div className="mt-[14px]">
+            <div style={{ marginTop: "14px" }}>
               <Input
                 error={errors.customer?.email?.message}
                 label="Correo electronico"
@@ -349,7 +346,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
               />
             </div>
 
-            <div className="mt-[14px]">
+            <div style={{ marginTop: "14px" }}>
               <Input
                 error={errors.customer?.phone?.message}
                 label="Telefono"
@@ -363,47 +360,38 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
           <section>
             <SectionTitle number={2}>Metodo de entrega</SectionTitle>
 
-            <div className="flex flex-col gap-2.5">
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {deliveryOptions.map((option) => {
                 const isSelected = option.id === selectedDeliveryOption;
-
                 return (
-                  <button
-                    className={cx(
-                      "flex items-center gap-3 rounded-[2px] border border-border bg-white px-4 py-[14px] text-left transition-colors hover:border-gold",
-                      isSelected ? "border-gold bg-gold/5" : "",
-                    )}
+                  <label
                     key={option.id}
                     onClick={() => setSelectedDeliveryOption(option.id)}
-                    type="button"
+                    style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 16px", border: `1px solid ${isSelected ? "var(--color-gold)" : "var(--color-border)"}`, borderRadius: "2px", cursor: "pointer", background: isSelected ? "rgba(217,186,30,0.05)" : "var(--color-white)", transition: "border-color 0.2s, background 0.2s" }}
                   >
-                    <span
-                      className={cx(
-                        "relative size-4 shrink-0 rounded-full border-[1.5px] border-border",
-                        isSelected ? "border-gold" : "",
-                      )}
-                    >
-                      {isSelected ? <span className="absolute inset-[3px] rounded-full bg-gold" /> : null}
-                    </span>
-
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-[13px] font-medium text-text">{option.label}</span>
-                      <span className="mt-0.5 block text-[11px] text-text-light">{option.description}</span>
-                    </span>
-
-                    <span className="text-sm font-medium text-gold">{option.priceLabel}</span>
-                  </button>
+                    {/* Radio visual */}
+                    <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `1.5px solid ${isSelected ? "var(--color-gold)" : "var(--color-border)"}`, flexShrink: 0, position: "relative" }}>
+                      {isSelected && <div style={{ position: "absolute", inset: "3px", borderRadius: "50%", background: "var(--color-gold)" }} />}
+                    </div>
+                    {/* Info */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text)", marginBottom: "2px" }}>{option.label}</div>
+                      <div style={{ fontSize: "11px", color: "var(--color-text-light)" }}>{option.description}</div>
+                    </div>
+                    {/* Price */}
+                    <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-gold)", flexShrink: 0 }}>{option.priceLabel}</span>
+                  </label>
                 );
               })}
             </div>
 
             {deliveryMethod === "shipping" ? (
-              <div className="mt-5 space-y-[14px]">
+              <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
                 {errors.address?.message ? (
                   <p className="text-[11px] text-error">{errors.address.message}</p>
                 ) : null}
 
-                <div className="grid gap-[14px] md:grid-cols-[minmax(0,1fr)_160px]">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 160px", gap: "14px" }}>
                   <Input
                     error={errors.address?.street?.message}
                     label="Calle"
@@ -418,7 +406,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                   />
                 </div>
 
-                <div className="grid gap-[14px] md:grid-cols-2">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                   <Input
                     error={errors.address?.apartment?.message}
                     label="Depto / oficina"
@@ -433,7 +421,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                   />
                 </div>
 
-                <div className="grid gap-[14px] md:grid-cols-2">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                   <Input
                     error={errors.address?.city?.message}
                     label="Ciudad"
@@ -447,6 +435,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                     </label>
                     <select
                       className={cx(fieldClassName, errors.address?.region?.message ? errorFieldClassName : "")}
+                      style={{ width: "100%" }}
                       {...register("address.region")}
                       defaultValue=""
                     >
@@ -463,7 +452,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                   </div>
                 </div>
 
-                <div className="grid gap-[14px] md:grid-cols-2">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                   <Input
                     error={errors.address?.zipCode?.message}
                     label="Codigo postal"
@@ -486,7 +475,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
           <section>
             <SectionTitle number={3}>Metodo de pago</SectionTitle>
 
-            <div className="mb-5 flex flex-wrap gap-2">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "20px" }}>
               {[
                 { id: "tarjeta" as const, label: "Tarjeta", icon: <CreditCardIcon /> },
                 { id: "transferencia" as const, label: "Transferencia", icon: <TransferIcon /> },
@@ -496,13 +485,10 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
 
                 return (
                   <button
-                    className={cx(
-                      "flex items-center gap-1.5 rounded-[2px] border border-border px-4 py-2 text-[12px] text-text-mid transition-colors hover:border-moss",
-                      isSelected ? "border-moss bg-moss text-white" : "bg-white",
-                    )}
                     key={method.id}
-                    onClick={() => setSelectedPaymentMethod(method.id)}
                     type="button"
+                    onClick={() => setSelectedPaymentMethod(method.id)}
+                    style={{ padding: "8px 16px", border: `1px solid ${isSelected ? "var(--color-moss)" : "var(--color-border)"}`, borderRadius: "2px", fontSize: "12px", color: isSelected ? "white" : "var(--color-moss)", background: isSelected ? "var(--color-moss)" : "var(--color-white)", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.18s" }}
                   >
                     {method.icon}
                     <span>{method.label}</span>
@@ -512,7 +498,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
             </div>
 
             {selectedPaymentMethod === "tarjeta" ? (
-              <div className="space-y-[14px]">
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 <div>
                   <label className="mb-2 block text-[10px] font-medium uppercase tracking-[0.18em] text-text-light">
                     Numero de tarjeta
@@ -530,7 +516,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                   />
                 </div>
 
-                <div className="grid gap-[14px] md:grid-cols-2">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                   <div>
                     <label className="mb-2 block text-[10px] font-medium uppercase tracking-[0.18em] text-text-light">
                       Vencimiento
@@ -584,7 +570,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
             ) : null}
 
             {selectedPaymentMethod === "transferencia" ? (
-              <div className="rounded-[2px] border border-border bg-beige p-4 text-[13px] leading-[1.8] text-text-mid">
+              <div style={{ borderRadius: "2px", border: "1px solid var(--color-border)", background: "var(--color-beige)", padding: "16px", fontSize: "13px", lineHeight: 1.8, color: "var(--color-text)" }}>
                 <strong className="font-medium text-moss">Crecer Libreria SpA</strong>
                 <br />
                 RUT: 76.123.456-7 · Banco Estado
@@ -596,7 +582,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
             ) : null}
 
             {selectedPaymentMethod === "efectivo" ? (
-              <div className="rounded-[2px] border border-border bg-beige p-4 text-[13px] leading-[1.8] text-text-mid">
+              <div style={{ borderRadius: "2px", border: "1px solid var(--color-border)", background: "var(--color-beige)", padding: "16px", fontSize: "13px", lineHeight: 1.8, color: "var(--color-text)" }}>
                 Pago disponible solo para retiro en tienda.
                 <br />
                 <strong className="font-medium text-moss">Arturo Prat 470, Antofagasta</strong>
@@ -605,7 +591,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
           </section>
 
           <section>
-            <h2 className="mb-3 font-serif text-base text-moss">Notas del pedido</h2>
+            <SectionTitle number={4}>Notas del pedido</SectionTitle>
             <Textarea
               label="Notas"
               placeholder="Instrucciones especiales, dedicatorias, etc."
@@ -615,86 +601,78 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
 
           {submitError ? <p className="text-[11px] text-error">{submitError}</p> : null}
 
-          <div className="lg:hidden">
+          <div>
             <Button className="w-full justify-center" loading={isSubmitting} type="submit" variant="moss">
               Confirmar pedido
             </Button>
           </div>
         </div>
 
-        <aside className="h-fit rounded-[2px] border border-border bg-white lg:sticky lg:top-20">
-          <div className="border-b border-border px-6 pb-4 pt-5">
-            <h2 className="font-serif text-lg text-moss">Resumen del pedido</h2>
+        <aside style={{ background: "var(--color-white)", border: "1px solid var(--color-border)", borderRadius: "2px", position: "sticky", top: "80px", overflow: "hidden" }}>
+          {/* Header */}
+          <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid var(--color-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontFamily: "var(--font-serif)", fontSize: "18px", color: "var(--color-moss)" }}>Tu pedido</span>
+            <Link href="/carrito" style={{ fontSize: "11px", color: "var(--color-gold)", textDecoration: "none", letterSpacing: "0.06em", textTransform: "uppercase" }}>Editar</Link>
           </div>
 
-          <div className="max-h-[280px] overflow-y-auto py-2">
+          {/* Items */}
+          <div style={{ maxHeight: "280px", overflowY: "auto", padding: "8px 0" }}>
             {items.map((item) => (
-              <div className="flex items-center gap-3 px-6 py-2.5" key={item.productId}>
-                <div className="relative aspect-[2/3] w-9 shrink-0 overflow-hidden rounded-[1px] bg-[linear-gradient(145deg,var(--beige-warm),var(--beige-mid))]">
+              <div key={item.productId} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 24px" }}>
+                <div style={{ width: "36px", flexShrink: 0, aspectRatio: "2/3", background: "linear-gradient(145deg, var(--color-beige-warm), var(--color-beige-mid))", borderRadius: "1px", position: "relative", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                   {item.imageUrl ? (
-                    <Image alt={item.title} className="object-cover" fill sizes="36px" src={item.imageUrl} />
+                    <Image alt={item.title} fill sizes="36px" src={item.imageUrl} style={{ objectFit: "cover" }} />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-moss/20">
-                      <BookIcon className="size-3" />
-                    </div>
+                    <BookIcon className="size-3 text-moss/20" />
                   )}
-                  <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-moss text-[9px] font-semibold text-white">
+                  <span style={{ position: "absolute", top: "-5px", right: "-5px", width: "16px", height: "16px", borderRadius: "50%", background: "var(--color-moss)", color: "white", fontSize: "9px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {item.quantity}
                   </span>
                 </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-serif text-[13px] text-text">{item.title}</p>
-                  <p className="truncate text-[11px] text-text-light">{item.author ?? "Crecer Libreria"}</p>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: "var(--font-serif)", fontSize: "13px", fontWeight: 500, color: "var(--color-text)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</div>
+                  {item.author && <div style={{ fontSize: "11px", color: "var(--color-text-light)", marginTop: "1px" }}>{item.author}</div>}
                 </div>
-
-                <span className="text-[13px] font-medium text-text-mid">
-                  {formatCLP(item.price * item.quantity)}
-                </span>
+                <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-moss)", flexShrink: 0 }}>{formatCLP(item.price * item.quantity)}</span>
               </div>
             ))}
           </div>
 
-          <div className="border-t border-border px-6 py-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-xs text-text-light">Subtotal</span>
-                <span className="text-sm text-text-mid">{formatCLP(subtotal)}</span>
-              </div>
-
-              {couponDiscount > 0 ? (
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-xs text-gold">Descuento</span>
-                  <span className="text-sm text-gold">-{formatCLP(couponDiscount)}</span>
-                </div>
-              ) : null}
-
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-xs text-text-light">Envio</span>
-                <span className={cx("text-sm", shippingCost === 0 ? "text-gold" : "text-text-mid")}>
-                  {shippingCost === 0 ? "Gratis" : formatCLP(shippingCost)}
-                </span>
-              </div>
+          {/* Totals */}
+          <div style={{ padding: "16px 24px", borderTop: "1px solid var(--color-border)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <span style={{ fontSize: "12px", color: "var(--color-text-light)" }}>Subtotal</span>
+              <span style={{ fontSize: "13px", color: "var(--color-text)" }}>{formatCLP(subtotal)}</span>
             </div>
-
-            <div className="mt-4 border-t border-border pt-4">
-              <div className="flex items-end justify-between gap-4">
-                <span className="font-serif text-base text-moss">Total</span>
-                <span className="font-serif text-[28px] font-medium text-moss">
-                  {formatCLP(totalWithShipping)}
-                </span>
+            {couponDiscount > 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <span style={{ fontSize: "12px", color: "var(--color-gold)" }}>Descuento</span>
+                <span style={{ fontSize: "13px", color: "var(--color-gold)" }}>-{formatCLP(couponDiscount)}</span>
               </div>
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <span style={{ fontSize: "12px", color: "var(--color-text-light)" }}>Envío</span>
+              <span style={{ fontSize: "13px", color: shippingCost === 0 ? "var(--color-gold)" : "var(--color-text-light)" }}>
+                {shippingCost === 0 ? "Gratis" : formatCLP(shippingCost)}
+              </span>
+            </div>
+            <div style={{ borderTop: "1px solid var(--color-border)", marginTop: "12px", paddingTop: "12px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-moss)" }}>Total</span>
+              <span style={{ fontFamily: "var(--font-serif)", fontSize: "24px", fontWeight: 500, color: "var(--color-moss)" }}>{formatCLP(totalWithShipping)}</span>
             </div>
           </div>
 
-          <div className="border-t border-border px-6 py-4 max-lg:hidden">
+          {/* Confirm button */}
+          <div style={{ padding: "16px 24px", borderTop: "1px solid var(--color-border)" }}>
             <Button className="w-full justify-center" loading={isSubmitting} type="submit" variant="moss">
-              <span className="flex items-center gap-2">
+              <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <ShieldIcon />
-                <span>Confirmar pedido</span>
+                <span>{isSubmitting ? "Procesando..." : "Confirmar pedido"}</span>
               </span>
             </Button>
-            <p className="mt-3 text-center text-[10px] text-text-light">Compra 100% segura · SSL</p>
+            <p style={{ marginTop: "12px", textAlign: "center", fontSize: "10px", color: "var(--color-text-light)" }}>
+              Compra 100% segura · SSL
+            </p>
           </div>
         </aside>
       </form>

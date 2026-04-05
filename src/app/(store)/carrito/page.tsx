@@ -1,27 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { cx } from "class-variance-authority";
+import type React from "react";
 
 import { useCart, useCartSummary } from "@/features/carrito/hooks";
 import { useCartHydration } from "@/features/carrito/useCartHydration";
-import { Button, Input } from "@/shared/ui";
 import { formatCLP } from "@/shared/utils/formatters";
 
-function CrossMark({ className }: { className?: string }) {
+function BookIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <span className={cx("relative block", className)}>
-      <span className="absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 rounded-[1px] bg-current" />
-      <span className="absolute left-0 top-1/2 h-[2px] w-full -translate-y-1/2 rounded-[1px] bg-current" />
-    </span>
-  );
-}
-
-function BookIcon({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24">
+    <svg aria-hidden="true" className={className} style={style} fill="none" viewBox="0 0 24 24">
       <path
         d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"
         stroke="currentColor"
@@ -39,26 +29,38 @@ function BookIcon({ className }: { className?: string }) {
   );
 }
 
-function TrashIcon() {
-  return (
-    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-      <path
-        d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
-}
 
 function CartSkeleton() {
   return (
-    <main className="min-h-[60vh] bg-beige px-5 py-12 md:px-10 lg:px-14 lg:py-16">
-      <div className="mx-auto grid max-w-[1100px] gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="h-80 animate-pulse rounded-[2px] bg-white/60" />
-        <div className="h-72 animate-pulse rounded-[2px] bg-white/60" />
+    <main style={{ minHeight: "60vh", background: "var(--color-beige)" }}>
+      <div className="page-px" style={{ paddingTop: "48px", paddingBottom: "80px" }}>
+        <div
+          style={{
+            maxWidth: "1100px",
+            margin: "0 auto",
+            display: "grid",
+            gridTemplateColumns: "1fr 380px",
+            gap: "48px",
+            alignItems: "start",
+          }}
+        >
+          <div
+            style={{
+              height: "320px",
+              borderRadius: "2px",
+              background: "rgba(255,255,255,0.6)",
+              animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite",
+            }}
+          />
+          <div
+            style={{
+              height: "288px",
+              borderRadius: "2px",
+              background: "rgba(255,255,255,0.6)",
+              animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite",
+            }}
+          />
+        </div>
       </div>
     </main>
   );
@@ -85,11 +87,6 @@ export default function CarritoPage() {
   useEffect(() => {
     setCouponInput(couponCode ?? "");
   }, [couponCode]);
-
-  const itemCountLabel = useMemo(() => {
-    const count = items.length;
-    return `${count} ${count === 1 ? "titulo" : "titulos"}`;
-  }, [items.length]);
 
   async function handleApplyCoupon() {
     const normalizedCode = couponInput.trim();
@@ -153,175 +150,504 @@ export default function CarritoPage() {
   }
 
   return (
-    <main className="min-h-[60vh] bg-beige px-5 py-12 md:px-10 lg:px-14 lg:py-16">
-      <div className="mx-auto grid max-w-[1100px] gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-12">
-        <section>
-          <div className="mb-8 flex items-end justify-between gap-4">
-            <div>
-              <h1 className="font-serif text-[28px] text-moss">Tu carrito</h1>
-              <p className="mt-2 text-[11px] uppercase tracking-[0.14em] text-text-light">
-                {itemCountLabel}
-              </p>
-            </div>
-          </div>
+    <main style={{ minHeight: "60vh", background: "var(--color-beige)" }}>
+      <div className="page-px" style={{ paddingTop: "48px", paddingBottom: "80px" }}>
+        <h1
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: "clamp(28px,3vw,38px)",
+            fontWeight: 400,
+            color: "var(--color-moss)",
+            marginBottom: "32px",
+          }}
+        >
+          Mi carrito
+        </h1>
 
-          {isEmpty ? (
-            <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
-              <CrossMark className="mb-6 h-12 w-12 text-moss/15" />
-              <h2 className="font-serif text-[28px] text-moss">Tu carrito esta vacio</h2>
-              <Button as="a" className="mt-6" href="/productos" variant="ghost">
-                Explorar coleccion →
-              </Button>
-            </div>
-          ) : (
-            <div className="border-t border-border/60">
-              {items.map((item) => (
-                <article
-                  className="flex items-center gap-4 border-b border-border py-5 md:gap-5"
-                  key={item.productId}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 380px",
+            gap: "48px",
+            alignItems: "start",
+            maxWidth: "1100px",
+            margin: "0 auto",
+          }}
+        >
+          {/* Left: items + coupon */}
+          <section>
+            {isEmpty ? (
+              /* Empty state */
+              <div style={{ textAlign: "center", padding: "80px 0" }}>
+                <BookIcon
+                  style={{
+                    width: 40,
+                    height: 40,
+                    opacity: 0.1,
+                    color: "var(--color-moss)",
+                    margin: "0 auto 16px",
+                    display: "block",
+                  }}
+                />
+                <p
+                  style={{
+                    fontFamily: "var(--font-serif)",
+                    fontSize: "22px",
+                    color: "var(--color-moss)",
+                    marginBottom: "8px",
+                  }}
                 >
-                  <div className="relative aspect-[2/3] w-[72px] overflow-hidden rounded-[2px] bg-[linear-gradient(145deg,var(--beige-warm),var(--beige-mid))]">
-                    {item.imageUrl ? (
-                      <Image
-                        alt={item.title}
-                        className="object-cover"
-                        fill
-                        sizes="72px"
-                        src={item.imageUrl}
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-moss/20">
-                        <BookIcon className="size-5" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <h2 className="font-serif text-base font-medium text-text">{item.title}</h2>
-                    <p className="mt-1 text-xs text-text-light">{item.author ?? "Crecer Libreria"}</p>
-                    {item.sku ? (
-                      <p className="mt-1 text-[10px] uppercase tracking-[0.06em] text-text-light">
-                        Codigo {item.sku}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        className="flex size-6 items-center justify-center rounded-[1px] border border-border text-sm text-text-mid transition-colors hover:border-moss hover:bg-moss hover:text-white"
-                        onClick={() => decrementQuantity(item.productId)}
-                        type="button"
-                      >
-                        −
-                      </button>
-                      <span className="min-w-6 text-center text-sm text-text-mid">{item.quantity}</span>
-                      <button
-                        className="flex size-6 items-center justify-center rounded-[1px] border border-border text-sm text-text-mid transition-colors hover:border-moss hover:bg-moss hover:text-white"
-                        onClick={() => incrementQuantity(item.productId)}
-                        type="button"
-                      >
-                        +
-                      </button>
-                    </div>
-
-                    <div className="min-w-[90px] text-right font-serif text-lg font-medium text-moss">
-                      {formatCLP(item.price * item.quantity)}
-                    </div>
-
-                    <button
-                      aria-label={`Eliminar ${item.title}`}
-                      className="text-text-light transition-colors hover:text-error"
-                      onClick={() => removeItem(item.productId)}
-                      type="button"
-                    >
-                      <TrashIcon />
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <aside className="sticky top-20 rounded-[2px] border border-border bg-white p-5 lg:p-6">
-          <h2 className="mb-5 font-serif text-lg text-moss">Resumen del pedido</h2>
-
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-xs text-text-light">Subtotal</span>
-              <span className="text-sm text-text-mid">{formatCLP(subtotal)}</span>
-            </div>
-
-            {couponDiscount > 0 ? (
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-xs text-gold">Descuento</span>
-                <span className="text-sm text-gold">-{formatCLP(couponDiscount)}</span>
+                  Tu carrito está vacío
+                </p>
+                <p
+                  style={{
+                    fontSize: "13px",
+                    color: "var(--color-text-light)",
+                    marginBottom: "24px",
+                  }}
+                >
+                  Explora nuestra colección y encuentra algo especial
+                </p>
+                <Link
+                  href="/productos"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "10px 24px",
+                    background: "var(--color-moss)",
+                    color: "white",
+                    borderRadius: "2px",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    textDecoration: "none",
+                  }}
+                >
+                  Ver colección →
+                </Link>
               </div>
-            ) : null}
+            ) : (
+              /* Item list */
+              <div style={{ borderTop: "1px solid var(--color-border)" }}>
+                {items.map((item) => (
+                  <div
+                    key={item.productId}
+                    style={{
+                      borderBottom: "1px solid var(--color-border)",
+                      paddingBottom: "20px",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
+                      {/* Image */}
+                      <div
+                        style={{
+                          width: "72px",
+                          flexShrink: 0,
+                          aspectRatio: "2/3",
+                          background:
+                            "linear-gradient(145deg, var(--color-beige-warm), var(--color-beige-mid))",
+                          borderRadius: "2px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          overflow: "hidden",
+                          position: "relative",
+                        }}
+                      >
+                        {item.imageUrl ? (
+                          <Image
+                            src={item.imageUrl}
+                            alt={item.title}
+                            fill
+                            style={{ objectFit: "cover" }}
+                            sizes="72px"
+                          />
+                        ) : (
+                          <BookIcon
+                            style={{
+                              width: 20,
+                              height: 20,
+                              opacity: 0.15,
+                              color: "var(--color-moss)",
+                            }}
+                          />
+                        )}
+                      </div>
 
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-xs text-text-light">Envio</span>
-              <span className="text-xs text-text-light">Calculado al checkout</span>
-            </div>
-          </div>
+                      {/* Info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Link href={`/productos/${item.slug}`} style={{ textDecoration: "none" }}>
+                          <p
+                            style={{
+                              fontFamily: "var(--font-serif)",
+                              fontSize: "16px",
+                              fontWeight: 500,
+                              color: "var(--color-moss)",
+                              lineHeight: 1.3,
+                              marginBottom: "4px",
+                            }}
+                          >
+                            {item.title}
+                          </p>
+                        </Link>
+                        {item.author && (
+                          <p
+                            style={{
+                              fontSize: "12px",
+                              color: "var(--color-text-light)",
+                              marginBottom: "12px",
+                            }}
+                          >
+                            {item.author}
+                          </p>
+                        )}
 
-          <div className="my-4 h-px w-full bg-border" />
+                        {/* Quantity controls */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              border: "1px solid var(--color-border)",
+                              borderRadius: "2px",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => decrementQuantity(item.productId)}
+                              style={{
+                                width: "32px",
+                                height: "36px",
+                                background: "var(--color-beige)",
+                                border: "none",
+                                fontSize: "16px",
+                                color: "var(--color-moss)",
+                                cursor: "pointer",
+                              }}
+                            >
+                              −
+                            </button>
+                            <span
+                              style={{
+                                width: "36px",
+                                height: "36px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                borderLeft: "1px solid var(--color-border)",
+                                borderRight: "1px solid var(--color-border)",
+                                fontSize: "14px",
+                                fontWeight: 500,
+                              }}
+                            >
+                              {item.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => incrementQuantity(item.productId)}
+                              style={{
+                                width: "32px",
+                                height: "36px",
+                                background: "var(--color-beige)",
+                                border: "none",
+                                fontSize: "16px",
+                                color: "var(--color-moss)",
+                                cursor: "pointer",
+                              }}
+                            >
+                              +
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeItem(item.productId)}
+                            style={{
+                              fontSize: "11px",
+                              color: "var(--color-text-light)",
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              letterSpacing: "0.06em",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
 
-          <div className="flex items-end justify-between gap-4">
-            <span className="font-serif text-base text-moss">Total</span>
-            <span className="font-serif text-[28px] font-medium text-moss">{formatCLP(total)}</span>
-          </div>
+                      {/* Price */}
+                      <div style={{ flexShrink: 0, textAlign: "right" }}>
+                        <p
+                          style={{
+                            fontFamily: "var(--font-serif)",
+                            fontSize: "18px",
+                            fontWeight: 500,
+                            color: "var(--color-moss)",
+                          }}
+                        >
+                          {formatCLP(item.price * item.quantity)}
+                        </p>
+                        {item.quantity > 1 && (
+                          <p
+                            style={{
+                              fontSize: "11px",
+                              color: "var(--color-text-light)",
+                              marginTop: "2px",
+                            }}
+                          >
+                            {formatCLP(item.price)} c/u
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-          <div className="mt-5 space-y-2">
-            <div className="flex items-start gap-2">
-              <Input
-                onChange={(event) => setCouponInput(event.target.value)}
-                placeholder="Codigo de cupon"
-                value={couponInput}
-                wrapperClassName="flex-1"
-              />
-              <Button
-                className="min-h-[42px] shrink-0 px-4"
-                disabled={isEmpty}
-                loading={isApplyingCoupon}
-                onClick={handleApplyCoupon}
-                size="sm"
-                variant="outline"
+            {/* Coupon field — always rendered below items/empty state */}
+            <div
+              style={{
+                marginTop: "8px",
+                paddingTop: "24px",
+                borderTop: "1px solid var(--color-border)",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "10px",
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "var(--color-text-light)",
+                  marginBottom: "8px",
+                }}
               >
-                Aplicar
-              </Button>
+                Código de descuento
+              </p>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <input
+                  type="text"
+                  placeholder="CRECER10"
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  style={{
+                    flex: 1,
+                    padding: "10px 14px",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: "2px",
+                    fontSize: "13px",
+                    background: "var(--color-white)",
+                    outline: "none",
+                    fontFamily: "var(--font-sans)",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyCoupon}
+                  disabled={isApplyingCoupon}
+                  style={{
+                    padding: "10px 20px",
+                    background: "var(--color-moss)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "2px",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    cursor: isApplyingCoupon ? "not-allowed" : "pointer",
+                    opacity: isApplyingCoupon ? 0.6 : 1,
+                  }}
+                >
+                  {isApplyingCoupon ? "..." : "Aplicar"}
+                </button>
+              </div>
+              {couponError && (
+                <p style={{ fontSize: "11px", color: "#C0392B", marginTop: "6px" }}>
+                  {couponError}
+                </p>
+              )}
+              {couponFeedback && (
+                <p style={{ fontSize: "11px", color: "var(--color-gold)", marginTop: "6px" }}>
+                  {couponFeedback}
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* Right: summary */}
+          <aside
+            style={{
+              background: "var(--color-white)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "2px",
+              position: "sticky",
+              top: "80px",
+              overflow: "hidden",
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                padding: "20px 24px 16px",
+                borderBottom: "1px solid var(--color-border)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-serif)",
+                  fontSize: "18px",
+                  fontWeight: 400,
+                  color: "var(--color-moss)",
+                }}
+              >
+                Resumen
+              </span>
             </div>
 
-            {couponFeedback ? <p className="text-[11px] text-gold">{couponFeedback}</p> : null}
-            {couponError ? <p className="text-[11px] text-error">{couponError}</p> : null}
-          </div>
+            {/* Totals */}
+            <div style={{ padding: "16px 24px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "8px",
+                }}
+              >
+                <span style={{ fontSize: "12px", color: "var(--color-text-light)" }}>Subtotal</span>
+                <span style={{ fontSize: "13px", color: "var(--color-text)" }}>
+                  {formatCLP(subtotal)}
+                </span>
+              </div>
+              {couponDiscount > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <span style={{ fontSize: "12px", color: "var(--color-gold)" }}>Descuento</span>
+                  <span style={{ fontSize: "13px", color: "var(--color-gold)" }}>
+                    -{formatCLP(couponDiscount)}
+                  </span>
+                </div>
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "8px",
+                }}
+              >
+                <span style={{ fontSize: "12px", color: "var(--color-text-light)" }}>Envío</span>
+                <span style={{ fontSize: "12px", color: "var(--color-text-light)" }}>
+                  Se calcula al checkout
+                </span>
+              </div>
+              <div
+                style={{
+                  borderTop: "1px solid var(--color-border)",
+                  marginTop: "12px",
+                  paddingTop: "12px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                }}
+              >
+                <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-moss)" }}>
+                  Total
+                </span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-serif)",
+                    fontSize: "24px",
+                    fontWeight: 500,
+                    color: "var(--color-moss)",
+                  }}
+                >
+                  {formatCLP(total)}
+                </span>
+              </div>
+            </div>
 
-          <Button
-            as="a"
-            className="mt-6 w-full justify-center"
-            disabled={isEmpty}
-            href="/checkout"
-            variant="moss"
-          >
-            Ir al checkout
-          </Button>
-
-          <p className="mt-3 text-center text-[10px] text-text-light">Compra segura · SSL</p>
-          {!isEmpty ? (
-            <p className="mt-2 text-center text-[10px] text-text-light">
-              {items.length} {items.length === 1 ? "producto seleccionado" : "productos seleccionados"}
-            </p>
-          ) : null}
-
-          <div className="mt-5 border-t border-border pt-4">
-            <Link className="text-[11px] uppercase tracking-[0.08em] text-moss hover:text-moss-mid" href="/productos">
-              Seguir comprando
-            </Link>
-          </div>
-        </aside>
+            {/* CTA */}
+            <div
+              style={{ padding: "16px 24px", borderTop: "1px solid var(--color-border)" }}
+            >
+              <Link
+                href="/checkout"
+                style={{
+                  width: "100%",
+                  padding: "14px",
+                  background: "var(--color-moss)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "2px",
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "10px",
+                  textDecoration: "none",
+                  opacity: isEmpty ? 0.4 : 1,
+                  pointerEvents: isEmpty ? "none" : "auto",
+                }}
+              >
+                Ir al checkout
+              </Link>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  fontSize: "10px",
+                  color: "var(--color-text-light)",
+                  marginTop: "12px",
+                  letterSpacing: "0.04em",
+                }}
+              >
+                Compra 100% segura · SSL
+              </div>
+              <div
+                style={{
+                  marginTop: "16px",
+                  borderTop: "1px solid var(--color-border)",
+                  paddingTop: "14px",
+                }}
+              >
+                <Link
+                  href="/productos"
+                  style={{
+                    fontSize: "11px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    color: "var(--color-moss)",
+                    textDecoration: "none",
+                  }}
+                >
+                  Seguir comprando
+                </Link>
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
     </main>
   );
 }
-

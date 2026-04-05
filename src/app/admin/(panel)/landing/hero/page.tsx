@@ -53,17 +53,21 @@ export default function AdminLandingHeroPage() {
 
   async function fetchSlides() {
     setLoading(true);
-    const response = await fetch("/api/admin/landing/hero", { cache: "no-store" });
-    const payload = (await response.json().catch(() => null)) as { data?: HeroSlide[]; message?: string } | null;
+    try {
+      const response = await fetch("/api/admin/landing/hero", { cache: "no-store" });
+      const payload = (await response.json().catch(() => null)) as { data?: HeroSlide[]; message?: string } | null;
 
-    if (!response.ok) {
-      setError(payload?.message ?? "No se pudieron cargar los slides.");
+      if (!response.ok) {
+        setError(payload?.message ?? "No se pudieron cargar los slides.");
+        return;
+      }
+
+      setSlides(payload?.data ?? []);
+    } catch {
+      setError("Error de red. Intenta nuevamente.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setSlides(payload?.data ?? []);
-    setLoading(false);
   }
 
   useEffect(() => {

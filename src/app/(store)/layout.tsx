@@ -10,15 +10,20 @@ type StoreLayoutProps = {
 };
 
 export default async function StoreLayout({ children }: StoreLayoutProps) {
-  const categories = await db
-    .select({
-      id: schema.categories.id,
-      name: schema.categories.name,
-      slug: schema.categories.slug,
-    })
-    .from(schema.categories)
-    .where(eq(schema.categories.isActive, true))
-    .orderBy(asc(schema.categories.displayOrder), asc(schema.categories.name));
+  let categories: { id: string; name: string; slug: string }[] = [];
+  try {
+    categories = await db
+      .select({
+        id: schema.categories.id,
+        name: schema.categories.name,
+        slug: schema.categories.slug,
+      })
+      .from(schema.categories)
+      .where(eq(schema.categories.isActive, true))
+      .orderBy(asc(schema.categories.displayOrder), asc(schema.categories.name));
+  } catch (error) {
+    console.error("StoreLayout: failed to load categories", error);
+  }
 
   return (
     <>

@@ -1,8 +1,8 @@
 import { createHash } from "crypto";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
-import { orderCustomers, orders } from "@/integrations/drizzle/schema";
+import { orderCustomers, orderItems, orders } from "@/integrations/drizzle/schema";
 import {
   createPaymentSession,
   getGetnetCancelUrl,
@@ -14,6 +14,7 @@ import {
 } from "@/integrations/payments/getnet";
 
 import type { OrderStatus, ServiceResult } from "../types";
+import { decrementStock } from "./stock-service";
 
 type ProcessPaymentResult = {
   orderNumber: string;
@@ -184,20 +185,53 @@ export async function processPaymentResult(
         firstPayment?.authorization ?? firstPayment?.processorFields?.authorization;
       const receipt = firstPayment?.receipt ?? firstPayment?.processorFields?.receipt;
 
-      await db
-        .update(orders)
-        .set({
-          status: "paid",
-          paymentMethod,
-          paymentReference: String(requestId),
-          adminNotes: buildPaymentNotes({
-            authorization,
-            receipt,
-            existingNotes: order.adminNotes,
-          }),
-          updatedAt: new Date(),
-        })
-        .where(eq(orders.id, order.id));
+      await db.transaction(async (tx) => {
+        // Guard: solo proceder si la orden sigue en "pending"
+        const [currentOrder] = await tx
+          .select({ id: orders.id, adminNotes: orders.adminNotes })
+          .from(orders)
+          .where(and(eq(orders.id, order.id), eq(orders.status, "pending")))
+          .limit(1);
+
+        if (!currentOrder) {
+          // Ya fue procesada (ej: webhook llegó primero). No hacer nada.
+          return;
+        }
+
+        // Obtener items para descontar stock
+        const itemRows = await tx
+          .select({
+            productId: orderItems.productId,
+            quantity: orderItems.quantity,
+          })
+          .from(orderItems)
+          .where(eq(orderItems.orderId, order.id));
+
+        // Descontar stock (best-effort: el pago ya fue confirmado, no lanzar error)
+        const validItemRows = itemRows.filter((r): r is { productId: string; quantity: number } => r.productId !== null);
+        if (validItemRows.length > 0) {
+          try {
+            await decrementStock(validItemRows, tx);
+          } catch (stockError) {
+            console.error(`Stock decrement failed for order ${order.id}:`, stockError);
+          }
+        }
+
+        await tx
+          .update(orders)
+          .set({
+            status: "paid",
+            paymentMethod,
+            paymentReference: String(requestId),
+            adminNotes: buildPaymentNotes({
+              authorization,
+              receipt,
+              existingNotes: currentOrder.adminNotes,
+            }),
+            updatedAt: new Date(),
+          })
+          .where(eq(orders.id, order.id));
+      });
 
       return {
         success: true,

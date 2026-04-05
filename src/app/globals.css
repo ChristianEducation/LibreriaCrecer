@@ -30,7 +30,7 @@
   --radius-lg: 2px;
   --radius-xl: 2px;
   --radius-hero: 16px;
-  --text-eyebrow: 9px;
+  --text-eyebrow: 13px;
 }
 
 :root {
@@ -154,7 +154,7 @@ body {
     --lm-gap: clamp(2rem, 4vw, 5rem);
     --lm-gap-row: clamp(1.75rem, 3vw, 3rem);
     --lm-title: clamp(2rem, 3.5vw, 3.5rem);
-    --lm-eyebrow: clamp(0.5rem, 0.6vw, 0.5625rem);
+    --lm-eyebrow: 0.8125rem;
     --lm-body: clamp(0.8125rem, 0.9vw, 0.9375rem);
     --lm-body-max: clamp(17rem, 25vw, 25rem);
     --lm-brand: clamp(0.5625rem, 0.65vw, 0.625rem);
@@ -177,9 +177,13 @@ body {
     }
   }
 
+  .section-eyebrow {
+    font-size: 12px;
+  }
+
   .libros-mes-eyebrow {
     margin-bottom: var(--lm-eyebrow-mb);
-    font-size: var(--lm-eyebrow);
+    font-size: 12px;
   }
 
   .libros-mes-eyebrow-line {
@@ -235,4 +239,9 @@ body {
   .libros-mes-price {
     font-size: var(--lm-price);
   }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

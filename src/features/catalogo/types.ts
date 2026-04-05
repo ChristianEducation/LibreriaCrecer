@@ -79,6 +79,8 @@ export type ProductQueryParams = {
   sortBy?: ProductSortBy;
   onlyInStock?: boolean;
   onlyActive?: boolean;
+  onlyOnSale?: boolean;
+  isFeatured?: boolean;
 };
 
 export type CategoryWithProducts = {

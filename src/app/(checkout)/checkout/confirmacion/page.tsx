@@ -1,165 +1,219 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 
-import { ProductCard } from "@/features/catalogo/components";
-import type { CatalogProduct } from "@/features/catalogo/types";
-import { Button } from "@/shared/ui";
+type OrderStatus = "paid" | "pending" | "cancelled";
 
-function CrossMark({ muted = false }: { muted?: boolean }) {
+const primaryButtonStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "8px",
+  padding: "12px 28px",
+  background: "var(--color-moss)",
+  color: "white",
+  textDecoration: "none",
+  borderRadius: "2px",
+  fontSize: "11px",
+  fontWeight: 500,
+  letterSpacing: "0.1em",
+  textTransform: "uppercase" as const,
+  transition: "background 0.22s",
+};
+
+function ConfirmacionContent() {
+  const searchParams = useSearchParams();
+  const orderNumber = searchParams.get("order");
+  const rawStatus = searchParams.get("status") ?? "pending";
+  const initialStatus: OrderStatus =
+    rawStatus === "paid" || rawStatus === "cancelled" ? rawStatus : "pending";
+
+  const [status, setStatus] = useState<OrderStatus>(initialStatus);
+  const [timedOut, setTimedOut] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const attemptsRef = useRef(0);
+  const MAX_ATTEMPTS = 10;
+
+  useEffect(() => {
+    if (initialStatus !== "pending" || !orderNumber) return;
+
+    intervalRef.current = setInterval(async () => {
+      attemptsRef.current += 1;
+
+      if (attemptsRef.current > MAX_ATTEMPTS) {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        setTimedOut(true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/ordenes/${orderNumber}`);
+        if (!res.ok) return;
+        const data = (await res.json()) as { data?: { status?: string } };
+        const newStatus = data.data?.status;
+
+        if (newStatus === "paid" || newStatus === "cancelled") {
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          setStatus(newStatus as OrderStatus);
+        }
+      } catch {
+        // ignorar, reintentar en próximo tick
+      }
+    }, 3000);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [initialStatus, orderNumber]);
+
   return (
-    <span className="relative mb-7 block h-[60px] w-[60px]">
-      <span
-        className="absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 rounded-[1px]"
-        style={{ backgroundColor: muted ? "var(--text-light)" : "var(--gold)" }}
-      />
-      <span
-        className="absolute left-0 top-1/2 h-[2px] w-full -translate-y-1/2 rounded-[1px]"
-        style={{ backgroundColor: muted ? "var(--text-light)" : "var(--gold)" }}
-      />
-    </span>
+    <main
+      style={{
+        minHeight: "calc(100vh - 64px)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "80px 24px",
+        background: "var(--color-beige)",
+      }}
+    >
+      <div style={{ maxWidth: "560px", width: "100%", textAlign: "center" }}>
+        {status === "paid" && (
+          <>
+            {/* Cruz dorada */}
+            <div style={{ width: "60px", height: "60px", position: "relative", margin: "0 auto 28px" }}>
+              <div style={{ position: "absolute", width: "2px", height: "100%", background: "var(--color-gold)", borderRadius: "1px", left: "50%", transform: "translateX(-50%)" }} />
+              <div style={{ position: "absolute", height: "2px", width: "100%", background: "var(--color-gold)", borderRadius: "1px", top: "50%", transform: "translateY(-50%)" }} />
+            </div>
+            <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "36px", fontWeight: 400, color: "var(--color-moss)", marginBottom: "12px" }}>
+              ¡Pedido confirmado!
+            </h1>
+            <p style={{ fontSize: "14px", color: "var(--color-text-light)", lineHeight: 1.7, maxWidth: "380px", margin: "0 auto 24px", fontWeight: 300 }}>
+              Gracias por tu compra. Te enviaremos un correo con los detalles de tu pedido a la brevedad.
+            </p>
+            {orderNumber && (
+              <p style={{ fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--color-gold)", marginBottom: "32px" }}>
+                Pedido #{orderNumber}
+              </p>
+            )}
+            <Link href="/productos" style={primaryButtonStyle}>
+              Seguir explorando
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </>
+        )}
+
+        {status === "pending" && !timedOut && (
+          <>
+            {/* Ícono reloj animado */}
+            <div style={{ width: "60px", height: "60px", margin: "0 auto 28px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" strokeWidth="1.2" width="48" height="48" style={{ animation: "spin 2s linear infinite" }}>
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </div>
+            <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "36px", fontWeight: 400, color: "var(--color-moss)", marginBottom: "12px" }}>
+              Verificando tu pago
+            </h1>
+            <p style={{ fontSize: "14px", color: "var(--color-text-light)", lineHeight: 1.7, maxWidth: "380px", margin: "0 auto 24px", fontWeight: 300 }}>
+              Estamos confirmando tu pago con la pasarela. Esto puede tomar unos segundos.
+            </p>
+            {orderNumber && (
+              <p style={{ fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--color-gold)", marginBottom: "32px" }}>
+                Pedido #{orderNumber}
+              </p>
+            )}
+          </>
+        )}
+
+        {status === "pending" && timedOut && (
+          <>
+            <div style={{ width: "60px", height: "60px", margin: "0 auto 28px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" strokeWidth="1.2" width="48" height="48">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </div>
+            <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "36px", fontWeight: 400, color: "var(--color-moss)", marginBottom: "12px" }}>
+              Pago en proceso
+            </h1>
+            <p style={{ fontSize: "14px", color: "var(--color-text-light)", lineHeight: 1.7, maxWidth: "380px", margin: "0 auto 24px", fontWeight: 300 }}>
+              No pudimos confirmar tu pago. Revisa tu email o contáctanos si el problema persiste.
+            </p>
+            {orderNumber && (
+              <p style={{ fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--color-gold)", marginBottom: "32px" }}>
+                Pedido #{orderNumber}
+              </p>
+            )}
+            <Link href="/productos" style={primaryButtonStyle}>
+              Volver a la tienda
+            </Link>
+          </>
+        )}
+
+        {status === "cancelled" && (
+          <>
+            <div style={{ width: "60px", height: "60px", margin: "0 auto 28px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-text-light)" strokeWidth="1.2" width="48" height="48">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+            </div>
+            <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "36px", fontWeight: 400, color: "var(--color-moss)", marginBottom: "12px" }}>
+              Pago no procesado
+            </h1>
+            <p style={{ fontSize: "14px", color: "var(--color-text-light)", lineHeight: 1.7, maxWidth: "380px", margin: "0 auto 24px", fontWeight: 300 }}>
+              El pago no pudo completarse. Puedes intentarlo nuevamente o contactarnos si el problema persiste.
+            </p>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+              <Link href="/checkout" style={primaryButtonStyle}>
+                Intentar nuevamente
+              </Link>
+              <Link href="/productos" style={{
+                display: "inline-flex", alignItems: "center", gap: "8px",
+                padding: "12px 28px", background: "transparent",
+                color: "var(--color-moss)", border: "1px solid var(--color-moss)",
+                textDecoration: "none", borderRadius: "2px", fontSize: "11px",
+                fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase",
+              }}>
+                Volver a la tienda
+              </Link>
+            </div>
+          </>
+        )}
+      </div>
+    </main>
   );
 }
 
-function normalizeStatus(value: string | null) {
-  if (value === "paid" || value === "pending" || value === "cancelled") {
-    return value;
-  }
-
-  return "pending";
-}
-
 export default function ConfirmacionPage() {
-  const searchParams = useSearchParams();
-  const [products, setProducts] = useState<CatalogProduct[]>([]);
-  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
-  const status = normalizeStatus(searchParams.get("status"));
-  const orderNumber = searchParams.get("order") ?? "ORD-PENDIENTE";
-
-  const message = useMemo(() => {
-    if (status === "paid") {
-      return {
-        title: "¡Tu compra fue procesada con exito!",
-        subtitle: "Recibiras un correo con los detalles a la brevedad.",
-        muted: false,
-      };
-    }
-
-    if (status === "cancelled") {
-      return {
-        title: "Pago no completado",
-        subtitle: "Tu pedido no fue procesado. Puedes intentarlo nuevamente.",
-        muted: true,
-      };
-    }
-
-    return {
-      title: "Pedido recibido",
-      subtitle: "En cuanto confirmemos tu pago, prepararemos tu pedido.",
-      muted: false,
-    };
-  }, [status]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadProducts() {
-      try {
-        const response = await fetch("/api/productos/novedades?limit=5");
-        const payload = (await response.json().catch(() => null)) as { data?: CatalogProduct[] } | null;
-
-        if (!cancelled) {
-          setProducts(payload?.data ?? []);
-        }
-      } catch {
-        if (!cancelled) {
-          setProducts([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoadingProducts(false);
-        }
-      }
-    }
-
-    void loadProducts();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   return (
-    <main>
-      <section className="mx-auto flex min-h-[60vh] max-w-[560px] flex-col items-center justify-center px-5 py-20 text-center">
-        <CrossMark muted={message.muted} />
-        <h1 className="font-serif text-[36px] text-moss">{message.title}</h1>
-        <p className="mt-3 max-w-[380px] text-sm font-light leading-[1.7] text-text-light">
-          {message.subtitle}
-        </p>
-        <p className="mt-8 text-[11px] uppercase tracking-[0.2em] text-gold">Pedido #{orderNumber}</p>
-
-        {status === "cancelled" ? (
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button as="a" href="/checkout" variant="moss">
-              Intentar de nuevo
-            </Button>
-            <Button as="a" href="/carrito" variant="outline">
-              Volver al carrito
-            </Button>
+    <Suspense
+      fallback={
+        <main
+          style={{
+            minHeight: "calc(100vh - 64px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "var(--color-beige)",
+          }}
+        >
+          <div style={{ width: "60px", height: "60px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" strokeWidth="1.2" width="48" height="48">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
           </div>
-        ) : (
-          <Button as="a" className="mt-8" href="/productos" variant="moss">
-            Seguir explorando →
-          </Button>
-        )}
-      </section>
-
-      <section className="bg-beige px-5 py-[72px] md:px-10 lg:px-14 lg:py-20">
-        <div className="mx-auto max-w-[1280px]">
-          <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="mb-2 flex items-center gap-[10px] text-[9px] uppercase tracking-[0.3em] text-gold">
-                <span className="h-px w-5 bg-gold" />
-                <span>Mientras sigues explorando</span>
-              </p>
-              <h2 className="font-serif text-[clamp(24px,2.2vw,34px)] leading-[1.1] text-moss">
-                Titulos recomendados
-              </h2>
-            </div>
-
-            <Button as="a" href="/productos" size="sm" variant="ghost">
-              Ver coleccion →
-            </Button>
-          </div>
-
-          {isLoadingProducts ? (
-            <div className="grid grid-cols-2 gap-x-[18px] gap-y-8 md:grid-cols-3 xl:grid-cols-5">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <div className="h-[320px] animate-pulse rounded-[2px] bg-white/60" key={index} />
-              ))}
-            </div>
-          ) : products.length > 0 ? (
-            <div className="grid grid-cols-2 gap-x-[18px] gap-y-8 md:grid-cols-3 xl:grid-cols-5">
-              {products.map((product) => (
-                <ProductCard
-                  author={product.author}
-                  id={product.id}
-                  isNew={product.createdAt ? Date.now() - new Date(product.createdAt).getTime() <= 1000 * 60 * 60 * 24 * 45 : false}
-                  isOnSale={product.hasDiscount}
-                  key={product.id}
-                  mainImageUrl={product.mainImageUrl}
-                  price={product.price}
-                  salePrice={product.salePrice}
-                  slug={product.slug}
-                  title={product.title}
-                />
-              ))}
-            </div>
-          ) : null}
-        </div>
-      </section>
-    </main>
+        </main>
+      }
+    >
+      <ConfirmacionContent />
+    </Suspense>
   );
 }

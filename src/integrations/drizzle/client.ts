@@ -66,9 +66,10 @@ const queryClient =
     user: dbConfig.user,
     pass: dbConfig.password,
     database: dbConfig.database,
-    ssl: dbConfig.useSsl ? "require" : undefined,
+    ssl: "require",
     prepare: false,
-    max: process.env.NODE_ENV === "production" ? 5 : 1,
+    connect_timeout: 10,
+    max: process.env.NODE_ENV === "production" ? 5 : 3,
   });
 
 const db = globalForDb.__crecerDb__ ?? drizzle(queryClient, { schema });

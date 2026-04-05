@@ -29,6 +29,7 @@ export default function AdminPedidosPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [sortBy, setSortBy] = useState("newest");
+  const [includePending, setIncludePending] = useState(false);
 
   const queryString = useMemo(() => {
     const query = new URLSearchParams({
@@ -42,9 +43,10 @@ export default function AdminPedidosPage() {
     if (search.trim()) query.set("search", search.trim());
     if (dateFrom) query.set("dateFrom", dateFrom);
     if (dateTo) query.set("dateTo", dateTo);
+    if (includePending) query.set("includePending", "true");
 
     return query.toString();
-  }, [page, sortBy, status, deliveryMethod, search, dateFrom, dateTo]);
+  }, [page, sortBy, status, deliveryMethod, search, dateFrom, dateTo, includePending]);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -135,6 +137,20 @@ export default function AdminPedidosPage() {
           <option value="total_asc">Total menor</option>
         </select>
       </div>
+
+      <label
+        style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}
+        className="text-sm text-text-mid"
+      >
+        <input
+          type="checkbox"
+          checked={includePending}
+          onChange={(e) => { setIncludePending(e.target.checked); setPage(1); }}
+          className="accent-gold"
+          style={{ width: "14px", height: "14px" }}
+        />
+        Mostrar pedidos pendientes
+      </label>
 
       {loading ? <p className="text-sm text-text-light">Cargando pedidos...</p> : null}
       {error ? <p className="text-sm text-error">{error}</p> : null}

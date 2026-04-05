@@ -173,6 +173,7 @@ export function ProductGallery({
         <button
           className="group relative mb-3 block aspect-[3/4] w-full overflow-hidden rounded-[2px] bg-[linear-gradient(145deg,var(--beige-warm),var(--beige-mid))] shadow-[0_8px_40px_rgba(58,48,1,0.1)]"
           onClick={() => setIsLightboxOpen(true)}
+          style={{ maxWidth: "420px", margin: "0 auto" }}
           type="button"
         >
           {activeImage?.url ? (
@@ -192,6 +193,7 @@ export function ProductGallery({
           </span>
         </button>
 
+        {galleryImages.length > 1 && (
         <div className="flex gap-2">
           {galleryImages.map((image, index) => {
             const isActive = index === activeIndex;
@@ -223,6 +225,7 @@ export function ProductGallery({
             );
           })}
         </div>
+        )}
       </div>
 
       <div

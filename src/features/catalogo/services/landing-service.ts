@@ -46,6 +46,11 @@ export async function getHeroIntermedio() {
   return result[0] ?? null;
 }
 
+export async function getCatalogoHeaderBanner() {
+  const result = await getBanners("catalogo_header");
+  return result[0] ?? null;
+}
+
 export async function getCuratedProducts(section?: string): Promise<CuratedProduct[]> {
   const whereClause = section
     ? and(

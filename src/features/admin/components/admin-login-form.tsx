@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cx } from "class-variance-authority";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 import { useToast } from "@/shared/hooks";
@@ -64,7 +63,6 @@ function EyeIcon({ off }: { off?: boolean }) {
 }
 
 export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
-  const router = useRouter();
   const { toast } = useToast();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -102,8 +100,7 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
       }
 
       toast({ message: "Acceso verificado. Redirigiendo al panel..." });
-      router.push(nextPath || "/admin");
-      router.refresh();
+      window.location.href = nextPath ?? "/admin";
     } catch {
       const message = "Ocurrio un error de red. Intenta nuevamente.";
       setErrorMessage(message);

@@ -17,12 +17,12 @@ export default async function AdminPanelLayout({ children }: AdminPanelLayoutPro
     redirect("/admin/login");
   }
 
-  const payload = await verifyToken(token);
+  const payload = await verifyToken(token).catch(() => null);
   if (!payload) {
     redirect("/admin/login");
   }
 
-  const admin = await getAdminById(payload.adminId);
+  const admin = await getAdminById(payload.adminId).catch(() => null);
   if (!admin) {
     redirect("/admin/login");
   }

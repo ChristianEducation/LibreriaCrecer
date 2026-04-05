@@ -12,11 +12,9 @@ type PaymentMethod = "tarjeta" | "transferencia" | "efectivo";
 
 function CheckoutSkeleton() {
   return (
-    <div className="mx-auto max-w-[1100px] px-5 py-12 md:px-10 lg:px-14 lg:py-16">
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="h-[720px] animate-pulse rounded-[2px] bg-white/60" />
-        <div className="h-[420px] animate-pulse rounded-[2px] bg-white/60" />
-      </div>
+    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "48px 56px 80px", display: "grid", gridTemplateColumns: "1fr 380px", gap: "48px", alignItems: "start" }}>
+      <div className="animate-pulse rounded-[2px]" style={{ height: "720px", background: "rgba(255,255,255,0.6)" }} />
+      <div className="animate-pulse rounded-[2px]" style={{ height: "420px", background: "rgba(255,255,255,0.6)" }} />
     </div>
   );
 }

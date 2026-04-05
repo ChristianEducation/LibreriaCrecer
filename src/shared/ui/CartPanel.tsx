@@ -27,6 +27,31 @@ function BookIcon({ className }: { className?: string }) {
   );
 }
 
+function CartEmptyIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.4"
+      style={{ width: "32px", height: "32px", color: "var(--color-moss)", opacity: 0.15 }}
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M3.75 5.25h1.7c.39 0 .73.27.82.65l1.48 6.35c.09.38.43.65.82.65h7.82c.39 0 .73-.26.82-.63l1.35-5.41H7.06"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      />
+      <circle cx="9.75" cy="18.25" fill="currentColor" r="1.25" />
+      <circle cx="17.25" cy="18.25" fill="currentColor" r="1.25" />
+    </svg>
+  );
+}
+
 export interface CartPanelProps {
   isOpen: boolean;
   onClose: () => void;
@@ -75,23 +100,32 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
     <div
       aria-hidden={!isOpen}
       className={cx(
-        "fixed right-6 top-[72px] z-[200] w-80 translate-y-[-8px] rounded border border-border bg-beige/95 opacity-0 shadow-[0_20px_48px_rgba(58,48,1,0.14)] backdrop-blur-xl transition-all duration-200 ease-out",
+        "fixed z-[200] w-80 translate-y-[-8px] bg-beige/95 opacity-0 backdrop-blur-xl transition-all duration-200 ease-out",
         isOpen ? "pointer-events-auto visible translate-y-0 opacity-100" : "pointer-events-none invisible",
       )}
+      style={{
+        top: "80px",
+        right: "24px",
+        borderRadius: "2px",
+        border: "1px solid var(--color-border)",
+        boxShadow: "0 20px 48px rgba(58,48,1,0.14)",
+      }}
       ref={panelRef}
     >
-      <div className="border-b border-border px-[18px] pb-[14px] pt-4">
-        <h3 className="font-serif text-base font-medium text-moss">Mi carrito</h3>
-        <p className="mt-1 text-[10px] uppercase tracking-[0.15em] text-text-light">{itemLabel}</p>
+      <div className="flex items-center justify-between border-b border-border" style={{ padding: "16px 18px 14px" }}>
+        <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "16px", fontWeight: 500, color: "var(--color-moss)" }}>Mi carrito</h3>
+        <p style={{ fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--color-text-light)" }}>{itemLabel}</p>
       </div>
 
       {isEmpty ? (
-        <div className="flex flex-col items-center px-[18px] py-10 text-center">
-          <BookIcon className="mb-3 size-8 text-moss opacity-15" />
-          <p className="text-[13px] text-text-light">Tu carrito esta vacio</p>
+        <div className="flex flex-col items-center justify-center text-center" style={{ height: "182px", paddingLeft: "18px", paddingRight: "18px" }}>
+          <div className="mb-3">
+            <CartEmptyIcon />
+          </div>
+          <p className="text-[13px] text-text-light">Tu carrito está vacío</p>
         </div>
       ) : (
-        <div className="max-h-[260px] overflow-y-auto">
+        <div style={{ height: "182px", overflowY: "auto" }}>
           {items.map((item) => (
             <div
               className="flex items-center gap-3 px-[18px] py-[10px] transition-colors hover:bg-beige-warm"
@@ -148,7 +182,7 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
         </div>
       )}
 
-      <div className="border-t border-border px-[18px] pb-4 pt-[14px]">
+      <div className="border-t border-border" style={{ padding: "14px 18px 16px" }}>
         <div className="mb-4 flex items-end justify-between gap-4">
           <span className="text-[10px] uppercase tracking-[0.2em] text-text-light">Total</span>
           <span className="font-serif text-[20px] font-medium text-moss">{formatCLP(total)}</span>
@@ -159,7 +193,7 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
           className={cx(
             "block w-full rounded border border-transparent bg-moss px-4 py-3 text-center text-[11px] font-medium uppercase tracking-[0.12em] text-white transition-all duration-200",
             isEmpty
-              ? "pointer-events-none cursor-not-allowed opacity-40"
+              ? "pointer-events-none cursor-not-allowed opacity-[0.38]"
               : "hover:-translate-y-px hover:bg-moss-mid",
           )}
           href="/checkout"

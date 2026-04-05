@@ -67,18 +67,22 @@ export default function AdminLandingSeleccionPage() {
 
   async function fetchItems(section?: string) {
     setLoading(true);
-    const query = section ? `?section=${encodeURIComponent(section)}` : "";
-    const response = await fetch(`/api/admin/landing/seleccion${query}`, { cache: "no-store" });
-    const payload = (await response.json().catch(() => null)) as { data?: CuratedRow[]; message?: string } | null;
+    try {
+      const query = section ? `?section=${encodeURIComponent(section)}` : "";
+      const response = await fetch(`/api/admin/landing/seleccion${query}`, { cache: "no-store" });
+      const payload = (await response.json().catch(() => null)) as { data?: CuratedRow[]; message?: string } | null;
 
-    if (!response.ok) {
-      setError(payload?.message ?? "No se pudo cargar la seleccion.");
+      if (!response.ok) {
+        setError(payload?.message ?? "No se pudo cargar la seleccion.");
+        return;
+      }
+
+      setItems(payload?.data ?? []);
+    } catch {
+      setError("Error de red. Intenta nuevamente.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setItems(payload?.data ?? []);
-    setLoading(false);
   }
 
   useEffect(() => {

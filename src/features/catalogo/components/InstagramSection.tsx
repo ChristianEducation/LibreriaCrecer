@@ -4,8 +4,8 @@ export function InstagramSection() {
   const appId = process.env.NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID;
 
   return (
-    <section className="page-px py-6 bg-beige">
-      <p className="section-eyebrow mb-6 flex items-center gap-3 font-sans uppercase tracking-[0.35em] text-gold" style={{ fontSize: "11px" }}>
+    <section className="page-px bg-beige" style={{ paddingTop: "2.5rem", paddingBottom: "2.5rem" }}>
+      <p className="section-eyebrow flex items-center gap-3 font-sans uppercase tracking-[0.35em] text-gold" style={{ marginBottom: "2.5rem" }}>
         <span className="h-px w-8 bg-gold" />
         Sé parte de nuestra comunidad
       </p>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" fill="none">
+  <!-- Páginas del libro -->
+  <rect x="20" y="40" width="75" height="95" rx="2" stroke="#736002" stroke-width="1.2" fill="#EAE6CC"/>
+  <rect x="105" y="40" width="75" height="95" rx="2" stroke="#736002" stroke-width="1.2" fill="#EAE6CC"/>
+  <!-- Lomo del libro -->
+  <line x1="95" y1="40" x2="100" y2="135" stroke="#D9BA1E" stroke-width="1.5"/>
+  <line x1="105" y1="40" x2="100" y2="135" stroke="#D9BA1E" stroke-width="1.5"/>
+  <!-- Líneas de texto — página izquierda -->
+  <line x1="35" y1="65" x2="80" y2="65" stroke="#736002" stroke-width="0.8" stroke-opacity="0.4"/>
+  <line x1="35" y1="75" x2="75" y2="75" stroke="#736002" stroke-width="0.8" stroke-opacity="0.4"/>
+  <line x1="35" y1="85" x2="78" y2="85" stroke="#736002" stroke-width="0.8" stroke-opacity="0.4"/>
+  <line x1="35" y1="95" x2="70" y2="95" stroke="#736002" stroke-width="0.8" stroke-opacity="0.4"/>
+  <line x1="35" y1="105" x2="76" y2="105" stroke="#736002" stroke-width="0.8" stroke-opacity="0.4"/>
+  <!-- Líneas de texto — página derecha -->
+  <line x1="120" y1="65" x2="165" y2="65" stroke="#736002" stroke-width="0.8" stroke-opacity="0.4"/>
+  <line x1="120" y1="75" x2="160" y2="75" stroke="#736002" stroke-width="0.8" stroke-opacity="0.4"/>
+  <line x1="120" y1="85" x2="163" y2="85" stroke="#736002" stroke-width="0.8" stroke-opacity="0.4"/>
+  <line x1="120" y1="95" x2="155" y2="95" stroke="#736002" stroke-width="0.8" stroke-opacity="0.4"/>
+  <line x1="120" y1="105" x2="158" y2="105" stroke="#736002" stroke-width="0.8" stroke-opacity="0.4"/>
+  <!-- Acento decorativo gold en esquina -->
+  <rect x="20" y="40" width="75" height="6" rx="2" fill="#D9BA1E" fill-opacity="0.25"/>
+  <rect x="105" y="40" width="75" height="6" rx="2" fill="#D9BA1E" fill-opacity="0.25"/>
+</svg>

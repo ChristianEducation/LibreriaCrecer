@@ -24,7 +24,7 @@ export function SectionHeader({
       {eyebrow ? (
         <div
           className={cx(
-            "flex items-center gap-3 text-eyebrow font-medium uppercase tracking-[0.35em] text-gold",
+            "section-eyebrow flex items-center gap-3 font-medium uppercase tracking-[0.35em] text-gold",
             isCentered ? "justify-center" : "",
           )}
         >

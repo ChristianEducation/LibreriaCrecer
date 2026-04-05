@@ -6,12 +6,12 @@ import {
   QuoteSection,
   RecentProductsCarousel,
 } from "@/features/catalogo/components";
-import { getCuratedProducts, getFeaturedCategories, getHeroIntermedio, getHeroSlides, getNewProducts } from "@/features/catalogo";
+import { getCategories, getCuratedProducts, getHeroIntermedio, getHeroSlides, getNewProducts } from "@/features/catalogo";
 export default async function HomePage() {
   const [heroSlides, novedades, categorias, seleccion, heroIntermedio] = await Promise.all([
     getHeroSlides(),
     getNewProducts(10),
-    getFeaturedCategories(),
+    getCategories(),
     getCuratedProducts(),
     getHeroIntermedio(),
   ]);

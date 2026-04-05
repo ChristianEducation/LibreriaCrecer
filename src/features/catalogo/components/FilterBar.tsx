@@ -8,44 +8,109 @@ type SortOption = "newest" | "price_asc" | "price_desc" | "name";
 export interface FilterBarProps {
   totalResults: number;
   activeSort: string;
+  activeFilter?: string;
 }
 
 const sortOptions: Array<{ value: SortOption; label: string }> = [
-  { value: "newest", label: "Mas recientes" },
+  { value: "newest", label: "Más recientes" },
   { value: "price_asc", label: "Precio: menor a mayor" },
   { value: "price_desc", label: "Precio: mayor a menor" },
-  { value: "name", label: "Orden alfabetico" },
+  { value: "name", label: "Orden alfabético" },
 ];
 
-export function FilterBar({ totalResults, activeSort }: FilterBarProps) {
+const filterChips: Array<{ value: string; label: string }> = [
+  { value: "", label: "Todos" },
+  { value: "nuevo", label: "Nuevos" },
+  { value: "oferta", label: "En oferta" },
+  { value: "destacado", label: "Recomendados" },
+];
+
+export function FilterBar({ totalResults, activeSort, activeFilter = "" }: FilterBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   function updateSort(sort: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("sort", sort);
-    const query = params.toString();
-    router.push(query ? `/productos?${query}` : "/productos");
+    router.push(`/productos?${params.toString()}`);
+  }
+
+  function updateFilter(filter: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (filter) {
+      params.set("filter", filter);
+    } else {
+      params.delete("filter");
+    }
+    router.push(params.toString() ? `/productos?${params.toString()}` : "/productos");
   }
 
   return (
-    <div className="sticky top-16 z-[90] border-b border-b-border bg-white/95 px-5 backdrop-blur md:px-10 lg:px-14">
-      <div className="flex min-h-[52px] flex-col justify-center gap-3 py-3 md:flex-row md:items-center md:justify-between md:py-0">
+    <div
+      className="page-px sticky z-[90] border-b border-b-border bg-white/95 backdrop-blur"
+      style={{ top: "64px" }}
+    >
+      <div
+        className="flex items-center justify-between"
+        style={{ minHeight: "52px", gap: "1rem" }}
+      >
+        {/* Izquierda: label + chips de filtro */}
         <div className="flex items-center gap-3">
-          <span className="text-[10px] uppercase tracking-[0.22em] text-text-light">Ordenar</span>
+          <span
+            className="font-sans uppercase"
+            style={{
+              fontSize: "10px",
+              letterSpacing: "0.22em",
+              color: "var(--text-light)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            FILTRAR
+          </span>
+          <div className="hidden items-center gap-2 md:flex">
+            {filterChips.map((chip) => {
+              const isActive = chip.value === activeFilter;
+              return (
+                <button
+                  className={cx(
+                    "rounded-[2px] border transition-colors",
+                    isActive
+                      ? "border-moss bg-moss text-white"
+                      : "border-border text-text-mid hover:border-moss hover:text-moss",
+                  )}
+                  key={chip.value || "all"}
+                  onClick={() => updateFilter(chip.value)}
+                  style={{ padding: "5px 12px", fontSize: "11px" }}
+                  type="button"
+                >
+                  {chip.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Derecha: contador + selector de orden */}
+        <div className="flex items-center gap-4">
+          <p style={{ fontSize: "12px", color: "var(--text-light)", whiteSpace: "nowrap" }}>
+            {totalResults} {totalResults === 1 ? "producto" : "productos"}
+          </p>
+
+          {/* Orden desktop */}
           <div className="hidden items-center gap-2 md:flex">
             {sortOptions.map((option) => {
               const isActive = option.value === activeSort;
               return (
                 <button
                   className={cx(
-                    "rounded-[1px] border px-3 py-[5px] text-[11px] transition-colors",
+                    "rounded-[2px] border transition-colors",
                     isActive
                       ? "border-transparent bg-moss text-white"
                       : "border-border text-text-mid hover:border-moss hover:text-moss",
                   )}
                   key={option.value}
                   onClick={() => updateSort(option.value)}
+                  style={{ padding: "5px 12px", fontSize: "11px" }}
                   type="button"
                 >
                   {option.label}
@@ -53,17 +118,14 @@ export function FilterBar({ totalResults, activeSort }: FilterBarProps) {
               );
             })}
           </div>
-        </div>
 
-        <div className="flex items-center justify-between gap-4">
-          <p className="text-[12px] text-text-light">
-            {totalResults} {totalResults === 1 ? "producto" : "productos"}
-          </p>
-          <label className="flex items-center gap-2 text-[12px] text-text-light md:hidden">
+          {/* Orden mobile */}
+          <label className="flex items-center gap-2 md:hidden" style={{ fontSize: "12px", color: "var(--text-light)" }}>
             <span>Orden</span>
             <select
-              className="border-none bg-transparent text-[12px] text-text focus:outline-none"
+              className="border-none bg-transparent focus:outline-none"
               onChange={(event) => updateSort(event.target.value)}
+              style={{ fontSize: "12px", color: "var(--text)" }}
               value={activeSort}
             >
               {sortOptions.map((option) => (

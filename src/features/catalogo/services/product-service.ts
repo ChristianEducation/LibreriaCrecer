@@ -122,7 +122,9 @@ function buildProductConditions({
   search,
   onlyInStock = true,
   onlyActive = true,
-}: Pick<ProductQueryParams, "categorySlug" | "search" | "onlyInStock" | "onlyActive">) {
+  onlyOnSale = false,
+  isFeatured = false,
+}: Pick<ProductQueryParams, "categorySlug" | "search" | "onlyInStock" | "onlyActive" | "onlyOnSale" | "isFeatured">) {
   const conditions: SQL[] = [];
 
   if (onlyActive) {
@@ -131,6 +133,14 @@ function buildProductConditions({
 
   if (onlyInStock) {
     conditions.push(eq(products.inStock, true));
+  }
+
+  if (onlyOnSale) {
+    conditions.push(isNotNull(products.salePrice));
+  }
+
+  if (isFeatured) {
+    conditions.push(eq(products.isFeatured, true));
   }
 
   if (search?.trim()) {
@@ -299,4 +309,51 @@ export async function getFeaturedProducts(): Promise<CatalogProduct[]> {
     24,
     [asc(products.title)],
   );
+}
+
+export async function getRelatedProducts(
+  productId: string,
+  categoryIds: string[],
+  limit = 5,
+): Promise<CatalogProduct[]> {
+  // Si no hay categorías, retornar vacío
+  if (categoryIds.length === 0) return [];
+
+  // Subconsulta: product_ids que pertenecen a alguna de las categorías dadas
+  const relatedProductIdsSubquery = db
+    .select({ productId: productCategories.productId })
+    .from(productCategories)
+    .where(inArray(productCategories.categoryId, categoryIds));
+
+  const rows = await db
+    .select({
+      id: products.id,
+      title: products.title,
+      slug: products.slug,
+      author: products.author,
+      price: products.price,
+      salePrice: products.salePrice,
+      mainImageUrl: products.mainImageUrl,
+      sku: products.sku,
+      inStock: products.inStock,
+      stockQuantity: products.stockQuantity,
+      createdAt: products.createdAt,
+    })
+    .from(products)
+    .where(
+      and(
+        eq(products.isActive, true),
+        eq(products.inStock, true),
+        // excluir el producto actual
+        sql`${products.id} != ${productId}`,
+        inArray(products.id, relatedProductIdsSubquery),
+      ),
+    )
+    .orderBy(desc(products.createdAt))
+    .limit(limit);
+
+  if (rows.length === 0) return [];
+
+  const categoryMap = await getCategoryRefsByProductIds(rows.map((r) => r.id));
+  return rows.map((row) => mapProduct(row, categoryMap.get(row.id) ?? []));
 }

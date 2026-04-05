@@ -57,17 +57,21 @@ export default function AdminLandingBannersPage() {
 
   async function fetchBanners() {
     setLoading(true);
-    const response = await fetch("/api/admin/landing/banners", { cache: "no-store" });
-    const payload = (await response.json().catch(() => null)) as { data?: BannerRow[]; message?: string } | null;
+    try {
+      const response = await fetch("/api/admin/landing/banners", { cache: "no-store" });
+      const payload = (await response.json().catch(() => null)) as { data?: BannerRow[]; message?: string } | null;
 
-    if (!response.ok) {
-      setError(payload?.message ?? "No se pudieron cargar banners.");
+      if (!response.ok) {
+        setError(payload?.message ?? "No se pudieron cargar banners.");
+        return;
+      }
+
+      setBanners(payload?.data ?? []);
+    } catch {
+      setError("Error de red. Intenta nuevamente.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setBanners(payload?.data ?? []);
-    setLoading(false);
   }
 
   useEffect(() => {

@@ -27,19 +27,24 @@ export default function AdminCategoriasPage() {
     const fetchCategories = async () => {
       setLoading(true);
       setError(null);
-      const response = await fetch("/api/admin/categorias", { cache: "no-store" });
-      const payload = (await response.json().catch(() => null)) as
-        | { data?: CategoryRow[]; message?: string }
-        | null;
 
-      if (!response.ok) {
-        setError(payload?.message ?? "No se pudieron cargar las categorias.");
+      try {
+        const response = await fetch("/api/admin/categorias", { cache: "no-store" });
+        const payload = (await response.json().catch(() => null)) as
+          | { data?: CategoryRow[]; message?: string }
+          | null;
+
+        if (!response.ok) {
+          setError(payload?.message ?? "No se pudieron cargar las categorias.");
+          return;
+        }
+
+        setCategories(payload?.data ?? []);
+      } catch {
+        setError("Error de red. Intenta nuevamente.");
+      } finally {
         setLoading(false);
-        return;
       }
-
-      setCategories(payload?.data ?? []);
-      setLoading(false);
     };
 
     void fetchCategories();

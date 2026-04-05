@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
       dateFrom: query.get("dateFrom") ?? undefined,
       dateTo: query.get("dateTo") ?? undefined,
       sortBy: (query.get("sortBy") as "newest" | "oldest" | "total_asc" | "total_desc" | null) ?? undefined,
+      includePending: query.get("includePending") === "true",
     });
 
     return NextResponse.json({

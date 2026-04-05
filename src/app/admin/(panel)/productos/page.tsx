@@ -39,10 +39,14 @@ export default function AdminProductosPage() {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const response = await fetch("/api/admin/categorias", { cache: "no-store" });
-      if (!response.ok) return;
-      const payload = (await response.json()) as { data?: CategoryOption[] };
-      setCategories(payload.data ?? []);
+      try {
+        const response = await fetch("/api/admin/categorias", { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = (await response.json()) as { data?: CategoryOption[] };
+        setCategories(payload.data ?? []);
+      } catch {
+        // best-effort, no bloquea la UI
+      }
     };
 
     void fetchCategories();
@@ -53,28 +57,32 @@ export default function AdminProductosPage() {
       setLoading(true);
       setError(null);
 
-      const query = new URLSearchParams({
-        page: String(page),
-        limit: "20",
-      });
-      if (search.trim()) query.set("search", search.trim());
-      if (categoryId) query.set("categoryId", categoryId);
-      if (isActive) query.set("isActive", isActive);
+      try {
+        const query = new URLSearchParams({
+          page: String(page),
+          limit: "20",
+        });
+        if (search.trim()) query.set("search", search.trim());
+        if (categoryId) query.set("categoryId", categoryId);
+        if (isActive) query.set("isActive", isActive);
 
-      const response = await fetch(`/api/admin/productos?${query.toString()}`, { cache: "no-store" });
-      const payload = (await response.json().catch(() => null)) as
-        | { data?: ProductListItem[]; pagination?: { totalPages?: number }; message?: string }
-        | null;
+        const response = await fetch(`/api/admin/productos?${query.toString()}`, { cache: "no-store" });
+        const payload = (await response.json().catch(() => null)) as
+          | { data?: ProductListItem[]; pagination?: { totalPages?: number }; message?: string }
+          | null;
 
-      if (!response.ok) {
-        setError(payload?.message ?? "No se pudieron cargar los productos.");
+        if (!response.ok) {
+          setError(payload?.message ?? "No se pudieron cargar los productos.");
+          return;
+        }
+
+        setProducts(payload?.data ?? []);
+        setTotalPages(payload?.pagination?.totalPages ?? 1);
+      } catch {
+        setError("Error de red. Intenta nuevamente.");
+      } finally {
         setLoading(false);
-        return;
       }
-
-      setProducts(payload?.data ?? []);
-      setTotalPages(payload?.pagination?.totalPages ?? 1);
-      setLoading(false);
     };
 
     void fetchProducts();

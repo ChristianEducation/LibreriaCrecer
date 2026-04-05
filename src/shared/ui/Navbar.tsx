@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cx } from "class-variance-authority";
@@ -44,9 +44,7 @@ function CartIcon() {
   );
 }
 
-const navLinks = [
-  { href: "/productos", label: "Colección" },
-  { href: "/#categorias", label: "Categorías" },
+const navLinksAfterCategories = [
   { href: "/#libros-mes", label: "Selección del mes" },
   { href: "/#recien-llegados", label: "Recién llegados" },
 ] as const;
@@ -64,7 +62,22 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
   const hydrated = useCartHydration();
   const { totalItems } = useCartSummary();
   const categoriesRef = useRef<HTMLLIElement | null>(null);
+  const categoriesCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const safeTotalItems = hydrated ? totalItems : 0;
+
+  function handleCategoriesMouseEnter() {
+    if (categoriesCloseTimeout.current) {
+      clearTimeout(categoriesCloseTimeout.current);
+      categoriesCloseTimeout.current = null;
+    }
+    setIsCategoriesOpen(true);
+  }
+
+  function handleCategoriesMouseLeave() {
+    categoriesCloseTimeout.current = setTimeout(() => {
+      setIsCategoriesOpen(false);
+    }, 150);
+  }
 
   useEffect(() => {
     function handleScroll() {
@@ -103,10 +116,6 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
     setIsCartOpen(false);
     setIsCategoriesOpen(false);
   }, [pathname]);
-
-  const categoriesLabel = useMemo(() => {
-    return categories.length > 0 ? "Categorias" : "Coleccion";
-  }, [categories.length]);
 
   return (
     <>
@@ -150,7 +159,75 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
               </div>
 
               <nav className="flex items-center gap-7">
-                {navLinks.map((link) => {
+                <Link
+                  className={cx(
+                    "text-[13px] tracking-[0.04em] transition-colors hover:text-moss",
+                    pathname === "/productos" || pathname.startsWith("/productos/") ? "font-medium text-moss" : "text-text-mid",
+                  )}
+                  href="/productos"
+                >
+                  Colección
+                </Link>
+
+                <li
+                  style={{ position: "relative", listStyle: "none" }}
+                  onMouseEnter={handleCategoriesMouseEnter}
+                  onMouseLeave={handleCategoriesMouseLeave}
+                  ref={categoriesRef}
+                >
+                  <button
+                    className={cx(
+                      "text-[13px] tracking-[0.04em] transition-colors hover:text-moss",
+                      pathname.startsWith("/productos") ? "font-medium text-moss" : "text-text-mid",
+                    )}
+                    onClick={() => setIsCategoriesOpen((current) => !current)}
+                    type="button"
+                  >
+                    Categorías
+                  </button>
+
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      marginTop: "10px",
+                      minWidth: "230px",
+                      padding: "10px 0",
+                      background: "rgba(242,239,223,0.98)",
+                      backdropFilter: "blur(16px)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: "2px",
+                      boxShadow: "0 16px 40px rgba(58,48,1,0.12)",
+                      opacity: isCategoriesOpen ? 1 : 0,
+                      transform: isCategoriesOpen ? "translateY(0)" : "translateY(-8px)",
+                      visibility: isCategoriesOpen ? "visible" : "hidden",
+                      pointerEvents: isCategoriesOpen ? "auto" : "none",
+                      transition: "opacity 0.2s ease, transform 0.2s ease",
+                      zIndex: 10,
+                    }}
+                  >
+                    <Link
+                      href="/productos"
+                      style={{ display: "block", padding: "9px 18px", fontSize: "13px", color: "var(--color-moss)", textDecoration: "none", transition: "background 0.15s" }}
+                      className="hover:bg-beige-warm"
+                    >
+                      Ver toda la colección
+                    </Link>
+                    {categories.map((category) => (
+                      <Link
+                        href={`/productos?cat=${category.slug}`}
+                        key={category.id}
+                        style={{ display: "block", padding: "9px 18px", fontSize: "13px", color: "var(--color-moss)", textDecoration: "none", transition: "background 0.15s" }}
+                        className="hover:bg-beige-warm"
+                      >
+                        {category.name}
+                      </Link>
+                    ))}
+                  </div>
+                </li>
+
+                {navLinksAfterCategories.map((link) => {
                   const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
 
                   return (
@@ -166,47 +243,6 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                     </Link>
                   );
                 })}
-
-                <li
-                  className="relative list-none"
-                  onMouseEnter={() => setIsCategoriesOpen(true)}
-                  onMouseLeave={() => setIsCategoriesOpen(false)}
-                  ref={categoriesRef}
-                >
-                  <button
-                    className={cx(
-                      "text-[13px] tracking-[0.04em] transition-colors hover:text-moss",
-                      pathname.startsWith("/productos") ? "font-medium text-moss" : "text-text-mid",
-                    )}
-                    onClick={() => setIsCategoriesOpen((current) => !current)}
-                    type="button"
-                  >
-                    {categoriesLabel}
-                  </button>
-
-                  <div
-                    className={cx(
-                      "absolute top-full mt-[10px] min-w-[230px] translate-y-[-8px] rounded border border-border bg-[color-mix(in_srgb,var(--beige)_98%,transparent)] py-[10px] opacity-0 shadow-[0_16px_40px_rgba(58,48,1,0.12)] backdrop-blur-xl transition-all duration-200",
-                      isCategoriesOpen ? "visible translate-y-0 opacity-100" : "invisible pointer-events-none",
-                    )}
-                  >
-                    <Link
-                      className="block px-[18px] py-[9px] text-[13px] text-text-mid transition-colors hover:bg-beige-warm hover:text-moss"
-                      href="/productos"
-                    >
-                      Ver toda la coleccion
-                    </Link>
-                    {categories.map((category) => (
-                      <Link
-                        className="block px-[18px] py-[9px] text-[13px] text-text-mid transition-colors hover:bg-beige-warm hover:text-moss"
-                        href={`/productos?cat=${category.slug}`}
-                        key={category.id}
-                      >
-                        {category.name}
-                      </Link>
-                    ))}
-                  </div>
-                </li>
               </nav>
 
               <button

@@ -10,5 +10,6 @@ export { Pagination } from "./Pagination";
 export { ProductCard } from "./ProductCard";
 export { ProductGallery } from "./ProductGallery";
 export { ProductGrid } from "./ProductGrid";
+export { ProductInfoBlock } from "./ProductInfoBlock";
 export { RecentProductsCarousel } from "./RecentProductsCarousel";
 export { QuoteSection } from "./QuoteSection";

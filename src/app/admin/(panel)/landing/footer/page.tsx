@@ -64,32 +64,35 @@ export default function AdminLandingFooterPage() {
     setLoading(true);
     setError(null);
 
-    const response = await fetch("/api/admin/landing/banners", { cache: "no-store" });
-    const payload = (await response.json().catch(() => null)) as
-      | { data?: FooterBanner[]; message?: string }
-      | null;
+    try {
+      const response = await fetch("/api/admin/landing/banners", { cache: "no-store" });
+      const payload = (await response.json().catch(() => null)) as
+        | { data?: FooterBanner[]; message?: string }
+        | null;
 
-    if (!response.ok) {
-      setError(payload?.message ?? "No se pudo cargar la configuracion del footer.");
+      if (!response.ok) {
+        setError(payload?.message ?? "No se pudo cargar la configuracion del footer.");
+        return;
+      }
+
+      const footerBanner = (payload?.data ?? []).find((item) => item.position === "footer_illustration") ?? null;
+      if (footerBanner) {
+        setBannerId(footerBanner.id);
+        setTitle(footerBanner.title ?? "Ilustracion footer");
+        setDescription(footerBanner.description ?? "");
+        setLinkUrl(footerBanner.linkUrl ?? "");
+        setIsActive(footerBanner.isActive);
+        setCurrentImageUrl(footerBanner.imageUrl ?? null);
+        setMetadata({
+          ...defaultMetadata,
+          ...(footerBanner.metadata ?? {}),
+        });
+      }
+    } catch {
+      setError("Error de red. Intenta nuevamente.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const footerBanner = (payload?.data ?? []).find((item) => item.position === "footer_illustration") ?? null;
-    if (footerBanner) {
-      setBannerId(footerBanner.id);
-      setTitle(footerBanner.title ?? "Ilustracion footer");
-      setDescription(footerBanner.description ?? "");
-      setLinkUrl(footerBanner.linkUrl ?? "");
-      setIsActive(footerBanner.isActive);
-      setCurrentImageUrl(footerBanner.imageUrl ?? null);
-      setMetadata({
-        ...defaultMetadata,
-        ...(footerBanner.metadata ?? {}),
-      });
-    }
-
-    setLoading(false);
   }
 
   useEffect(() => {

@@ -17,6 +17,7 @@ type GetOrdersAdminParams = {
   dateFrom?: string;
   dateTo?: string;
   sortBy?: OrderSortBy;
+  includePending?: boolean;
 };
 
 const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
@@ -51,6 +52,8 @@ export async function getOrdersAdmin(params: GetOrdersAdminParams) {
 
   if (params.status) {
     filters.push(eq(orders.status, params.status));
+  } else if (!params.includePending) {
+    filters.push(inArray(orders.status, ["paid", "preparing", "shipped", "delivered"]));
   }
 
   if (params.deliveryMethod) {

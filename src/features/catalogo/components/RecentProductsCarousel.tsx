@@ -87,7 +87,7 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
     : products;
 
   return (
-    <section className="page-px bg-white" id="recien-llegados" style={{ paddingTop: "5rem", paddingBottom: "5rem" }}>
+    <section className="page-px bg-white" id="recien-llegados" style={{ paddingTop: "2.5rem", paddingBottom: "2.5rem" }}>
       {/* Header */}
       <div
         style={{
@@ -99,12 +99,11 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
       >
         <div>
           <p
-            className="font-sans uppercase text-gold"
+            className="section-eyebrow font-sans uppercase text-gold"
             style={{
               display: "flex",
               alignItems: "center",
               gap: "12px",
-              fontSize: "9px",
               letterSpacing: "0.35em",
               marginBottom: "10px",
             }}

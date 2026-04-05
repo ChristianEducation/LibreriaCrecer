@@ -61,84 +61,141 @@ export function PageHeader({
   }
 
   const subtitle = activeCategoryData
-    ? "Una curaduria pensada para acompanar estudio, lectura y devocion."
-    : "Explora novedades, clasicos y selecciones con una identidad editorial sobria.";
+    ? (activeCategoryData as { description?: string | null }).description ??
+      "Una curaduría pensada para acompañar el estudio, la lectura y la devoción."
+    : "Libros, biblias y artículos religiosos para el crecimiento espiritual.";
+
+  const hasBg = !!currentImage;
 
   return (
-    <section className="relative overflow-hidden bg-moss px-5 pt-10 md:px-10 md:pt-14 lg:px-14 lg:pt-14">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(232,208,96,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(200,168,48,0.16),transparent_32%)]" />
-
+    <section
+      className="page-px relative overflow-hidden"
+      style={{
+        background: hasBg
+          ? "#3a3001"
+          : `#4a3c02 radial-gradient(ellipse at 70% 50%, rgba(217,186,30,0.07) 0%, transparent 60%)`,
+        paddingTop: "3.5rem",
+      }}
+    >
+      {/* Imagen de fondo previa (fade out) */}
       {previousImage ? (
-        <div className="absolute inset-0">
+        <div className="pointer-events-none absolute inset-0">
           <Image
             alt=""
-            className={cx(
-              "object-cover mix-blend-multiply opacity-[0.35] transition-opacity duration-[400ms]",
-              isTransitioning ? "opacity-0" : "opacity-[0.35]",
-            )}
+            className="object-cover"
             fill
             sizes="100vw"
             src={previousImage}
+            style={{ opacity: isTransitioning ? 0 : 0.45, transition: "opacity 400ms" }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(58,48,1,0.55) 0%, rgba(58,48,1,0.45) 100%)",
+            }}
           />
         </div>
       ) : null}
 
+      {/* Imagen de fondo actual */}
       {currentImage ? (
-        <div className="absolute inset-0">
+        <div className="pointer-events-none absolute inset-0">
           <Image
             alt=""
-            className="object-cover mix-blend-multiply opacity-[0.35] transition-opacity duration-[400ms]"
+            className="object-cover"
             fill
             sizes="100vw"
             src={currentImage}
+            style={{ opacity: 0.45 }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(58,48,1,0.55) 0%, rgba(58,48,1,0.45) 100%)",
+            }}
           />
         </div>
       ) : null}
 
-      <div className="relative z-[1] border-b border-b-white/10 pb-10">
-        <div className="mb-4 flex flex-wrap items-center gap-2 text-[10px] text-white/40">
-          <Link className="transition-colors hover:text-gold-light" href="/">
+      {/* Contenido principal */}
+      <div className="relative z-[1] border-b" style={{ borderColor: "rgba(255,255,255,0.07)", paddingBottom: "2.5rem" }}>
+        {/* Breadcrumb */}
+        <div
+          className="flex flex-wrap items-center gap-2"
+          style={{ marginBottom: "1.25rem", fontSize: "10px" }}
+        >
+          <Link
+            className="transition-colors"
+            href="/"
+            style={{ color: "rgba(255,255,255,0.35)" }}
+          >
             Inicio
           </Link>
-          <span>/</span>
-          <Link className="transition-colors hover:text-gold-light" href="/productos">
-            Coleccion
+          <span style={{ color: "rgba(255,255,255,0.35)", opacity: 0.3 }}>/</span>
+          <Link
+            className="transition-colors"
+            href="/productos"
+            style={{ color: activeCategoryData ? "rgba(255,255,255,0.35)" : "var(--gold-light)" }}
+          >
+            Colección
           </Link>
           {activeCategoryData ? (
             <>
-              <span>/</span>
-              <span className="text-gold-light">{activeCategoryData.name}</span>
+              <span style={{ color: "rgba(255,255,255,0.35)", opacity: 0.3 }}>/</span>
+              <span style={{ color: "var(--gold-light)" }}>{activeCategoryData.name}</span>
             </>
           ) : null}
         </div>
 
-        <h1 className="max-w-3xl font-serif text-[clamp(36px,4vw,56px)] font-normal leading-[1.04] text-white">
+        {/* Título */}
+        <h1
+          className="font-serif font-normal leading-[1.04] text-white"
+          style={{ fontSize: "clamp(36px,4vw,56px)" }}
+        >
           {activeCategoryData ? (
             activeCategoryData.name
           ) : (
             <>
-              Coleccion <em className="font-normal italic text-[rgba(237,217,106,0.85)]">Crecer</em>
+              Nuestra{" "}
+              <em className="font-normal italic" style={{ color: "rgba(232,210,140,0.85)" }}>
+                colección
+              </em>
             </>
           )}
         </h1>
-        <p className="mt-4 max-w-2xl text-[14px] font-light leading-[1.8] text-white/55">{subtitle}</p>
+
+        {/* Subtítulo */}
+        <p
+          className="font-light text-white/55"
+          style={{ fontSize: "14px", lineHeight: 1.8, marginTop: "1rem", maxWidth: "42rem" }}
+        >
+          {subtitle}
+        </p>
       </div>
 
-      <div className="relative z-[1] flex gap-1 overflow-x-auto border-t border-t-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* Tabs de categorías */}
+      <div
+        className="relative z-[1] flex gap-1 overflow-x-auto border-t [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{ borderColor: "rgba(255,255,255,0.07)" }}
+      >
         <button
           className={cx(
-            "relative shrink-0 px-5 py-4 text-[12px] font-normal text-white/45 transition-colors hover:text-white/75",
-            !activeCategory ? "font-medium text-white" : "",
+            "relative shrink-0 transition-colors",
+            !activeCategory ? "font-medium text-white" : "text-white/45 hover:text-white/75",
           )}
           onClick={() => updateCategory("")}
+          style={{ padding: "1rem 1.25rem", fontSize: "12px", letterSpacing: "0.05em" }}
           type="button"
         >
           Todos
           <span
-            className={cx(
-              "absolute inset-x-4 bottom-0 h-[2px] origin-left bg-gold transition-transform duration-300",
-              !activeCategory ? "scale-x-100" : "scale-x-0",
-            )}
+            className="absolute inset-x-4 bottom-0 origin-left bg-gold transition-transform duration-300"
+            style={{
+              height: "2px",
+              transform: !activeCategory ? "scaleX(1)" : "scaleX(0)",
+            }}
           />
         </button>
 
@@ -148,19 +205,21 @@ export function PageHeader({
           return (
             <button
               className={cx(
-                "relative shrink-0 px-5 py-4 text-[12px] font-normal text-white/45 transition-colors hover:text-white/75",
-                isActive ? "font-medium text-white" : "",
+                "relative shrink-0 transition-colors",
+                isActive ? "font-medium text-white" : "text-white/45 hover:text-white/75",
               )}
               key={category.id}
               onClick={() => updateCategory(category.slug)}
+              style={{ padding: "1rem 1.25rem", fontSize: "12px", letterSpacing: "0.05em" }}
               type="button"
             >
               {category.name}
               <span
-                className={cx(
-                  "absolute inset-x-4 bottom-0 h-[2px] origin-left bg-gold transition-transform duration-300",
-                  isActive ? "scale-x-100" : "scale-x-0",
-                )}
+                className="absolute inset-x-4 bottom-0 origin-left bg-gold transition-transform duration-300"
+                style={{
+                  height: "2px",
+                  transform: isActive ? "scaleX(1)" : "scaleX(0)",
+                }}
               />
             </button>
           );
