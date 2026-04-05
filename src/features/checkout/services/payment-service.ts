@@ -135,7 +135,8 @@ export async function initializePayment(
         requestId: session.requestId,
       },
     };
-  } catch {
+  } catch (error) {
+    console.error("initializePayment failed:", error);
     return {
       success: false,
       code: "validation_error",
