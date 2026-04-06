@@ -20,6 +20,7 @@ export interface ProductCardProps {
   mainImageUrl?: string | null;
   isNew?: boolean;
   isOnSale?: boolean;
+  stockQuantity?: number;
   className?: string;
 }
 
@@ -48,6 +49,7 @@ export function ProductCard({
   mainImageUrl,
   isNew = false,
   isOnSale = false,
+  stockQuantity,
   className,
 }: ProductCardProps) {
   const router = useRouter();
@@ -57,6 +59,7 @@ export function ProductCard({
 
   const hasDiscount = isOnSale || (salePrice !== null && salePrice !== undefined && salePrice < price);
   const effectivePrice = hasDiscount && salePrice ? salePrice : price;
+  const isLowStock = stockQuantity !== undefined && stockQuantity > 0 && stockQuantity <= 3;
 
   const badge = useMemo(() => {
     if (hasDiscount) {
@@ -112,7 +115,12 @@ export function ProductCard({
           </div>
         )}
 
-        {badge ? <div className="absolute left-2 top-2 z-[2]">{badge}</div> : null}
+        {(badge ?? isLowStock) ? (
+          <div className="absolute left-2 top-2 z-[2] flex flex-col gap-1">
+            {badge}
+            {isLowStock && <Badge variant="warning">Últimas unidades</Badge>}
+          </div>
+        ) : null}
 
         <div className="absolute inset-0 flex items-end justify-center bg-[rgba(58,48,1,0.82)] p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
           <Button

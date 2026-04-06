@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import type { CatalogProductDetail } from "@/features/catalogo/types";
 import { useCart } from "@/features/carrito/hooks";
+import { Badge } from "@/shared/ui";
 import { formatCLP } from "@/shared/utils/formatters";
 
 // Íconos inline SVG
@@ -62,15 +63,17 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
     return () => window.clearTimeout(t);
   }, [added]);
 
+  const maxQty = product.inStock ? Math.max(1, product.stockQuantity) : 1;
+
   function decrement() {
     setQty((q) => Math.max(1, q - 1));
   }
   function increment() {
-    setQty((q) => Math.min(99, q + 1));
+    setQty((q) => Math.min(maxQty, q + 1));
   }
   function handleQtyChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = parseInt(e.target.value, 10);
-    if (!isNaN(val) && val >= 1 && val <= 99) setQty(val);
+    if (!isNaN(val) && val >= 1 && val <= maxQty) setQty(val);
   }
 
   function handleAddToCart() {
@@ -91,7 +94,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
     setAdded(true);
   }
 
-  const showLowStock = product.inStock && product.stockQuantity > 0 && product.stockQuantity <= 5;
+  const showLowStock = product.inStock && product.stockQuantity > 0 && product.stockQuantity <= 3;
 
   return (
     <div style={{ paddingTop: "4px" }}>
@@ -125,10 +128,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
       {/* Badge de stock */}
       {showLowStock && (
         <div style={{ marginBottom: "20px" }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 12px", borderRadius: "2px", fontSize: "11px", fontWeight: 500, letterSpacing: "0.06em", background: "rgba(217,186,30,0.15)", color: "var(--gold)", border: "1px solid rgba(217,186,30,0.3)" }}>
-            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "currentColor", flexShrink: 0 }} />
-            Últimas unidades en stock
-          </span>
+          <Badge variant="warning">Últimas unidades</Badge>
         </div>
       )}
       {!product.inStock && (
@@ -204,7 +204,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
             −
           </button>
           <input
-            max={99}
+            max={maxQty}
             min={1}
             onChange={handleQtyChange}
             style={{ width: "44px", height: "48px", border: "none", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", textAlign: "center", fontSize: "14px", fontWeight: 500, background: "white", outline: "none", color: "var(--text)" }}

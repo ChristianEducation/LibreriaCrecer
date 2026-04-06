@@ -47,6 +47,10 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
         Anterior
       </button>
 
+      <span className="px-3 text-[12px] text-text-light">
+        Página {currentPage} de {totalPages}
+      </span>
+
       {visiblePages.map((page, index) => {
         const previousPage = visiblePages[index - 1];
         const showGap = previousPage && page - previousPage > 1;

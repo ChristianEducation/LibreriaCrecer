@@ -27,7 +27,7 @@ export function ProductGrid({ products }: ProductGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 md:gap-x-5 md:gap-y-10 xl:grid-cols-4 2xl:grid-cols-5">
+    <div className="grid grid-cols-3 gap-x-4 gap-y-8 lg:grid-cols-5 lg:gap-x-5 lg:gap-y-10">
       {products.map((product) => (
         <ProductCard
           author={product.author}
@@ -39,6 +39,7 @@ export function ProductGrid({ products }: ProductGridProps) {
           price={product.price}
           salePrice={product.salePrice}
           slug={product.slug}
+          stockQuantity={product.stockQuantity}
           title={product.title}
         />
       ))}
