@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cx } from "class-variance-authority";
 
@@ -28,6 +29,11 @@ const filterChips: Array<{ value: string; label: string }> = [
 export function FilterBar({ totalResults, activeSort, activeFilter = "" }: FilterBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") ?? "");
+
+  useEffect(() => {
+    setSearchInput(searchParams.get("search") ?? "");
+  }, [searchParams]);
 
   function updateSort(sort: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -42,6 +48,19 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
     } else {
       params.delete("filter");
     }
+    router.push(params.toString() ? `/productos?${params.toString()}` : "/productos");
+  }
+
+  function handleSearch(event: React.FormEvent) {
+    event.preventDefault();
+    const params = new URLSearchParams(searchParams.toString());
+    const trimmed = searchInput.trim();
+    if (trimmed) {
+      params.set("search", trimmed);
+    } else {
+      params.delete("search");
+    }
+    params.delete("page");
     router.push(params.toString() ? `/productos?${params.toString()}` : "/productos");
   }
 
@@ -90,8 +109,51 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
           </div>
         </div>
 
-        {/* Derecha: contador + selector de orden */}
+        {/* Derecha: búsqueda + contador + selector de orden */}
         <div className="flex items-center gap-4">
+          <form onSubmit={handleSearch} style={{ position: "relative" }}>
+            <input
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Buscar..."
+              style={{
+                height: "32px",
+                width: "180px",
+                padding: "0 32px 0 10px",
+                border: "1px solid var(--color-border)",
+                borderRadius: "2px",
+                fontSize: "12px",
+                background: "var(--color-white)",
+                color: "var(--color-text)",
+                outline: "none",
+                fontFamily: "var(--font-sans)",
+              }}
+            />
+            <button
+              type="submit"
+              aria-label="Buscar"
+              style={{
+                position: "absolute",
+                right: "8px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                color: "var(--color-text-light)",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" style={{ width: "13px", height: "13px" }}>
+                <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+                <path d="m16 16 4.25 4.25" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+              </svg>
+            </button>
+          </form>
+
           <p style={{ fontSize: "12px", color: "var(--text-light)", whiteSpace: "nowrap" }}>
             {totalResults} {totalResults === 1 ? "producto" : "productos"}
           </p>

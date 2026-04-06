@@ -8,6 +8,7 @@ type ProductosPageProps = {
     sort?: string | string[];
     page?: string | string[];
     filter?: string | string[];
+    search?: string | string[];
   }>;
 };
 
@@ -34,6 +35,7 @@ export default async function ProductosPage({ searchParams }: ProductosPageProps
   const sort = getValidSort(getSingleValue(params.sort));
   const page = getValidPage(getSingleValue(params.page));
   const filter = getSingleValue(params.filter) ?? "";
+  const search = getSingleValue(params.search) ?? "";
 
   const [productResult, categories, headerBanner] = await Promise.all([
     getProducts({
@@ -41,6 +43,7 @@ export default async function ProductosPage({ searchParams }: ProductosPageProps
       limit: 40,
       categorySlug: activeCategory || undefined,
       sortBy: filter === "nuevo" ? "newest" : sort,
+      search: search || undefined,
       onlyActive: true,
       onlyInStock: true,
       onlyOnSale: filter === "oferta",

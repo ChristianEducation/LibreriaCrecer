@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cx } from "class-variance-authority";
 
 import { useCartSummary } from "@/features/carrito/hooks";
@@ -56,9 +56,11 @@ export interface NavbarProps {
 
 export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const hydrated = useCartHydration();
   const { totalItems } = useCartSummary();
   const categoriesRef = useRef<HTMLLIElement | null>(null);
@@ -117,6 +119,14 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
     setIsCategoriesOpen(false);
   }, [pathname]);
 
+  function handleSearch(event: React.FormEvent) {
+    event.preventDefault();
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
+    setSearchQuery("");
+    router.push(`/productos?search=${encodeURIComponent(trimmed)}`);
+  }
+
   return (
     <>
       <header
@@ -143,20 +153,25 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
             </Link>
           ) : (
             <>
-              <div className="relative hidden w-full max-w-[420px] flex-1 lg:block">
+              <form
+                className="relative hidden w-full max-w-[420px] flex-1 lg:block"
+                onSubmit={handleSearch}
+              >
                 <input
                   className="h-10 w-full rounded border border-border bg-beige-warm py-2 pl-4 pr-10 text-[14px] text-text transition-[border-color,background-color] duration-200 placeholder:text-text-light focus:border-gold focus:bg-white focus:outline-none"
                   placeholder="Buscar libros, autores..."
                   type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <button
                   aria-label="Buscar"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-text-light transition-colors hover:text-moss"
-                  type="button"
+                  type="submit"
                 >
                   <SearchIcon />
                 </button>
-              </div>
+              </form>
 
               <nav className="flex items-center gap-7">
                 <Link
