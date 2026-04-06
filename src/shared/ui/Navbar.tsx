@@ -44,6 +44,39 @@ function CartIcon() {
   );
 }
 
+function HamburgerIcon() {
+  return (
+    <svg aria-hidden="true" className="size-[22px]" fill="none" viewBox="0 0 24 24">
+      <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg aria-hidden="true" className="size-[20px]" fill="none" viewBox="0 0 24 24">
+      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-[14px]"
+      fill="none"
+      viewBox="0 0 24 24"
+      style={{
+        transform: open ? "rotate(180deg)" : "rotate(0deg)",
+        transition: "transform 0.2s ease",
+      }}
+    >
+      <path d="M6 9l6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
 const navLinksAfterCategories = [
   { href: "/#libros-mes", label: "Selección del mes" },
   { href: "/#recien-llegados", label: "Recién llegados" },
@@ -60,6 +93,8 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileCategoriesOpen, setIsMobileCategoriesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const hydrated = useCartHydration();
   const { totalItems } = useCartSummary();
@@ -96,6 +131,7 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
       if (event.key === "Escape") {
         setIsCategoriesOpen(false);
         setIsCartOpen(false);
+        setIsMobileMenuOpen(false);
       }
     }
 
@@ -117,14 +153,28 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
   useEffect(() => {
     setIsCartOpen(false);
     setIsCategoriesOpen(false);
+    setIsMobileMenuOpen(false);
   }, [pathname]);
+
+  // Scroll lock when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
 
   function handleSearch(event: React.FormEvent) {
     event.preventDefault();
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
     setSearchQuery("");
+    setIsMobileMenuOpen(false);
     router.push(`/productos?search=${encodeURIComponent(trimmed)}`);
+  }
+
+  function closeMobileMenu() {
+    setIsMobileMenuOpen(false);
   }
 
   return (
@@ -153,6 +203,7 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
             </Link>
           ) : (
             <>
+              {/* Desktop search */}
               <form
                 className="relative hidden w-full max-w-[420px] flex-1 lg:block"
                 onSubmit={handleSearch}
@@ -173,7 +224,8 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                 </button>
               </form>
 
-              <nav className="flex items-center gap-7">
+              {/* Desktop nav — hidden on mobile */}
+              <nav className="hidden items-center gap-7 lg:flex">
                 <Link
                   className={cx(
                     "text-[13px] tracking-[0.04em] transition-colors hover:text-moss",
@@ -260,25 +312,218 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                 })}
               </nav>
 
-              <button
-                aria-expanded={isCartOpen}
-                className="relative flex shrink-0 items-center gap-1.5 text-moss transition-opacity hover:opacity-70"
-                onClick={() => setIsCartOpen((current) => !current)}
-                type="button"
-              >
-                <CartIcon />
-                {safeTotalItems > 0 && (
-                  <span
-                    className="flex size-4 items-center justify-center rounded-full bg-gold text-[9px] font-semibold text-white"
-                  >
-                    {safeTotalItems}
-                  </span>
-                )}
-              </button>
+              {/* Right side: cart + hamburger */}
+              <div className="flex shrink-0 items-center gap-3">
+                <button
+                  aria-expanded={isCartOpen}
+                  className="relative flex items-center gap-1.5 text-moss transition-opacity hover:opacity-70"
+                  onClick={() => setIsCartOpen((current) => !current)}
+                  type="button"
+                >
+                  <CartIcon />
+                  {safeTotalItems > 0 && (
+                    <span className="flex size-4 items-center justify-center rounded-full bg-gold text-[9px] font-semibold text-white">
+                      {safeTotalItems}
+                    </span>
+                  )}
+                </button>
+
+                {/* Hamburger — mobile only */}
+                <button
+                  aria-expanded={isMobileMenuOpen}
+                  aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+                  className="flex items-center justify-center text-moss transition-opacity hover:opacity-70 lg:hidden"
+                  onClick={() => setIsMobileMenuOpen((current) => !current)}
+                  type="button"
+                >
+                  {isMobileMenuOpen ? <CloseIcon /> : <HamburgerIcon />}
+                </button>
+              </div>
             </>
           )}
         </div>
       </header>
+
+      {/* Mobile menu drawer — hidden on desktop */}
+      {variant === "default" && (
+        <>
+          {/* Backdrop */}
+          <div
+            aria-hidden="true"
+            className="lg:hidden"
+            onClick={closeMobileMenu}
+            style={{
+              position: "fixed",
+              inset: 0,
+              top: "64px",
+              zIndex: 98,
+              background: "rgba(58,48,1,0.35)",
+              backdropFilter: "blur(2px)",
+              opacity: isMobileMenuOpen ? 1 : 0,
+              visibility: isMobileMenuOpen ? "visible" : "hidden",
+              transition: "opacity 0.25s ease, visibility 0.25s ease",
+            }}
+          />
+
+          {/* Drawer panel */}
+          <div
+            className="lg:hidden"
+            style={{
+              position: "fixed",
+              top: "64px",
+              left: 0,
+              right: 0,
+              zIndex: 99,
+              background: "rgba(245,243,232,0.98)",
+              backdropFilter: "blur(16px)",
+              borderBottom: "1px solid var(--color-border)",
+              boxShadow: "0 12px 40px rgba(58,48,1,0.12)",
+              maxHeight: "calc(100vh - 64px)",
+              overflowY: "auto",
+              opacity: isMobileMenuOpen ? 1 : 0,
+              transform: isMobileMenuOpen ? "translateY(0)" : "translateY(-12px)",
+              visibility: isMobileMenuOpen ? "visible" : "hidden",
+              transition: "opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease",
+            }}
+          >
+            <div style={{ padding: "20px 0 32px" }}>
+              {/* Search */}
+              <div style={{ padding: "0 20px 20px" }}>
+                <form onSubmit={handleSearch} style={{ position: "relative" }}>
+                  <input
+                    className="w-full rounded border border-border bg-beige-warm py-3 pl-4 pr-10 text-[14px] text-text transition-[border-color,background-color] duration-200 placeholder:text-text-light focus:border-gold focus:bg-white focus:outline-none"
+                    placeholder="Buscar libros, autores..."
+                    type="search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <button
+                    aria-label="Buscar"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-light transition-colors hover:text-moss"
+                    type="submit"
+                  >
+                    <SearchIcon />
+                  </button>
+                </form>
+              </div>
+
+              {/* Divider */}
+              <div style={{ height: "1px", background: "var(--color-border)", marginBottom: "8px" }} />
+
+              {/* Nav links */}
+              <nav>
+                {/* Colección */}
+                <Link
+                  href="/productos"
+                  onClick={closeMobileMenu}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "14px 20px",
+                    fontSize: "15px",
+                    color: pathname === "/productos" || pathname.startsWith("/productos/") ? "var(--color-moss)" : "var(--color-text-mid)",
+                    fontWeight: pathname === "/productos" || pathname.startsWith("/productos/") ? 500 : 300,
+                    textDecoration: "none",
+                    borderBottom: "1px solid var(--color-border)",
+                    transition: "color 0.15s",
+                  }}
+                >
+                  Colección
+                </Link>
+
+                {/* Categorías — accordion */}
+                <div style={{ borderBottom: "1px solid var(--color-border)" }}>
+                  <button
+                    onClick={() => setIsMobileCategoriesOpen((current) => !current)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      width: "100%",
+                      padding: "14px 20px",
+                      fontSize: "15px",
+                      color: "var(--color-text-mid)",
+                      fontWeight: 300,
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      textAlign: "left",
+                    }}
+                    type="button"
+                  >
+                    <span>Categorías</span>
+                    <ChevronDownIcon open={isMobileCategoriesOpen} />
+                  </button>
+
+                  {/* Category list */}
+                  <div
+                    style={{
+                      overflow: "hidden",
+                      maxHeight: isMobileCategoriesOpen ? "400px" : "0",
+                      transition: "max-height 0.3s ease",
+                    }}
+                  >
+                    <Link
+                      href="/productos"
+                      onClick={closeMobileMenu}
+                      style={{
+                        display: "block",
+                        padding: "11px 20px 11px 36px",
+                        fontSize: "13px",
+                        color: "var(--color-moss)",
+                        textDecoration: "none",
+                        borderTop: "1px solid var(--color-border)",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Ver toda la colección
+                    </Link>
+                    {categories.map((category) => (
+                      <Link
+                        href={`/productos?cat=${category.slug}`}
+                        key={category.id}
+                        onClick={closeMobileMenu}
+                        style={{
+                          display: "block",
+                          padding: "11px 20px 11px 36px",
+                          fontSize: "13px",
+                          color: "var(--color-text-mid)",
+                          textDecoration: "none",
+                          borderTop: "1px solid var(--color-border)",
+                        }}
+                      >
+                        {category.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Remaining links */}
+                {navLinksAfterCategories.map((link) => (
+                  <Link
+                    href={link.href}
+                    key={link.href}
+                    onClick={closeMobileMenu}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "14px 20px",
+                      fontSize: "15px",
+                      color: "var(--color-text-mid)",
+                      fontWeight: 300,
+                      textDecoration: "none",
+                      borderBottom: "1px solid var(--color-border)",
+                      transition: "color 0.15s",
+                    }}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          </div>
+        </>
+      )}
 
       {variant === "default" ? <CartPanel isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} /> : null}
     </>
