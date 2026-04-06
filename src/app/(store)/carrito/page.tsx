@@ -34,16 +34,7 @@ function CartSkeleton() {
   return (
     <main style={{ minHeight: "60vh", background: "var(--color-beige)" }}>
       <div className="page-px" style={{ paddingTop: "48px", paddingBottom: "80px" }}>
-        <div
-          style={{
-            maxWidth: "1100px",
-            margin: "0 auto",
-            display: "grid",
-            gridTemplateColumns: "1fr 380px",
-            gap: "48px",
-            alignItems: "start",
-          }}
-        >
+        <div className="cart-layout-grid">
           <div
             style={{
               height: "320px",
@@ -164,16 +155,7 @@ export default function CarritoPage() {
           Mi carrito
         </h1>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 380px",
-            gap: "48px",
-            alignItems: "start",
-            maxWidth: "1100px",
-            margin: "0 auto",
-          }}
-        >
+        <div className="cart-layout-grid">
           {/* Left: items + coupon */}
           <section>
             {isEmpty ? (

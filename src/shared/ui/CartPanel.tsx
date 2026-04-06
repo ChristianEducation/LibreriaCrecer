@@ -5,6 +5,7 @@ import Link from "next/link";
 import { cx } from "class-variance-authority";
 
 import { useCart, useCartSummary } from "@/features/carrito/hooks";
+import { useIsMobile } from "@/shared/hooks/useIsMobile";
 import { formatCLP } from "@/shared/utils/formatters";
 
 function BookIcon({ className }: { className?: string }) {
@@ -61,6 +62,7 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const { items, incrementQuantity, decrementQuantity, removeItem } = useCart();
   const { total, totalItems, isEmpty } = useCartSummary();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!isOpen) {
@@ -100,12 +102,14 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
     <div
       aria-hidden={!isOpen}
       className={cx(
-        "fixed z-[200] w-80 translate-y-[-8px] bg-beige/95 opacity-0 backdrop-blur-xl transition-all duration-200 ease-out",
+        "fixed z-[200] translate-y-[-8px] bg-beige/95 opacity-0 backdrop-blur-xl transition-all duration-200 ease-out",
         isOpen ? "pointer-events-auto visible translate-y-0 opacity-100" : "pointer-events-none invisible",
       )}
       style={{
         top: "80px",
-        right: "24px",
+        right: isMobile ? 0 : "24px",
+        left: isMobile ? 0 : "auto",
+        width: isMobile ? "100vw" : "320px",
         borderRadius: "2px",
         border: "1px solid var(--color-border)",
         boxShadow: "0 20px 48px rgba(58,48,1,0.14)",

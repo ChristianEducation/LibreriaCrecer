@@ -241,6 +241,60 @@ body {
   }
 }
 
+/* Producto detalle — grid 2 col que colapsa a 1 col en móvil */
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .product-detail-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 72px;
+  }
+}
+
+/* Productos relacionados — auto-fill responsive */
+.related-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 24px 18px;
+}
+
+/* Carrito y Checkout — layout 2 col que colapsa a 1 col en móvil */
+.cart-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: start;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .cart-layout-grid {
+    grid-template-columns: 1fr 380px;
+    gap: 48px;
+  }
+}
+
+/* Checkout form — padding lateral reducido en móvil */
+.checkout-form-padding {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+@media (min-width: 768px) {
+  .checkout-form-padding {
+    padding: 48px 56px 80px;
+  }
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

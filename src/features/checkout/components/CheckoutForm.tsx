@@ -261,7 +261,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
 
       <form
         onSubmit={handleSubmit(handleValidSubmit)}
-        style={{ maxWidth: "1100px", margin: "0 auto", padding: "48px 56px 80px", display: "grid", gridTemplateColumns: "1fr 380px", gap: "48px", alignItems: "start" }}
+        className="checkout-form-padding cart-layout-grid"
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "36px" }}>
           <section>

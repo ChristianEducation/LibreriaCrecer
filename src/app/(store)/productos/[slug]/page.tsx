@@ -67,16 +67,7 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
           </p>
 
           {/* Layout 2 columnas */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "72px",
-              maxWidth: "1100px",
-              margin: "0 auto",
-              alignItems: "start",
-            }}
-          >
+          <div className="product-detail-grid">
             <ProductGallery
               images={product.images}
               mainImageUrl={product.mainImageUrl}
@@ -158,13 +149,7 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
             </div>
 
             {/* Grid relacionados */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(5, 1fr)",
-                gap: "24px 18px",
-              }}
-            >
+            <div className="related-products-grid">
               {relatedProducts.map((p) => (
                 <ProductCard
                   author={p.author}

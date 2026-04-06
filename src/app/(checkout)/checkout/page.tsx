@@ -10,7 +10,7 @@ import type { CreateOrderSchemaInput } from "@/features/checkout/schemas";
 
 function CheckoutSkeleton() {
   return (
-    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "48px 56px 80px", display: "grid", gridTemplateColumns: "1fr 380px", gap: "48px", alignItems: "start" }}>
+    <div className="checkout-form-padding cart-layout-grid">
       <div className="animate-pulse rounded-[2px]" style={{ height: "720px", background: "rgba(255,255,255,0.6)" }} />
       <div className="animate-pulse rounded-[2px]" style={{ height: "420px", background: "rgba(255,255,255,0.6)" }} />
     </div>
