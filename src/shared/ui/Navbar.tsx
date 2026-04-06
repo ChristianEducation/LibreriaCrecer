@@ -252,11 +252,13 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                 type="button"
               >
                 <CartIcon />
-                <span
-                  className="flex size-4 items-center justify-center rounded-full bg-gold text-[9px] font-semibold text-white"
-                >
-                  {safeTotalItems}
-                </span>
+                {safeTotalItems > 0 && (
+                  <span
+                    className="flex size-4 items-center justify-center rounded-full bg-gold text-[9px] font-semibold text-white"
+                  >
+                    {safeTotalItems}
+                  </span>
+                )}
               </button>
             </>
           )}

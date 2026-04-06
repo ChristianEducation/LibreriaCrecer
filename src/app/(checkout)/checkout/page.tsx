@@ -39,6 +39,7 @@ export default function CheckoutPage() {
         deliveryMethod: formData.deliveryMethod,
         address: formData.deliveryMethod === "shipping" ? formData.address : undefined,
         couponCode: couponCode ?? undefined,
+        notes: formData.notes || undefined,
       };
 
       const orderRes = await fetch("/api/ordenes", {

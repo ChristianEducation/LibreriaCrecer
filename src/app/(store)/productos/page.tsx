@@ -40,7 +40,7 @@ export default async function ProductosPage({ searchParams }: ProductosPageProps
       page,
       limit: 40,
       categorySlug: activeCategory || undefined,
-      sortBy: sort,
+      sortBy: filter === "nuevo" ? "newest" : sort,
       onlyActive: true,
       onlyInStock: true,
       onlyOnSale: filter === "oferta",

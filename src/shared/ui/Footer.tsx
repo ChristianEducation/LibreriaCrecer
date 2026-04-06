@@ -84,7 +84,6 @@ const catalogLinks = [
 const infoLinks = [
   { href: "/carrito", label: "Mi carrito" },
   { href: "/checkout", label: "Checkout" },
-  { href: "/admin/login", label: "Acceso administrador" },
 ];
 
 export async function Footer() {

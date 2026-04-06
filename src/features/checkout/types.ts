@@ -37,6 +37,7 @@ export type CreateOrderInput = {
   deliveryMethod: DeliveryMethod;
   address?: CreateOrderAddressInput;
   couponCode?: string;
+  notes?: string;
 };
 
 export type StockValidationError = {
@@ -94,6 +95,7 @@ export type OrderDetail = {
     id: string;
     productId: string | null;
     sku: string | null;
+    slug: string | null;
     productTitle: string;
     unitPrice: number;
     quantity: number;

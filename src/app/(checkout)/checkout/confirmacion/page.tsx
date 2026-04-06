@@ -15,6 +15,7 @@ type OrderItemData = {
   unitPrice: number;
   quantity: number;
   sku: string | null;
+  slug: string | null;
 };
 
 const primaryButtonStyle: React.CSSProperties = {
@@ -69,7 +70,7 @@ function ConfirmacionContent() {
       }
 
       const validItems = data.data.items.filter(
-        (item): item is OrderItemData & { productId: string } => item.productId !== null,
+        (item): item is OrderItemData & { productId: string; slug: string | null } => item.productId !== null,
       );
 
       if (validItems.length === 0) {
@@ -81,7 +82,7 @@ function ConfirmacionContent() {
         addItem({
           productId: item.productId,
           title: item.productTitle,
-          slug: "",
+          slug: item.slug ?? "",
           author: null,
           price: item.unitPrice,
           originalPrice: null,

@@ -424,6 +424,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
               label="Notas"
               placeholder="Instrucciones especiales, dedicatorias, etc."
               rows={4}
+              {...register("notes")}
             />
           </section>
 

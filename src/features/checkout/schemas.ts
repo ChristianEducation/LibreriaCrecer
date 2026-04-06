@@ -30,6 +30,7 @@ export const CreateOrderSchema = z
     deliveryMethod: z.enum(["pickup", "shipping"]),
     address: createOrderAddressSchema.optional(),
     couponCode: z.string().trim().min(1).optional(),
+    notes: z.string().trim().max(500).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.deliveryMethod === "shipping" && !data.address) {

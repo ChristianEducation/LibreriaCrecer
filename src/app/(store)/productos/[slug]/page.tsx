@@ -173,7 +173,7 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
                   key={p.id}
                   mainImageUrl={p.mainImageUrl}
                   price={p.price}
-                  salePrice={p.salePrice}
+                  salePrice={p.salePrice ?? undefined}
                   slug={p.slug}
                   title={p.title}
                 />

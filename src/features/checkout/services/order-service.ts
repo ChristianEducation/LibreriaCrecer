@@ -160,8 +160,10 @@ async function getOrderDetailByWhere(
       unitPrice: orderItems.unitPrice,
       quantity: orderItems.quantity,
       subtotal: orderItems.subtotal,
+      slug: products.slug,
     })
     .from(orderItems)
+    .leftJoin(products, eq(products.id, orderItems.productId))
     .where(eq(orderItems.orderId, order.id))
     .orderBy(desc(orderItems.createdAt));
 
@@ -270,6 +272,7 @@ export async function createOrder(data: CreateOrderInput): Promise<ServiceResult
             deliveryMethod: data.deliveryMethod,
             couponId,
             discountAmount,
+            adminNotes: data.notes ?? null,
           })
           .returning({
             id: orders.id,
