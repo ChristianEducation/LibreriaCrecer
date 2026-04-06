@@ -194,7 +194,7 @@ export function ProductGallery({
         </button>
 
         {galleryImages.length > 1 && (
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {galleryImages.map((image, index) => {
             const isActive = index === activeIndex;
 

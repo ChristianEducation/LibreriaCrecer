@@ -134,7 +134,7 @@ export async function Footer() {
         {hasIllustration ? <div style={{ width: `${banner.artSpaceWidth}%` }} /> : null}
 
         <div className="flex-1 px-8 pb-0 pt-10 md:px-14">
-          <div className="grid gap-7 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
+          <div className="grid grid-cols-1 gap-7 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
             <div>
               <div className="mb-4 flex items-center gap-3">
                 <BrandCross />

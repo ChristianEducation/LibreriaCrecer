@@ -267,7 +267,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
           <section>
             <SectionTitle number={1}>Informacion de contacto</SectionTitle>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+            <div className="form-grid-2col">
               <Input
                 error={errors.customer?.firstName?.message}
                 label="Nombre"
@@ -337,7 +337,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                   <p className="text-[11px] text-error">{errors.address.message}</p>
                 ) : null}
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 160px", gap: "14px" }}>
+                <div className="form-grid-street">
                   <Input
                     error={errors.address?.street?.message}
                     label="Calle"
@@ -352,7 +352,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                   />
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                <div className="form-grid-2col">
                   <Input
                     error={errors.address?.apartment?.message}
                     label="Depto / oficina"
@@ -367,7 +367,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                   />
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                <div className="form-grid-2col">
                   <Input
                     error={errors.address?.city?.message}
                     label="Ciudad"

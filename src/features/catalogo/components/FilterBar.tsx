@@ -73,7 +73,7 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
         className="flex items-center justify-between"
         style={{ minHeight: "52px", gap: "1rem" }}
       >
-        {/* Izquierda: label + chips de filtro */}
+        {/* Izquierda: label + chips de filtro (desktop) */}
         <div className="flex items-center gap-3">
           <span
             className="font-sans uppercase"
@@ -198,6 +198,29 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
             </select>
           </label>
         </div>
+      </div>
+
+      {/* Chips de filtro móvil — scroll horizontal, ocultos en desktop */}
+      <div className="filter-bar-chips-mobile md:hidden">
+        {filterChips.map((chip) => {
+          const isActive = chip.value === activeFilter;
+          return (
+            <button
+              className={cx(
+                "shrink-0 rounded-[2px] border transition-colors",
+                isActive
+                  ? "border-moss bg-moss text-white"
+                  : "border-border text-text-mid hover:border-moss hover:text-moss",
+              )}
+              key={chip.value || "all"}
+              onClick={() => updateFilter(chip.value)}
+              style={{ padding: "5px 12px", fontSize: "11px" }}
+              type="button"
+            >
+              {chip.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

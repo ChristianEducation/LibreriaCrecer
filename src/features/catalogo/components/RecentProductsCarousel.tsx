@@ -142,10 +142,9 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
       ) : (
         <>
           <div
+            className="recent-products-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: `repeat(${Math.min(visibleProducts.length, 5)}, minmax(0, 200px))`,
-              gap: "1.5rem",
               opacity: visible ? 1 : 0,
               transform: visible ? "translateY(0)" : "translateY(6px)",
               transition: "opacity 0.3s ease, transform 0.3s ease",
