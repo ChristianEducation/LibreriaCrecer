@@ -35,7 +35,7 @@ test.describe("Home", () => {
     const footer = page.locator("footer");
     await footer.scrollIntoViewIfNeeded();
     await expect(footer).toBeVisible();
-    await expect(footer.getByText("Crecer Libreria")).toBeVisible();
+    await expect(footer.getByText("Crecer Libreria").first()).toBeVisible();
   });
 
   test("link Colección navega a /productos", async ({ page }) => {

@@ -37,9 +37,10 @@ test.describe("Catálogo /productos", () => {
   test("chip 'Todos' limpia el filtro en la URL", async ({ page }) => {
     // Primero aplicar filtro
     await page.goto("/productos?filter=nuevo");
+    await expect(page.getByRole("button", { name: "Todos" }).first()).toBeVisible();
     await page.getByRole("button", { name: "Todos" }).first().click();
-    // URL no tiene filter=
-    await expect(page).not.toHaveURL(/filter=/);
+    // URL no tiene filter= — esperar explícitamente la navegación
+    await expect(page).not.toHaveURL(/filter=/, { timeout: 10_000 });
   });
 
   test("botón de orden 'Precio: menor a mayor' actualiza URL", async ({ page }) => {

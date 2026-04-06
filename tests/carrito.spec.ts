@@ -12,8 +12,8 @@ test.describe("Carrito", () => {
     // Esperar hidratación de Zustand (skeleton desaparece)
     await expect(page.getByRole("heading", { name: /mi carrito/i })).toBeVisible();
 
-    // Estado vacío
-    await expect(page.getByText("Tu carrito está vacío")).toBeVisible();
+    // Estado vacío — scope a main para evitar el CartPanel (que también tiene este texto)
+    await expect(page.locator("main").getByText("Tu carrito está vacío")).toBeVisible();
     await expect(page.getByRole("link", { name: /ver colección/i })).toBeVisible();
   });
 
@@ -34,20 +34,20 @@ test.describe("Carrito", () => {
     // 2. Capturar título del producto
     const productTitle = await page.getByRole("heading", { level: 1 }).textContent();
 
-    // 3. Agregar al carrito
+    // 3. Agregar al carrito y esperar confirmación visual
     const addBtn = page.getByRole("button", { name: /añadir al carrito/i });
     await expect(addBtn).toBeVisible();
     await addBtn.click();
 
-    // 4. Esperar confirmación visual
-    await expect(addBtn).toContainText(/agregado/i, { timeout: 3000 });
+    // 4. El botón cambia a "Agregado" — verificar con locator separado
+    await expect(page.getByText(/agregado/i).first()).toBeVisible({ timeout: 3000 });
 
     // 5. Navegar al carrito
     await page.goto("/carrito");
     await expect(page.getByRole("heading", { name: /mi carrito/i })).toBeVisible();
 
-    // 6. El estado vacío NO debe aparecer
-    await expect(page.getByText("Tu carrito está vacío")).not.toBeVisible({ timeout: 5000 });
+    // 6. El estado vacío NO debe aparecer (scoped a main)
+    await expect(page.locator("main").getByText("Tu carrito está vacío")).not.toBeVisible({ timeout: 5000 });
 
     // 7. El título del producto aparece en el carrito
     if (productTitle) {
@@ -66,11 +66,11 @@ test.describe("Carrito", () => {
     // Ir al carrito
     await page.goto("/carrito");
     await expect(page.getByRole("heading", { name: /mi carrito/i })).toBeVisible();
-    await expect(page.getByText("Tu carrito está vacío")).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator("main").getByText("Tu carrito está vacío")).not.toBeVisible({ timeout: 5000 });
 
-    // Resumen muestra Subtotal con precio CLP
+    // Resumen muestra Subtotal con precio CLP — scope a main para evitar CartPanel oculto
     await expect(page.getByText("Subtotal")).toBeVisible();
-    await expect(page.getByText(/^\$[\d.]+/).first()).toBeVisible();
+    await expect(page.locator("main").getByText(/^\$[\d.]+/).first()).toBeVisible();
   });
 
   test("se puede aumentar la cantidad de un item con el stepper", async ({ page }) => {
@@ -80,7 +80,7 @@ test.describe("Carrito", () => {
     await page.getByRole("button", { name: /añadir al carrito/i }).click();
 
     await page.goto("/carrito");
-    await expect(page.getByText("Tu carrito está vacío")).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator("main").getByText("Tu carrito está vacío")).not.toBeVisible({ timeout: 5000 });
 
     // Click en botón "+"
     await page.getByRole("button", { name: "+" }).first().click();

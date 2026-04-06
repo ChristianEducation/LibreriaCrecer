@@ -22,8 +22,8 @@ test.describe("Detalle de producto", () => {
   });
 
   test("muestra el precio formateado en CLP", async ({ page }) => {
-    // El precio siempre empieza con $ (formatCLP)
-    await expect(page.getByText(/^\$[\d.]+/).first()).toBeVisible();
+    // Scope a main para evitar el CartPanel oculto que también tiene precios ($0)
+    await expect(page.locator("main").getByText(/^\$[\d.]+/).first()).toBeVisible();
   });
 
   test("muestra el botón 'Añadir al carrito'", async ({ page }) => {
@@ -34,8 +34,8 @@ test.describe("Detalle de producto", () => {
   test("el botón 'Añadir al carrito' muestra confirmación al hacer click", async ({ page }) => {
     const addBtn = page.getByRole("button", { name: /añadir al carrito/i });
     await addBtn.click();
-    // Cambia a "Agregado" por 2 segundos
-    await expect(addBtn).toContainText(/agregado/i, { timeout: 3000 });
+    // El botón cambia texto a "Agregado" — usar locator separado para evitar stale reference
+    await expect(page.getByText(/agregado/i).first()).toBeVisible({ timeout: 3000 });
   });
 
   test("muestra la imagen o el placeholder del libro", async ({ page }) => {
@@ -45,7 +45,8 @@ test.describe("Detalle de producto", () => {
   });
 
   test("muestra breadcrumb con enlace a Colección", async ({ page }) => {
-    await expect(page.getByRole("link", { name: "Colección" })).toBeVisible();
+    // Scope a main para evitar el link "Colección" del Navbar
+    await expect(page.locator("main").getByRole("link", { name: "Colección" })).toBeVisible();
   });
 
   test("muestra sección de productos relacionados si existen", async ({ page }) => {

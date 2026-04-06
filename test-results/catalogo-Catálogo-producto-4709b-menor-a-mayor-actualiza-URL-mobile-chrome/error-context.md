@@ -1,0 +1,399 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: catalogo.spec.ts >> Catálogo /productos >> botón de orden 'Precio: menor a mayor' actualiza URL
+- Location: tests\catalogo.spec.ts:46:7
+
+# Error details
+
+```
+TimeoutError: locator.click: Timeout 10000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: /menor a mayor/i }).first()
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Crecer Libreria Libreria cristiana" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]:
+          - generic [ref=e9]: Crecer Libreria
+          - generic [ref=e10]: Libreria cristiana
+      - generic [ref=e11]:
+        - button [ref=e12]:
+          - img [ref=e13]
+        - button "Abrir menú" [ref=e17]:
+          - img [ref=e18]
+  - main [ref=e20]:
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - link "Inicio" [ref=e24] [cursor=pointer]:
+            - /url: /
+          - generic [ref=e25]: /
+          - link "Colección" [ref=e26] [cursor=pointer]:
+            - /url: /productos
+        - heading "Nuestra colección" [level=1] [ref=e27]:
+          - text: Nuestra
+          - emphasis [ref=e28]: colección
+        - paragraph [ref=e29]: Libros, biblias y artículos religiosos para el crecimiento espiritual.
+      - generic [ref=e30]:
+        - button "Todos" [ref=e31]: Todos
+        - button "Biblia" [ref=e33]: Biblia
+        - button "Espiritualidad" [ref=e34]: Espiritualidad
+        - button "Espiritualidad Ignaciana" [ref=e35]: Espiritualidad Ignaciana
+        - button "Santos y Biografías" [ref=e36]: Santos y Biografías
+        - button "Liturgia" [ref=e37]: Liturgia
+        - button "Teología" [ref=e38]: Teología
+        - button "Psicología y Fe" [ref=e39]: Psicología y Fe
+        - button "Familia y Vida Cristiana" [ref=e40]: Familia y Vida Cristiana
+        - button "Devocionario" [ref=e41]: Devocionario
+    - generic [ref=e42]:
+      - generic [ref=e43]:
+        - generic [ref=e45]: FILTRAR
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - searchbox "Buscar..." [ref=e48]
+            - button "Buscar" [ref=e49] [cursor=pointer]:
+              - img [ref=e50]
+          - paragraph [ref=e53]: 20 productos
+          - generic [ref=e54]:
+            - generic [ref=e55]: Orden
+            - combobox "Orden" [ref=e56]:
+              - option "Más recientes" [selected]
+              - 'option "Precio: menor a mayor"'
+              - 'option "Precio: mayor a menor"'
+              - option "Orden alfabético"
+      - generic [ref=e57]:
+        - button "Todos" [ref=e58]
+        - button "Nuevos" [ref=e59]
+        - button "En oferta" [ref=e60]
+        - button "Recomendados" [ref=e61]
+    - generic [ref=e63]:
+      - link "Nuevo Agregar San Ignacio de Loyola Ejercicios Espirituales de San Ignacio $31.000" [ref=e64] [cursor=pointer]:
+        - generic [ref=e65]:
+          - img [ref=e67]
+          - generic [ref=e71]: Nuevo
+          - button "Agregar" [ref=e73]:
+            - generic [ref=e74]: Agregar
+        - generic [ref=e75]:
+          - paragraph [ref=e76]: San Ignacio de Loyola
+          - heading "Ejercicios Espirituales de San Ignacio" [level=3] [ref=e77]
+          - paragraph [ref=e78]: $31.000
+      - link "Nuevo Agregar Varios autores La Sagrada Biblia — Edición Latinoamericana $30.000" [ref=e79] [cursor=pointer]:
+        - generic [ref=e80]:
+          - img [ref=e82]
+          - generic [ref=e86]: Nuevo
+          - button "Agregar" [ref=e88]:
+            - generic [ref=e89]: Agregar
+        - generic [ref=e90]:
+          - paragraph [ref=e91]: Varios autores
+          - heading "La Sagrada Biblia — Edición Latinoamericana" [level=3] [ref=e92]
+          - paragraph [ref=e93]: $30.000
+      - link "Nuevo Agregar Varios autores Biblia Latinoamérica — Letra Grande $26.000" [ref=e94] [cursor=pointer]:
+        - generic [ref=e95]:
+          - img [ref=e97]
+          - generic [ref=e101]: Nuevo
+          - button "Agregar" [ref=e103]:
+            - generic [ref=e104]: Agregar
+        - generic [ref=e105]:
+          - paragraph [ref=e106]: Varios autores
+          - heading "Biblia Latinoamérica — Letra Grande" [level=3] [ref=e107]
+          - paragraph [ref=e108]: $26.000
+      - link "Oferta Agregar Varios autores Biblia Católica para Jóvenes $29.000 $26.000" [ref=e109] [cursor=pointer]:
+        - generic [ref=e110]:
+          - img [ref=e112]
+          - generic [ref=e116]: Oferta
+          - button "Agregar" [ref=e118]:
+            - generic [ref=e119]: Agregar
+        - generic [ref=e120]:
+          - paragraph [ref=e121]: Varios autores
+          - heading "Biblia Católica para Jóvenes" [level=3] [ref=e122]
+          - generic [ref=e123]:
+            - generic [ref=e124]: $29.000
+            - generic [ref=e125]: $26.000
+      - link "Nuevo Agregar Equipo San Pablo La Liturgia Cotidiana 2026 $4.700" [ref=e126] [cursor=pointer]:
+        - generic [ref=e127]:
+          - img [ref=e129]
+          - generic [ref=e133]: Nuevo
+          - button "Agregar" [ref=e135]:
+            - generic [ref=e136]: Agregar
+        - generic [ref=e137]:
+          - paragraph [ref=e138]: Equipo San Pablo
+          - heading "La Liturgia Cotidiana 2026" [level=3] [ref=e139]
+          - paragraph [ref=e140]: $4.700
+      - link "Nuevo Agregar Varios autores Liturgia de las Horas del Pueblo $22.000" [ref=e141] [cursor=pointer]:
+        - generic [ref=e142]:
+          - img [ref=e144]
+          - generic [ref=e148]: Nuevo
+          - button "Agregar" [ref=e150]:
+            - generic [ref=e151]: Agregar
+        - generic [ref=e152]:
+          - paragraph [ref=e153]: Varios autores
+          - heading "Liturgia de las Horas del Pueblo" [level=3] [ref=e154]
+          - paragraph [ref=e155]: $22.000
+      - link "Nuevo Agregar Varios autores La Belleza de la Liturgia $22.500" [ref=e156] [cursor=pointer]:
+        - generic [ref=e157]:
+          - img [ref=e159]
+          - generic [ref=e163]: Nuevo
+          - button "Agregar" [ref=e165]:
+            - generic [ref=e166]: Agregar
+        - generic [ref=e167]:
+          - paragraph [ref=e168]: Varios autores
+          - heading "La Belleza de la Liturgia" [level=3] [ref=e169]
+          - paragraph [ref=e170]: $22.500
+      - link "Nuevo Agregar J.-B. Chautard El Alma de Todo Apostolado $46.000" [ref=e171] [cursor=pointer]:
+        - generic [ref=e172]:
+          - img [ref=e174]
+          - generic [ref=e178]: Nuevo
+          - button "Agregar" [ref=e180]:
+            - generic [ref=e181]: Agregar
+        - generic [ref=e182]:
+          - paragraph [ref=e183]: J.-B. Chautard
+          - heading "El Alma de Todo Apostolado" [level=3] [ref=e184]
+          - paragraph [ref=e185]: $46.000
+      - link "Nuevo Agregar Varios autores La Espiritualidad Ignaciana $22.000" [ref=e186] [cursor=pointer]:
+        - generic [ref=e187]:
+          - img [ref=e189]
+          - generic [ref=e193]: Nuevo
+          - button "Agregar" [ref=e195]:
+            - generic [ref=e196]: Agregar
+        - generic [ref=e197]:
+          - paragraph [ref=e198]: Varios autores
+          - heading "La Espiritualidad Ignaciana" [level=3] [ref=e199]
+          - paragraph [ref=e200]: $22.000
+      - link "Nuevo Agregar Varios autores Amar y Servir a Cristo $16.000" [ref=e201] [cursor=pointer]:
+        - generic [ref=e202]:
+          - img [ref=e204]
+          - generic [ref=e208]: Nuevo
+          - button "Agregar" [ref=e210]:
+            - generic [ref=e211]: Agregar
+        - generic [ref=e212]:
+          - paragraph [ref=e213]: Varios autores
+          - heading "Amar y Servir a Cristo" [level=3] [ref=e214]
+          - paragraph [ref=e215]: $16.000
+      - link "Nuevo Agregar Varios autores Discernimiento Espiritual Ignaciano $9.500" [ref=e216] [cursor=pointer]:
+        - generic [ref=e217]:
+          - img [ref=e219]
+          - generic [ref=e223]: Nuevo
+          - button "Agregar" [ref=e225]:
+            - generic [ref=e226]: Agregar
+        - generic [ref=e227]:
+          - paragraph [ref=e228]: Varios autores
+          - heading "Discernimiento Espiritual Ignaciano" [level=3] [ref=e229]
+          - paragraph [ref=e230]: $9.500
+      - link "Nuevo Agregar Varios autores Experiencia de Dios en San Ignacio $9.500" [ref=e231] [cursor=pointer]:
+        - generic [ref=e232]:
+          - img [ref=e234]
+          - generic [ref=e238]: Nuevo
+          - button "Agregar" [ref=e240]:
+            - generic [ref=e241]: Agregar
+        - generic [ref=e242]:
+          - paragraph [ref=e243]: Varios autores
+          - heading "Experiencia de Dios en San Ignacio" [level=3] [ref=e244]
+          - paragraph [ref=e245]: $9.500
+      - link "Nuevo Agregar Donato Calabrese Padre Pío — Siete Años de Misterio $24.000" [ref=e246] [cursor=pointer]:
+        - generic [ref=e247]:
+          - img [ref=e249]
+          - generic [ref=e253]: Nuevo
+          - button "Agregar" [ref=e255]:
+            - generic [ref=e256]: Agregar
+        - generic [ref=e257]:
+          - paragraph [ref=e258]: Donato Calabrese
+          - heading "Padre Pío — Siete Años de Misterio" [level=3] [ref=e259]
+          - paragraph [ref=e260]: $24.000
+      - link "Nuevo Agregar Rino Cammilleri El Gran Libro de los Santos Protectores $35.000" [ref=e261] [cursor=pointer]:
+        - generic [ref=e262]:
+          - img [ref=e264]
+          - generic [ref=e268]: Nuevo
+          - button "Agregar" [ref=e270]:
+            - generic [ref=e271]: Agregar
+        - generic [ref=e272]:
+          - paragraph [ref=e273]: Rino Cammilleri
+          - heading "El Gran Libro de los Santos Protectores" [level=3] [ref=e274]
+          - paragraph [ref=e275]: $35.000
+      - link "Nuevo Agregar Varios autores Teología Espiritual $25.500" [ref=e276] [cursor=pointer]:
+        - generic [ref=e277]:
+          - img [ref=e279]
+          - generic [ref=e283]: Nuevo
+          - button "Agregar" [ref=e285]:
+            - generic [ref=e286]: Agregar
+        - generic [ref=e287]:
+          - paragraph [ref=e288]: Varios autores
+          - heading "Teología Espiritual" [level=3] [ref=e289]
+          - paragraph [ref=e290]: $25.500
+      - link "Nuevo Agregar Varios autores Espiritualidad Ignaciana y Educación $9.500" [ref=e291] [cursor=pointer]:
+        - generic [ref=e292]:
+          - img [ref=e294]
+          - generic [ref=e298]: Nuevo
+          - button "Agregar" [ref=e300]:
+            - generic [ref=e301]: Agregar
+        - generic [ref=e302]:
+          - paragraph [ref=e303]: Varios autores
+          - heading "Espiritualidad Ignaciana y Educación" [level=3] [ref=e304]
+          - paragraph [ref=e305]: $9.500
+      - link "Nuevo Agregar Varios autores Psicología y Espiritualidad Ignaciana $9.500" [ref=e306] [cursor=pointer]:
+        - generic [ref=e307]:
+          - img [ref=e309]
+          - generic [ref=e313]: Nuevo
+          - button "Agregar" [ref=e315]:
+            - generic [ref=e316]: Agregar
+        - generic [ref=e317]:
+          - paragraph [ref=e318]: Varios autores
+          - heading "Psicología y Espiritualidad Ignaciana" [level=3] [ref=e319]
+          - paragraph [ref=e320]: $9.500
+      - link "Nuevo Agregar Gary R. Collins Psicología y Fe Cristiana $20.000" [ref=e321] [cursor=pointer]:
+        - generic [ref=e322]:
+          - img [ref=e324]
+          - generic [ref=e328]: Nuevo
+          - button "Agregar" [ref=e330]:
+            - generic [ref=e331]: Agregar
+        - generic [ref=e332]:
+          - paragraph [ref=e333]: Gary R. Collins
+          - heading "Psicología y Fe Cristiana" [level=3] [ref=e334]
+          - paragraph [ref=e335]: $20.000
+      - link "Nuevo Agregar Ricardo E. Facci Familia, enciende en tu seno la luz de Cristo $9.000" [ref=e336] [cursor=pointer]:
+        - generic [ref=e337]:
+          - img [ref=e339]
+          - generic [ref=e343]: Nuevo
+          - button "Agregar" [ref=e345]:
+            - generic [ref=e346]: Agregar
+        - generic [ref=e347]:
+          - paragraph [ref=e348]: Ricardo E. Facci
+          - heading "Familia, enciende en tu seno la luz de Cristo" [level=3] [ref=e349]
+          - paragraph [ref=e350]: $9.000
+      - link "Nuevo Agregar Hna. Gunthildis Novena a la Madre Tres Veces Admirable de Schoenstatt $4.500" [ref=e351] [cursor=pointer]:
+        - generic [ref=e352]:
+          - img [ref=e354]
+          - generic [ref=e358]: Nuevo
+          - button "Agregar" [ref=e360]:
+            - generic [ref=e361]: Agregar
+        - generic [ref=e362]:
+          - paragraph [ref=e363]: Hna. Gunthildis
+          - heading "Novena a la Madre Tres Veces Admirable de Schoenstatt" [level=3] [ref=e364]
+          - paragraph [ref=e365]: $4.500
+  - contentinfo [ref=e366]:
+    - generic [ref=e373]:
+      - generic [ref=e374]:
+        - generic [ref=e379]:
+          - paragraph [ref=e380]: Crecer Libreria
+          - paragraph [ref=e381]: Fe, lectura y formacion
+        - paragraph [ref=e382]: Una libreria cristiana pensada para acompanar el estudio, la devocion y la vida diaria con una seleccion curada de titulos.
+      - generic [ref=e383]:
+        - heading "Catalogo" [level=4] [ref=e384]
+        - generic [ref=e385]:
+          - link "Coleccion completa" [ref=e386] [cursor=pointer]:
+            - /url: /productos
+          - link "Novedades" [ref=e387] [cursor=pointer]:
+            - /url: /productos?filter=nuevo
+          - link "Ofertas" [ref=e388] [cursor=pointer]:
+            - /url: /productos?filter=oferta
+      - generic [ref=e389]:
+        - heading "Informacion" [level=4] [ref=e390]
+        - generic [ref=e391]:
+          - link "Mi carrito" [ref=e392] [cursor=pointer]:
+            - /url: /carrito
+          - link "Checkout" [ref=e393] [cursor=pointer]:
+            - /url: /checkout
+      - generic [ref=e394]:
+        - heading "Ubicacion" [level=4] [ref=e395]
+        - generic [ref=e396]:
+          - img [ref=e397]
+          - paragraph [ref=e400]: Arturo Prat 470 / Antofagasta, Chile
+        - link "Ver en el mapa →" [ref=e401] [cursor=pointer]:
+          - /url: https://maps.google.com/?q=Arturo+Prat+470+Antofagasta
+    - generic [ref=e402]:
+      - paragraph [ref=e403]: © 2026 Crecer Libreria. Todos los derechos reservados.
+      - paragraph [ref=e404]: "Diseño: Hultur Studio"
+  - button "Open Next.js Dev Tools" [ref=e410] [cursor=pointer]:
+    - img [ref=e411]
+  - alert [ref=e414]
+```
+
+# Test source
+
+```ts
+  1  | /**
+  2  |  * Tests del Catálogo (/productos)
+  3  |  * Requiere datos en la BD — correr `npm run seed:products` antes.
+  4  |  * Verifica carga de la página, filtros, orden y búsqueda.
+  5  |  */
+  6  | import { test, expect } from "@playwright/test";
+  7  | 
+  8  | test.describe("Catálogo /productos", () => {
+  9  |   test.beforeEach(async ({ page }) => {
+  10 |     await page.goto("/productos");
+  11 |   });
+  12 | 
+  13 |   test("carga con header y grilla de productos", async ({ page }) => {
+  14 |     // PageHeader con "Nuestra colección"
+  15 |     await expect(page.getByRole("heading", { name: /colecci/i }).first()).toBeVisible();
+  16 |     // FilterBar con label FILTRAR
+  17 |     await expect(page.getByText("FILTRAR")).toBeVisible();
+  18 |     // Al menos un producto en la grilla
+  19 |     await expect(page.locator('article[role="link"]').first()).toBeVisible();
+  20 |   });
+  21 | 
+  22 |   test("muestra el contador de resultados", async ({ page }) => {
+  23 |     // FilterBar muestra "N productos"
+  24 |     await expect(page.getByText(/productos?/)).toBeVisible();
+  25 |   });
+  26 | 
+  27 |   test("chip 'Nuevos' actualiza la URL con filter=nuevo", async ({ page }) => {
+  28 |     await page.getByRole("button", { name: "Nuevos" }).first().click();
+  29 |     await expect(page).toHaveURL(/filter=nuevo/);
+  30 |   });
+  31 | 
+  32 |   test("chip 'En oferta' actualiza la URL con filter=oferta", async ({ page }) => {
+  33 |     await page.getByRole("button", { name: "En oferta" }).first().click();
+  34 |     await expect(page).toHaveURL(/filter=oferta/);
+  35 |   });
+  36 | 
+  37 |   test("chip 'Todos' limpia el filtro en la URL", async ({ page }) => {
+  38 |     // Primero aplicar filtro
+  39 |     await page.goto("/productos?filter=nuevo");
+  40 |     await expect(page.getByRole("button", { name: "Todos" }).first()).toBeVisible();
+  41 |     await page.getByRole("button", { name: "Todos" }).first().click();
+  42 |     // URL no tiene filter= — esperar explícitamente la navegación
+  43 |     await expect(page).not.toHaveURL(/filter=/, { timeout: 10_000 });
+  44 |   });
+  45 | 
+  46 |   test("botón de orden 'Precio: menor a mayor' actualiza URL", async ({ page }) => {
+> 47 |     await page.getByRole("button", { name: /menor a mayor/i }).first().click();
+     |                                                                        ^ TimeoutError: locator.click: Timeout 10000ms exceeded.
+  48 |     await expect(page).toHaveURL(/sort=price_asc/);
+  49 |   });
+  50 | 
+  51 |   test("búsqueda actualiza la URL con el parámetro search", async ({ page }) => {
+  52 |     const searchInput = page.getByPlaceholder("Buscar...").first();
+  53 |     await searchInput.fill("biblia");
+  54 |     await searchInput.press("Enter");
+  55 |     await expect(page).toHaveURL(/search=biblia/);
+  56 |   });
+  57 | 
+  58 |   test("buscar un término vacío no agrega search a la URL", async ({ page }) => {
+  59 |     const searchInput = page.getByPlaceholder("Buscar...").first();
+  60 |     await searchInput.fill("  ");
+  61 |     await searchInput.press("Enter");
+  62 |     await expect(page).not.toHaveURL(/search=/);
+  63 |   });
+  64 | 
+  65 |   test("hacer click en un producto navega al detalle", async ({ page }) => {
+  66 |     const firstProduct = page.locator('article[role="link"]').first();
+  67 |     await expect(firstProduct).toBeVisible();
+  68 |     await firstProduct.click();
+  69 |     await expect(page).toHaveURL(/\/productos\/.+/);
+  70 |   });
+  71 | });
+  72 | 
+```
