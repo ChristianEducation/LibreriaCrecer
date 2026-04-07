@@ -49,10 +49,10 @@ test.describe("Carrito", () => {
     // 6. El estado vacío NO debe aparecer (scoped a main)
     await expect(page.locator("main").getByText("Tu carrito está vacío")).not.toBeVisible({ timeout: 5000 });
 
-    // 7. El título del producto aparece en el carrito
+    // 7. El título del producto aparece en el carrito — scope a main para evitar CartPanel oculto
     if (productTitle) {
       await expect(
-        page.getByText(productTitle.trim(), { exact: false }).first()
+        page.locator("main").getByText(productTitle.trim(), { exact: false }).first()
       ).toBeVisible();
     }
   });
