@@ -477,6 +477,9 @@ npm run db:generate  # Generar migración Drizzle
 npm run db:migrate   # Aplicar migraciones
 npm run seed:admin   # Crear primer usuario admin
 npm run seed:products # Seed de 20 libros, 9 categorías, selección del mes y hero slide
+npm run test:e2e          # Correr todos los tests E2E con Playwright (requiere dev server en :3000)
+npm run test:e2e:ui       # Playwright en modo UI interactivo
+npm run test:e2e:report   # Ver reporte HTML del último run
 ```
 
 ---
@@ -495,10 +498,20 @@ npm run seed:products # Seed de 20 libros, 9 categorías, selección del mes y h
 
 ## Estado actual del proyecto
 
-- **Fases 1–4C completas** — backend, APIs, admin panel, landing y todas las páginas interiores implementados ✅
+- **Fases 1–4C completas + auditoría completa** — backend, APIs, admin panel, landing y todas las páginas interiores implementados ✅
 - `npx tsc --noEmit` y `npm run lint` pasan sin errores
 - **Flujo de pago Getnet funcionando end-to-end en TEST** — pago aprobado, rechazo, cancelación, polling en confirmación y botón "reintentar" implementados y verificados ✅
 - **Checkout simplificado** — único método de pago (Getnet), dos opciones de entrega: Retiro en tienda (gratis) y Despacho Chilexpress (por pagar al recibir, `shippingCost: 0` en BD) ✅
+- **Playwright E2E instalado** — 32 tests passing en Chromium + Pixel 5 (home, catálogo, producto, carrito, admin). 1 test skipped known issue (chip "Todos" router.push en Next.js 15). `checkout.spec.ts` escrito pero pendiente de corregir ✅
+- **Auditoría completa del e-commerce realizada y corregida** — 8 bugs encontrados y corregidos (filtro Nuevos, notas pedido, slug reintentar, badge carrito, salePrice relacionados, link admin en footer, grids mobile, CartPanel desbordaba) ✅
+- **Mobile responsive completo** — carrito, checkout, detalle producto, CartPanel, catálogo, formularios, footer y galería adaptados con clases CSS en `globals.css` ✅
+- **Menú hamburguesa móvil** — drawer con búsqueda, links de nav y categorías accordion. Body scroll-lock. Cierra con Escape y al navegar ✅
+- **Búsqueda textual funcional** — input en `FilterBar` (desktop) y en el drawer del Navbar (móvil), conectada al parámetro `?search=` y resuelta en backend con `ilike` en title y author ✅
+- **Página `/categorias` implementada** — grid real con `CategoryCard`, header visual con breadcrumb, estado vacío con CTA ✅
+- **`ProductGrid` responsive** — 2 columnas en móvil / 5 columnas en desktop (`grid-cols-2 lg:grid-cols-5`) ✅
+- **Badge "Últimas unidades"** — aparece en `ProductCard` cuando `stock_quantity ≤ 5` ✅
+- **Paginación con indicador** — muestra "Página X de Y" en el catálogo ✅
+- **Stepper respeta stock real** — el botón `+` tiene como máximo `product.stockQuantity` ✅
 - **Pendiente:** ejecutar `npm run seed:products` en producción, VESSI, Resend, Fase 5
 - **Getnet en TEST** — credenciales de producción se configuran post-validación con Getnet
 - **Instagram** — Elfsight activo, `NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID=1e93ffdc-0e7e-4160-b103-98c5a444c896`
@@ -603,6 +616,14 @@ Referencia visual del diseñador: `docs/catalogo.html`, `docs/producto.html`, `d
 | 18 | UI del admin quedaba en loading permanente si el fetch lanzaba | `setLoading(false)` dentro del `try` — nunca ejecutado al ocurrir excepción | `finally { setLoading(false) }` en todas las funciones de fetch de Client Components |
 | 19 | Pool de conexiones agotado en desarrollo | `max: 1` causaba que el layout y la API route se bloquearan mutuamente | `max: 3` en desarrollo, `max: 5` en producción en `client.ts` |
 | 20 | Post-guardar en formulario de producto admin no navegaba | `router.push("/admin/productos")` + `router.refresh()` se cancelaban mutuamente (mismo patrón que bug #11) | `window.location.href = "/admin/productos"` en `product-admin-form.tsx` |
+| 21 | Chip "Nuevos" en FilterBar no filtraba — mostraba todos con sort newest | Valor del chip era `"new"` en vez de `"nuevo"`, por lo que la condición `filter === "nuevo"` nunca se cumplía en `page.tsx` | Corregir valor del chip a `"nuevo"` en el array `filterChips` de `FilterBar.tsx` |
+| 22 | Notas internas del pedido no se guardaban desde el admin | Campo `adminNotes` no incluido en el payload del PATCH `/api/admin/pedidos/[id]` ni en el schema de validación | Agregar `adminNotes` al schema Zod y al handler de actualización |
+| 23 | Botón "Agregar al carrito y reintentar" fallaba en `/checkout/confirmacion` | La función `handleRetry` leía `item.slug` del snapshot de `order_items`, pero el campo `slug` no se guardaba al crear la orden | Incluir `slug` en `CreateOrderItemInput` y persistirlo en el snapshot de `order_items` |
+| 24 | Badge de cantidad del carrito mostraba `0` cuando el carrito estaba vacío | `Navbar` no esperaba la hidratación de Zustand — renderizaba antes de que `localStorage` cargara | Envolver el badge en condicional `hydrated &&` usando `useCartHydration()` |
+| 25 | Tarjetas de productos relacionados mostraban precio original en vez del precio en oferta | Componente de relacionados usaba `product.price` directamente sin calcular `effectivePrice` | Usar `sale_price ?? price` consistente con el resto del catálogo |
+| 26 | Link "Acceso administrador" visible en el footer público | `Footer.tsx` incluía enlace `/admin` sin restricción de visibilidad | Eliminar el enlace del footer público — el admin se accede directamente vía URL |
+| 27 | Grids de carrito, checkout y detalle de producto rompían en móvil | `style={{ display: "grid", gridTemplateColumns: "1fr 380px" }}` fijos sin media queries — en pantallas estrechas las columnas quedaban aplastadas | Reemplazar con clases CSS en `globals.css` (`.cart-layout-grid`, `.product-detail-grid`, `.form-grid-2col`, `.form-grid-street`) que colapsan a 1 columna bajo 768px |
+| 28 | `CartPanel` desbordaba el viewport en iPhone SE — contenido cortado | Ancho fijo sin tope máximo — en pantallas de 375px el panel desbordaba | Ancho `100vw` en móvil con `max-width` en desktop, zona de items con altura máxima fija y scroll interno |
 
 ---
 
@@ -627,6 +648,8 @@ Referencia visual del diseñador: `docs/catalogo.html`, `docs/producto.html`, `d
 - **No calcular `tranKey` de Getnet concatenando strings** — la fórmula correcta usa bytes crudos: `Buffer.concat([nonceBytes, Buffer.from(seed, "utf8"), Buffer.from(secretKey, "utf8")])` → SHA-256 → Base64. Concatenar `base64(nonce) + seed + secretKey` como string produce un `tranKey` inválido que Getnet rechaza silenciosamente.
 - **No acceder a `payment[0].status` directamente como string** — Getnet devuelve un objeto `{status, reason, message, date}`; el valor string está en `payment[0].status.status`
 - **No apuntar `cancelUrl` directo a `/checkout/confirmacion`** — siempre pasar por `/api/pagos/retorno` igual que `returnUrl`, para que el servidor actualice el estado de la orden en BD (pending → cancelled) antes de redirigir
+- **No usar `getByText()` o `getByRole()` sin scope en tests Playwright cuando el CartPanel puede estar visible** — el `CartPanel` cerrado tiene `opacity-0` pero sigue en el DOM y contiene textos de precios y "Tu carrito está vacío", causando strict mode violations o matches de elementos ocultos. Siempre usar `page.locator("main").getByText(...)` para aislar el contenido principal
+- **No usar grids fijos con `style={{ display: "grid", gridTemplateColumns: "1fr 380px" }}` inline sin media queries** — rompen en mobile. Definir clases responsive en `globals.css` (`.cart-layout-grid`, `.product-detail-grid`, `.form-grid-2col`, `.form-grid-street`) y aplicarlas como `className`
 
 ---
 
