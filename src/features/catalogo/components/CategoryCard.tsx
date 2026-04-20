@@ -6,9 +6,25 @@ export interface CategoryCardProps {
   slug: string;
   imageUrl?: string | null;
   productCount?: number;
+  panoramaUrl?: string | null;
+  panoramaIndex?: number;
+  panoramaTotal?: number;
 }
 
-export function CategoryCard({ name, slug, imageUrl, productCount }: CategoryCardProps) {
+export function CategoryCard({
+  name,
+  slug,
+  imageUrl,
+  productCount,
+  panoramaUrl,
+  panoramaIndex = 0,
+  panoramaTotal = 1,
+}: CategoryCardProps) {
+  const xPos = panoramaTotal > 1
+    ? `${Math.round((panoramaIndex / (panoramaTotal - 1)) * 100)}%`
+    : "0%";
+  const bgPosition = `${xPos} 50%`;
+
   return (
     <Link
       href={`/productos?cat=${slug}`}
@@ -25,7 +41,18 @@ export function CategoryCard({ name, slug, imageUrl, productCount }: CategoryCar
     >
       {/* Background */}
       <div style={{ position: "absolute", inset: 0 }}>
-        {imageUrl ? (
+        {panoramaUrl ? (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `url(${panoramaUrl})`,
+              backgroundSize: "cover",
+              backgroundPosition: bgPosition,
+              transition: "transform 0.4s ease",
+            }}
+          />
+        ) : imageUrl ? (
           <Image
             alt={name}
             fill

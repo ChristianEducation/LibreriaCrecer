@@ -13,7 +13,7 @@ import {
 } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
-import { categories, productCategories, productImages, products } from "@/integrations/drizzle/schema";
+import { categories, featuredProducts, productCategories, productImages, products } from "@/integrations/drizzle/schema";
 
 import type {
   CatalogProduct,
@@ -124,7 +124,8 @@ function buildProductConditions({
   onlyActive = true,
   onlyOnSale = false,
   isFeatured = false,
-}: Pick<ProductQueryParams, "categorySlug" | "search" | "onlyInStock" | "onlyActive" | "onlyOnSale" | "isFeatured">) {
+  onlySeleccion = false,
+}: Pick<ProductQueryParams, "categorySlug" | "search" | "onlyInStock" | "onlyActive" | "onlyOnSale" | "isFeatured" | "onlySeleccion">) {
   const conditions: SQL[] = [];
 
   if (onlyActive) {
@@ -156,6 +157,15 @@ function buildProductConditions({
       .where(and(eq(categories.slug, categorySlug.trim()), eq(categories.isActive, true)));
 
     conditions.push(inArray(products.id, categoryProductsSubquery));
+  }
+
+  if (onlySeleccion) {
+    const seleccionSubquery = db
+      .select({ productId: featuredProducts.productId })
+      .from(featuredProducts)
+      .where(and(eq(featuredProducts.section, "libros_mes"), eq(featuredProducts.isActive, true)));
+
+    conditions.push(inArray(products.id, seleccionSubquery));
   }
 
   return conditions.length > 0 ? and(...conditions) : undefined;

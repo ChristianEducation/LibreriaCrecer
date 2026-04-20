@@ -35,6 +35,10 @@ export default function AdminLandingPage() {
           <p className="font-medium text-text">Hero intermedio</p>
           <p className="mt-2 text-sm font-light text-text-light">Frase inspiradora entre secciones. Usar position &ldquo;hero_intermedio&rdquo;.</p>
         </Link>
+        <Link href="/admin/landing/categorias" className="rounded-[10px] border border-border bg-white p-5 transition-colors hover:border-gold/40 hover:bg-gold/5">
+          <p className="font-medium text-text">Imagen de categorías</p>
+          <p className="mt-2 text-sm font-light text-text-light">Panorámica dividida entre las tarjetas de categorías del landing.</p>
+        </Link>
       </div>
     </section>
   );

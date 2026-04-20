@@ -24,6 +24,7 @@ const filterChips: Array<{ value: string; label: string }> = [
   { value: "nuevo", label: "Nuevos" },
   { value: "oferta", label: "En oferta" },
   { value: "destacado", label: "Recomendados" },
+  { value: "seleccion", label: "Selección del mes" },
 ];
 
 export function FilterBar({ totalResults, activeSort, activeFilter = "" }: FilterBarProps) {

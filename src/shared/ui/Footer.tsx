@@ -13,6 +13,16 @@ type FooterBannerResponse = {
   metadata?: FooterBannerMetadata | null;
 };
 
+type FooterContentResponse = {
+  brandDescription: string | null;
+  catalogLinks: string | null;
+  infoLinks: string | null;
+  address: string | null;
+  mapsUrl: string | null;
+  copyrightText: string | null;
+  designCredit: string | null;
+};
+
 const defaultFooterBanner: FooterBannerMetadata & { imageUrl: string | null } = {
   imageUrl: null,
   opacity: 0.8,
@@ -21,6 +31,27 @@ const defaultFooterBanner: FooterBannerMetadata & { imageUrl: string | null } = 
   imgWidth: 72,
   artSpaceWidth: 36,
 };
+
+const defaultFooterContent = {
+  brandDescription:
+    "Una libreria cristiana pensada para acompanar el estudio, la devocion y la vida diaria con una seleccion curada de titulos.",
+  catalogLinks: "Coleccion completa::/productos|||Novedades::/productos?filter=nuevo|||Ofertas::/productos?filter=oferta",
+  infoLinks: "Mi carrito::/carrito|||Checkout::/checkout",
+  address: "Arturo Prat 470 / Antofagasta, Chile",
+  mapsUrl: "https://maps.google.com/?q=Arturo+Prat+470+Antofagasta",
+  copyrightText: "© 2026 Crecer Libreria. Todos los derechos reservados.",
+  designCredit: "Diseño: Hultur Studio",
+};
+
+function parseLinks(raw: string): { label: string; href: string }[] {
+  return raw
+    .split("|||")
+    .filter(Boolean)
+    .map((item) => {
+      const [label, href] = item.split("::");
+      return { label: label ?? "", href: href ?? "/" };
+    });
+}
 
 async function getBaseUrl() {
   if (process.env.NEXT_PUBLIC_APP_URL) {
@@ -66,6 +97,32 @@ async function getFooterBanner() {
   }
 }
 
+async function getFooterContent() {
+  try {
+    const baseUrl = await getBaseUrl();
+    const response = await fetch(`${baseUrl}/api/landing/footer`, { cache: "no-store" });
+
+    if (!response.ok) return defaultFooterContent;
+
+    const payload = (await response.json()) as { data?: FooterContentResponse | null };
+    const data = payload.data;
+
+    if (!data) return defaultFooterContent;
+
+    return {
+      brandDescription: data.brandDescription ?? defaultFooterContent.brandDescription,
+      catalogLinks: data.catalogLinks ?? defaultFooterContent.catalogLinks,
+      infoLinks: data.infoLinks ?? defaultFooterContent.infoLinks,
+      address: data.address ?? defaultFooterContent.address,
+      mapsUrl: data.mapsUrl ?? defaultFooterContent.mapsUrl,
+      copyrightText: data.copyrightText ?? defaultFooterContent.copyrightText,
+      designCredit: data.designCredit ?? defaultFooterContent.designCredit,
+    };
+  } catch {
+    return defaultFooterContent;
+  }
+}
+
 function BrandCross() {
   return (
     <span className="relative block h-5 w-5">
@@ -75,21 +132,12 @@ function BrandCross() {
   );
 }
 
-const catalogLinks = [
-  { href: "/productos", label: "Coleccion completa" },
-  { href: "/productos?filter=nuevo", label: "Novedades" },
-  { href: "/productos?filter=oferta", label: "Ofertas" },
-];
-
-const infoLinks = [
-  { href: "/carrito", label: "Mi carrito" },
-  { href: "/checkout", label: "Checkout" },
-];
-
 export async function Footer() {
-  const banner = await getFooterBanner();
+  const [banner, content] = await Promise.all([getFooterBanner(), getFooterContent()]);
   const mid = Math.round((banner.fadeStart + banner.fadeEnd) / 2);
   const hasIllustration = Boolean(banner.imageUrl);
+  const catalogLinks = parseLinks(content.catalogLinks);
+  const infoLinks = parseLinks(content.infoLinks);
 
   return (
     <footer className="relative overflow-hidden bg-beige-warm">
@@ -107,7 +155,7 @@ export async function Footer() {
           <div className="absolute inset-0 z-[1] overflow-hidden">
             <img
               alt=""
-              className="h-full object-cover object-left-center mix-blend-multiply"
+              className="h-full object-cover object-left"
               src={banner.imageUrl ?? ""}
               style={{
                 width: `${banner.imgWidth}%`,
@@ -144,8 +192,7 @@ export async function Footer() {
                 </div>
               </div>
               <p className="max-w-[240px] text-[11px] font-light leading-[1.75] text-text-light">
-                Una libreria cristiana pensada para acompanar el estudio, la devocion y la vida
-                diaria con una seleccion curada de titulos.
+                {content.brandDescription}
               </p>
             </div>
 
@@ -190,11 +237,11 @@ export async function Footer() {
                   />
                   <circle cx="12" cy="9" fill="currentColor" r="1.75" />
                 </svg>
-                <p className="text-[11px] font-light">Arturo Prat 470 / Antofagasta, Chile</p>
+                <p className="text-[11px] font-light">{content.address}</p>
               </div>
               <a
                 className="mt-3 inline-block border-b border-b-gold/30 text-[9px] font-medium uppercase tracking-[0.1em] text-gold transition-colors hover:border-b-gold"
-                href="https://maps.google.com/?q=Arturo+Prat+470+Antofagasta"
+                href={content.mapsUrl}
                 rel="noreferrer"
                 target="_blank"
               >
@@ -206,8 +253,11 @@ export async function Footer() {
       </div>
 
       <div className="relative z-[3] flex flex-col gap-2 border-t border-t-[rgba(115,96,2,0.1)] px-14 pb-5 pt-[14px] text-[10px] text-text-light md:flex-row md:items-center md:justify-between">
-        <p>© 2026 Crecer Libreria. Todos los derechos reservados.</p>
-        <p>Diseño: Hultur Studio</p>
+        <p>{content.copyrightText}</p>
+        <div className="flex items-center gap-3">
+          <p>{content.designCredit}</p>
+          <Link className="opacity-60 no-underline transition-opacity hover:opacity-100" href="/admin/login" style={{ fontSize: "10px", color: "inherit", textDecoration: "none" }}>·</Link>
+        </div>
       </div>
     </footer>
   );

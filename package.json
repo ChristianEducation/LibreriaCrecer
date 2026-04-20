@@ -24,6 +24,7 @@
     "class-variance-authority": "^0.7.1",
     "drizzle-orm": "^0.45.1",
     "jose": "^6.2.1",
+    "lottie-react": "^2.4.1",
     "next": "15.2.4",
     "postgres": "^3.4.8",
     "react": "^19.0.0",

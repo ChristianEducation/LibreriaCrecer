@@ -9,15 +9,7 @@ import { useCartSummary } from "@/features/carrito/hooks";
 import { useCartHydration } from "@/features/carrito/useCartHydration";
 
 import { CartPanel } from "./CartPanel";
-
-function BrandMark({ className }: { className?: string }) {
-  return (
-    <span className={cx("relative block h-7 w-7", className)}>
-      <span className="absolute left-1/2 top-0 h-full w-[1.5px] -translate-x-1/2 bg-gold" />
-      <span className="absolute left-0 top-1/2 h-[1.5px] w-full -translate-y-1/2 bg-gold" />
-    </span>
-  );
-}
+import { Logo } from "./Logo";
 
 function SearchIcon() {
   return (
@@ -78,8 +70,8 @@ function ChevronDownIcon({ open }: { open: boolean }) {
 }
 
 const navLinksAfterCategories = [
-  { href: "/#libros-mes", label: "Selección del mes" },
-  { href: "/#recien-llegados", label: "Recién llegados" },
+  { href: "/productos?filter=seleccion", label: "Selección del mes" },
+  { href: "/productos?filter=nuevo", label: "Recién llegados" },
 ] as const;
 
 export interface NavbarProps {
@@ -187,7 +179,7 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
       >
         <div className="page-px flex h-16 items-center justify-between gap-5">
           <Link className="flex shrink-0 items-center gap-[10px]" href="/">
-            <BrandMark />
+            <Logo size="navbar" />
             <span className="flex flex-col">
               <span className="font-serif text-[18px] font-medium text-moss">Crecer Libreria</span>
               <span className="text-[9px] uppercase tracking-[0.22em] text-gold">Libreria cristiana</span>
@@ -205,7 +197,8 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
             <>
               {/* Desktop search */}
               <form
-                className="relative hidden w-full max-w-[420px] flex-1 lg:block"
+                className="relative hidden flex-1 lg:block"
+                style={{ maxWidth: "300px" }}
                 onSubmit={handleSearch}
               >
                 <input
@@ -234,6 +227,16 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                   href="/productos"
                 >
                   Colección
+                </Link>
+
+                <Link
+                  className={cx(
+                    "text-[13px] tracking-[0.04em] transition-colors hover:text-moss",
+                    pathname === "/nosotros" ? "font-medium text-moss" : "text-text-mid",
+                  )}
+                  href="/nosotros"
+                >
+                  Conócenos
                 </Link>
 
                 <li
@@ -429,6 +432,25 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                   }}
                 >
                   Colección
+                </Link>
+
+                {/* Conócenos */}
+                <Link
+                  href="/nosotros"
+                  onClick={closeMobileMenu}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "14px 20px",
+                    fontSize: "15px",
+                    color: pathname === "/nosotros" ? "var(--color-moss)" : "var(--color-text-mid)",
+                    fontWeight: pathname === "/nosotros" ? 500 : 300,
+                    textDecoration: "none",
+                    borderBottom: "1px solid var(--color-border)",
+                    transition: "color 0.15s",
+                  }}
+                >
+                  Conócenos
                 </Link>
 
                 {/* Categorías — accordion */}

@@ -6,13 +6,25 @@ type QuoteSectionProps = {
 
 export function QuoteSection({ quote, author, backgroundImageUrl }: QuoteSectionProps) {
   return (
-    <section className="relative overflow-hidden bg-moss px-5 py-20 md:px-10 md:py-24 lg:px-14">
+    <section
+      className="page-px relative overflow-hidden bg-moss"
+      style={{ paddingTop: "6.25rem", paddingBottom: "6.25rem" }}
+    >
       {backgroundImageUrl ? (
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-cover bg-center opacity-[0.08] mix-blend-screen"
-          style={{ backgroundImage: `url(${backgroundImageUrl})` }}
-        />
+        <>
+          {/* Imagen de fondo */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${backgroundImageUrl})` }}
+          />
+          {/* Overlay oscuro — permite leer el texto */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{ background: "rgba(30,24,0,0.62)" }}
+          />
+        </>
       ) : null}
 
       <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(to_right,transparent,rgba(200,168,48,0.7),transparent)]" />

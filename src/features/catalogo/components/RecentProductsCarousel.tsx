@@ -87,7 +87,7 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
     : products;
 
   return (
-    <section className="page-px bg-white" id="recien-llegados" style={{ paddingTop: "2.5rem", paddingBottom: "2.5rem" }}>
+    <section className="page-px bg-white" id="recien-llegados" style={{ paddingTop: "5rem", paddingBottom: "5rem" }}>
       {/* Header */}
       <div
         style={{

@@ -51,6 +51,11 @@ export async function getCatalogoHeaderBanner() {
   return result[0] ?? null;
 }
 
+export async function getCategoriesPanorama() {
+  const result = await getBanners("categories_panorama");
+  return result[0] ?? null;
+}
+
 export async function getCuratedProducts(section?: string): Promise<CuratedProduct[]> {
   const whereClause = section
     ? and(

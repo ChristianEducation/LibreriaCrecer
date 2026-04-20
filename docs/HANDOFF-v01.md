@@ -1,8 +1,8 @@
 # Crecer Librería Cristiana — Handoff v01
-**Última actualización:** Abril 2026 — Sesión: Auditoría completa + mobile responsive + Playwright E2E  
-**Stack:** Next.js 15.2.4 · Drizzle ORM · Supabase PostgreSQL · Zustand 5 · Tailwind v4 · Getnet  
+**Última actualización:** Abril 2026 — Sesión: CAT1–CAT5 (Logo, BrandLoader, landing spacing, panoramic categories, editable footer, /nosotros)  
+**Stack:** Next.js 15.2.4 · Drizzle ORM · Supabase PostgreSQL · Zustand 5 · Tailwind v4 · Getnet · lottie-react  
 **Estado del build:** ✅ `npx tsc --noEmit` limpio · ✅ `npm run lint` limpio  
-**Líneas de código:** ~16.250 · 185 archivos `.ts`/`.tsx`
+**Líneas de código:** ~17.500 · ~200 archivos `.ts`/`.tsx`
 
 ---
 
@@ -26,6 +26,7 @@ Estado:     Zustand 5 con persist a localStorage
 Formularios: React Hook Form 7 + Zod 4
 Auth admin: jose (JWT) + bcryptjs — Edge Runtime compatible
 Pagos:      Getnet Web Checkout (actualmente en ambiente TEST)
+Animaciones: lottie-react (BrandLoader — public/animations/Loader_16.json)
 Emails:     Resend (pendiente — integrations/email/index.ts es placeholder vacío)
 Inventario: VESSI (pendiente — integrations/inventory/index.ts es placeholder vacío)
 Instagram:  Elfsight widget externo
@@ -66,47 +67,59 @@ npm run test:e2e:report   # Abrir reporte HTML del último run
 src/
 ├── app/
 │   ├── (store)/              # Tienda pública — StoreLayout con Navbar + Footer
-│   │   ├── page.tsx          # Home ✅
+│   │   ├── page.tsx          # Home ✅ (LandingWithSplash wrapper — splash 3.5s)
 │   │   ├── productos/        # /productos (listado) y /productos/[slug] (detalle) ✅
 │   │   ├── categorias/       # /categorias ✅ Grid real con header visual y breadcrumb
-│   │   └── carrito/          # /carrito ✅
+│   │   ├── carrito/          # /carrito ✅
+│   │   └── nosotros/         # /nosotros ✅ Secciones alternadas texto+imagen (CMS)
 │   ├── (checkout)/           # Layout propio sin Navbar/Footer de la tienda
 │   │   └── checkout/
 │   │       ├── page.tsx      # Formulario de compra ✅
-│   │       └── confirmacion/ # Página post-pago ✅ (polling 3s/30s activo)
+│   │       └── confirmacion/ # Página post-pago ✅ (polling 3s/30s activo, usa BrandLoader)
 │   ├── admin/
 │   │   ├── login/            # Pública — no protegida por middleware ✅
 │   │   └── (panel)/          # Protegido — AdminLayout con sidebar ✅
-│   │       ├── page.tsx      # Dashboard con stats reales ✅
+│   │       ├── page.tsx      # Dashboard con stats reales ✅ (acceso rápido a /nosotros)
 │   │       ├── productos/    # CRUD completo ✅
 │   │       ├── categorias/   # CRUD completo ✅
 │   │       ├── pedidos/      # Listado + detalle + cambio de estado ✅
-│   │       └── landing/      # hero/, banners/, seleccion/, footer/ ✅
+│   │       ├── nosotros/     # CRUD secciones de /nosotros ✅
+│   │       └── landing/      # hero/, banners/, seleccion/, footer/, categorias/ ✅
 │   └── api/
 │       ├── productos/        # GET público ✅
 │       ├── categorias/       # GET público ✅
-│       ├── landing/          # GET público hero, banners, selección ✅
+│       ├── landing/          # GET público hero, banners, selección, footer ✅
+│       ├── nosotros/         # GET público secciones activas ✅
 │       ├── ordenes/          # POST crear orden, GET por número ✅
 │       ├── cupones/          # POST validar cupón ✅
 │       ├── stock/            # POST validar stock ✅
 │       ├── pagos/            # crear-sesion, retorno, notificacion ✅
-│       └── admin/            # Todas las rutas protegidas del admin ✅
+│       └── admin/            # Rutas protegidas del admin ✅ (incluye /nosotros CRUD)
 │
 ├── features/
 │   ├── catalogo/             # Servicios, componentes, tipos del catálogo ✅
 │   ├── carrito/              # Zustand store + hooks + tipos ✅
 │   ├── checkout/             # Servicios de orden, cupón, stock, pago ✅
 │   ├── admin/                # Auth, CRUD, schemas, componentes admin ✅
+│   ├── landing/              # ✅ LandingWithSplash.tsx (splash screen 3.5s)
 │   └── pedidos/              # ⚠️ Solo index.ts vacío — lógica en checkout/ y admin/
 │
 ├── shared/
 │   ├── ui/                   # Button, Input, Badge, Navbar, Footer, CartPanel, Toast...
+│   │   ├── Logo.tsx          # ✅ Logo real SVG + texto "Crecer" con cruz dorada
+│   │   └── BrandLoader.tsx   # ✅ Spinner Lottie con colores gold del proyecto
 │   ├── hooks/                # useScrollReveal, useToast
 │   ├── utils/                # formatters.ts (formatCLP, formatDate)
 │   └── config/               # ⚠️ index.ts vacío
 │
+├── public/
+│   ├── animations/
+│   │   └── Loader_16.json    # ✅ Animación Lottie del BrandLoader (colores gold #c8a830 [0.788,0.659,0.298,1])
+│   └── images/
+│       └── logo.png          # Logo PNG de reserva
+│
 └── integrations/
-    ├── drizzle/              # Cliente + schema (13 tablas) + 3 migraciones ✅
+    ├── drizzle/              # Cliente + schema (15 tablas) + 5 migraciones ✅
     ├── supabase/             # Storage client + helpers ✅
     ├── payments/getnet/      # Auth, client, config, types ✅
     ├── email/                # ⚠️ Placeholder vacío — Resend pendiente
@@ -207,16 +220,67 @@ JWT en cookie HTTP-only `admin-session` (24h, firmado con `jose`). Middleware Ed
 - `src/features/catalogo/components/CategoryCarousel.tsx`
 - `src/features/catalogo/components/RecentProductsCarousel.tsx`
 - `src/features/catalogo/components/QuoteSection.tsx` — Hero intermedio
+- `src/features/catalogo/components/CategoryCard.tsx` — con soporte panorámico
 - `src/features/catalogo/components/InstagramSection.tsx`
 - `src/shared/ui/TopBanner.tsx` + `TopBannerClient.tsx`
+- `src/features/landing/LandingWithSplash.tsx` — wrapper con splash screen
 
 **Secciones y su fuente de datos:**
 - Hero slides → tabla `hero_slides` (admin)
-- Selección del mes → tabla `featured_products` (admin)
-- Categorías → tabla `categories` con `featured=true` (admin)
+- Selección del mes → tabla `featured_products` + filtro `?filter=seleccion` en catálogo (admin)
+- Categorías → tabla `categories` activas con imagen panorámica opcional (admin `/admin/landing/categorias`)
 - Recién llegados → 10 productos más recientes (automático)
 - Hero intermedio → tabla `banners` con `position="hero_intermedio"` (admin)
+- Footer texto → tabla `footer_content` — descripción, links, dirección, copyright (admin)
+- Footer ilustración → tabla `banners` con `position="footer_illustration"` (admin)
 - Instagram → Elfsight widget (`NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID`)
+
+**Imagen panorámica en categorías (CAT3):**
+`CategoryCarousel` acepta `panoramaUrl?: string | null`. Cuando está presente, cada `CategoryCard` usa CSS `background-image` con `background-position` calculado: `(index / (total-1)) * 100% 50%`. Efecto: la imagen panorámica se distribuye horizontalmente entre todas las tarjetas. Sin panorama, las tarjetas usan su `imageUrl` individual o el gradiente de fallback. Configurable desde `/admin/landing/categorias`.
+
+**Padding vertical corregido (CAT2):**
+`RecentProductsCarousel`, `LibrosMesSection`, `CategoryCarousel` usan `paddingTop/Bottom: "5rem"` (antes 2.5rem). `QuoteSection` usa `paddingTop/Bottom: "6.25rem"` + overlay con div separado `rgba(30,24,0,0.62)`. Buscador Navbar: `maxWidth: "300px"` inline.
+
+**Footer dinámico (CAT4):**
+`Footer.tsx` llama `Promise.all([getFooterBanner(), getFooterContent()])`. `getFooterContent()` fetch a `/api/landing/footer`; si falla, cae al objeto `defaultFooterContent` hardcodeado. Links del footer se guardan como `"label::href|||label::href"` en BD. La imagen del footer usa `object-left` (no `object-left-center mix-blend-multiply`).
+
+---
+
+### Feature 8: Logo real + BrandLoader + Splash screen (CAT1)
+**Estado:** ✅ Completa  
+**Archivos clave:**
+- `src/shared/ui/Logo.tsx` — Logo SVG + texto "Crecer" con cruz dorada (reemplaza BrandMark hardcodeado en Navbar y Footer)
+- `src/shared/ui/BrandLoader.tsx` — Spinner Lottie usando `lottie-react`, carga `public/animations/Loader_16.json`
+- `public/animations/Loader_16.json` — Animación Lottie con colores gold `[0.788, 0.659, 0.298, 1]` (#c8a830)
+- `src/features/landing/LandingWithSplash.tsx` — Client Component, muestra `BrandLoader` por 3.5s antes de renderizar el home
+- `src/app/(store)/page.tsx` — envuelto en `LandingWithSplash` (solo primera visita o navegación directa al home)
+- `src/app/(checkout)/checkout/confirmacion/page.tsx` — usa `BrandLoader` en lugar del spinner SVG genérico
+
+**Cómo funciona:**
+`BrandLoader` importa la animación Lottie y la renderiza con `lottie-react`. `LandingWithSplash` mantiene estado `showSplash` con `setTimeout(3500)`; mientras `showSplash=true` muestra el loader centrado en pantalla completa, luego monta el contenido real. La confirmación de pago usa `BrandLoader` en el estado de polling `pending`.
+
+**Link admin discreto en Footer (CAT1):**
+En la barra de copyright, al final del bloque derecho, un `·` (punto mediano) con `href="/admin/login"`, `opacity-60`, `hover:opacity-100`, sin underline. No visible para usuarios normales, accesible para el admin directo vía URL o click.
+
+---
+
+### Feature 9: Página /nosotros con CMS (CAT5)
+**Estado:** ✅ Completa  
+**Archivos clave:**
+- `src/app/(store)/nosotros/page.tsx` — Server Component, hero moss, secciones alternadas, CTA
+- `src/app/admin/(panel)/nosotros/page.tsx` — Client Component CRUD con `AdminUploadZone`
+- `src/app/api/nosotros/route.ts` — GET público secciones activas ordenadas por `displayOrder`
+- `src/app/api/admin/nosotros/route.ts` — GET all + POST crear (con auto-incremento de `displayOrder`)
+- `src/app/api/admin/nosotros/[id]/route.ts` — PUT actualizar + DELETE soft (isActive=false)
+- `src/app/api/admin/nosotros/[id]/imagen/route.ts` — POST imagen via `uploadBannerImage(file, "promo")`
+- `src/integrations/drizzle/schema/landing.ts` — tabla `aboutSections`
+
+**Cómo funciona:**
+Las secciones tienen `title`, `content`, `imageUrl`, `imagePosition` ("right"|"left"), `displayOrder`, `isActive`. La página pública alterna fondo beige/white por índice par/impar. Cuando hay imagen, usa grid 2 columnas con orden CSS según `imagePosition`. Sin imagen, el texto ocupa `maxWidth: 720px`. El admin permite crear, editar, activar/desactivar y eliminar (soft) cada sección. Las imágenes se suben a bucket `banners` con subcarpeta `promo`.
+
+**Navbar (CAT5):**
+- Link "Conócenos" agregado en desktop (antes del dropdown Categorías) y en el drawer móvil
+- `navLinksAfterCategories` actualizado: `?filter=seleccion` (Selección del mes) y `?filter=nuevo` (Recién llegados)
 
 ---
 
@@ -439,6 +503,47 @@ await expect(page.getByText("Tu carrito está vacío")).toBeVisible(); // puede 
 
 ---
 
+### R13 — Migraciones Drizzle: generar SQL, aplicar manualmente en Supabase
+**Por qué:** `drizzle-kit push` y `drizzle-kit migrate` fallan con el Session Pooler de Supabase. El username tiene un punto (`postgres.projectref`) que `postgres.js` parsea mal al recibir la URL directa, sin importar los flags SSL o `connect_timeout`. Las conexiones cuelgan indefinidamente.
+
+```bash
+# ✅ FLUJO CORRECTO para cambios de schema
+npm run db:generate       # genera SQL en src/integrations/drizzle/migrations/
+# → copiar el SQL generado
+# → pegarlo en Supabase SQL Editor → "Run without RLS"
+
+# ❌ INCORRECTO — cuelga siempre con Session Pooler
+npx drizzle-kit push
+npx drizzle-kit migrate
+```
+
+**Migraciones aplicadas hasta la fecha:**
+- `0000_...` — schema inicial (products, categories, orders, etc.)
+- `0001_...` — segunda migración
+- `0002_...` — tercera migración
+- `0003_add_footer_content.sql` — tabla `footer_content` (aplicada manualmente, Abril 2026)
+- `0004_add_about_sections.sql` — tabla `about_sections` (aplicada manualmente, Abril 2026)
+
+---
+
+### R14 — BrandLoader en lugar de spinners genéricos
+**Por qué:** El proyecto tiene una animación Lottie con los colores exactos del sistema de diseño (`gold #c8a830`). Usar SVG spinner genérico o `animate-spin` rompe la consistencia visual.
+
+```typescript
+// ✅ CORRECTO
+import { BrandLoader } from "@/shared/ui/BrandLoader";
+
+// En JSX:
+<BrandLoader className="h-8 w-8" />   // tamaño configurable vía className
+
+// ❌ INCORRECTO
+<svg className="animate-spin h-8 w-8 text-gold" ...>   // spinner genérico
+```
+
+`BrandLoader` acepta `className` para controlar el tamaño. Importar directo (no desde barrel si hay conflictos de Server/Client).
+
+---
+
 ## 🐛 BUGS RESUELTOS — HISTORIAL COMPLETO
 
 | # | Síntoma | Causa raíz | Fix permanente |
@@ -502,6 +607,15 @@ await expect(page.getByText("Tu carrito está vacío")).toBeVisible(); // puede 
 - [x] **Seed de productos actualizado** — 20 libros católicos reales y 9 categorías
 - [x] **Checkout simplificado** — único método de pago (Getnet), dos opciones de entrega
 - [x] **Auditoría de UX completa** — 6 bugs corregidos post-auditoría (filtro Nuevos, notas pedido, slug reintentar, badge carrito, salePrice relacionados, footer link admin)
+- [x] **Logo real** — `Logo.tsx` reemplaza BrandMark hardcodeado en Navbar y Footer (CAT1)
+- [x] **BrandLoader Lottie** — `BrandLoader.tsx` + `Loader_16.json` colores gold (CAT1)
+- [x] **Splash screen 3.5s** — `LandingWithSplash.tsx` en home, `BrandLoader` en confirmación (CAT1)
+- [x] **Espaciado landing** — secciones a 5rem, QuoteSection 6.25rem + overlay correcto (CAT2)
+- [x] **Imagen panorámica categorías** — CSS background-position distribuida entre tarjetas, configurable desde admin (CAT3)
+- [x] **Footer dinámico** — texto editable vía `footer_content` en BD, fallback hardcodeado (CAT4)
+- [x] **Filtro Selección del mes** — `?filter=seleccion` en catálogo vía subquery `featured_products` (CAT5)
+- [x] **Página /nosotros** — CMS completo: secciones alternadas, admin CRUD, imágenes (CAT5)
+- [x] **Navbar Conócenos** — link en desktop y drawer móvil; links actualizados a `?filter=seleccion` y `?filter=nuevo` (CAT5)
 - [ ] **API Chilexpress** — cotización de despacho en tiempo real y búsqueda de sucursales (pendiente de credenciales del cliente)
 - [ ] **VESSI** — pendiente de respuesta de la API. Integración en `src/integrations/inventory/`
 
@@ -516,7 +630,7 @@ await expect(page.getByText("Tu carrito está vacío")).toBeVisible(); // puede 
 
 ---
 
-## 🗄 BASE DE DATOS — 13 TABLAS
+## 🗄 BASE DE DATOS — 15 TABLAS
 
 | Tabla | Descripción |
 |---|---|
@@ -530,11 +644,13 @@ await expect(page.getByText("Tu carrito está vacío")).toBeVisible(); // puede 
 | `order_addresses` | Dirección de despacho (solo si delivery_method = "shipping") |
 | `coupons` | Cupones de descuento (percentage o fixed), vigencia, usos |
 | `hero_slides` | Slides del hero rotativo del landing |
-| `banners` | Banners por position (ej: `hero_intermedio`) |
-| `featured_products` | Selección curada por sección (ej: `monthly_selection`) |
+| `banners` | Banners por position (`hero_intermedio`, `footer_illustration`, `categories_panorama`, etc.) |
+| `featured_products` | Selección curada por sección (`libros_mes` → filtro `?filter=seleccion`) |
 | `admin_users` | Usuarios del panel admin con password_hash |
+| `footer_content` | Texto editable del footer: descripción, links catálogo, links info, dirección, copyright (**nueva — Abril 2026**) |
+| `about_sections` | Secciones de /nosotros: título, contenido, imageUrl, imagePosition, displayOrder, isActive (**nueva — Abril 2026**) |
 
-**Migraciones:** 3 aplicadas (`0000`, `0001`, `0002`) en `src/integrations/drizzle/migrations/`
+**Migraciones:** 5 en `src/integrations/drizzle/migrations/` — las dos últimas (`0003`, `0004`) aplicadas manualmente en Supabase SQL Editor (ver R13)
 
 ---
 
@@ -582,22 +698,35 @@ CRON_SECRET=
 | Stock descontado doble | Guard `status = 'pending'` en transacción de pago |
 | Test Playwright falla con "strict mode violation" | Scoped a `page.locator("main")` o usar `.first()` explícito |
 | Test Playwright falla con "element not found" post-click | Usar locator separado después del click (no reusar el mismo si el DOM cambia) |
+| `drizzle-kit push` o `migrate` cuelga con Supabase | Session Pooler incompatible con drizzle-kit CLI — usar `db:generate` + SQL manual en Supabase SQL Editor (R13) |
+| Spinner genérico en vez del loader del sistema de diseño | Usar `BrandLoader` de `@/shared/ui/BrandLoader` — animación Lottie con colores gold del proyecto (R14) |
 
 ---
 
 ## 🟢 ESTADO ACTUAL DEL PROYECTO
 
-**Fases 1–4C completas + auditoría completa + mobile responsive.** El e-commerce es funcional end-to-end en ambiente TEST de Getnet, totalmente responsive en móvil, con menú hamburguesa, búsqueda y categorías implementados:
+**Fases 1–4C completas + auditoría completa + mobile responsive + CAT1–CAT5 identidad y contenido.** El e-commerce es funcional end-to-end, totalmente responsive, con identidad visual propia (logo real, BrandLoader Lottie, splash screen) y contenido completamente editable desde el admin:
 
 **Flujo de compra verificado:**
-- Cliente navega home → catálogo (con búsqueda, filtros, paginación) → detalle de producto → carrito → checkout → Getnet Web Checkout
-- Pago aprobado: orden pasa a `paid` → stock descontado → confirmación con status paid
+- Cliente navega home (con splash screen 3.5s) → catálogo (filtros, búsqueda, paginación, selección del mes) → detalle de producto → carrito → checkout → Getnet Web Checkout
+- Pago aprobado: orden pasa a `paid` → stock descontado → confirmación con BrandLoader + status paid
 - Pago cancelado: orden pasa a `cancelled` → confirmación con botón "Agregar al carrito y reintentar"
 - Webhook de Getnet con guard idempotente contra doble procesamiento
 - Cron job cancela órdenes `pending` de más de 24h, hora a hora
+
+**Contenido editable desde el admin:**
+- Hero slides, banners intermedios, selección curada del mes
+- Imagen panorámica de la sección categorías del landing
+- Texto completo del footer (descripción, links, dirección, copyright)
+- Página /nosotros con secciones alternadas (título, contenido, imagen, posición)
+
+**Identidad visual:**
+- Logo real (`Logo.tsx`) en Navbar y Footer
+- BrandLoader Lottie con colores gold del sistema de diseño
+- Splash screen 3.5s en el home; BrandLoader en confirmación de pago
 
 **Tests E2E:** 32 passing en Chromium y Pixel 5 (mobile). `checkout.spec.ts` escrito pero pendiente de corregir.
 
 **Pendiente para producción:** Resend (emails), credenciales Getnet de producción, variables en Vercel, ejecutar seed en producción.
 
-*Handoff v01 — Abril 2026*
+*Handoff v01 — Abril 2026 · Sesión CAT1–CAT5*

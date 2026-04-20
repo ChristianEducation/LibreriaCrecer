@@ -48,6 +48,7 @@ export default async function ProductosPage({ searchParams }: ProductosPageProps
       onlyInStock: true,
       onlyOnSale: filter === "oferta",
       isFeatured: filter === "destacado",
+      onlySeleccion: filter === "seleccion",
     }),
     getCategories(),
     getCatalogoHeaderBanner(),

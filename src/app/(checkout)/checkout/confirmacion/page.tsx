@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
+import { BrandLoader } from "@/shared/ui/BrandLoader";
+
 import { useCart } from "@/features/carrito/hooks";
 
 type OrderStatus = "paid" | "pending" | "cancelled";
@@ -134,6 +136,11 @@ function ConfirmacionContent() {
     };
   }, [initialStatus, orderNumber]);
 
+  // Durante el polling mostramos BrandLoader a pantalla completa
+  if (status === "pending" && !timedOut) {
+    return <BrandLoader />;
+  }
+
   return (
     <main
       style={{
@@ -171,29 +178,6 @@ function ConfirmacionContent() {
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </Link>
-          </>
-        )}
-
-        {status === "pending" && !timedOut && (
-          <>
-            {/* Ícono reloj animado */}
-            <div style={{ width: "60px", height: "60px", margin: "0 auto 28px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" strokeWidth="1.2" width="48" height="48" style={{ animation: "spin 2s linear infinite" }}>
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-            </div>
-            <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "36px", fontWeight: 400, color: "var(--color-moss)", marginBottom: "12px" }}>
-              Verificando tu pago
-            </h1>
-            <p style={{ fontSize: "14px", color: "var(--color-text-light)", lineHeight: 1.7, maxWidth: "380px", margin: "0 auto 24px", fontWeight: 300 }}>
-              Estamos confirmando tu pago con la pasarela. Esto puede tomar unos segundos.
-            </p>
-            {orderNumber && (
-              <p style={{ fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--color-gold)", marginBottom: "32px" }}>
-                Pedido #{orderNumber}
-              </p>
-            )}
           </>
         )}
 
@@ -282,26 +266,7 @@ function ConfirmacionContent() {
 
 export default function ConfirmacionPage() {
   return (
-    <Suspense
-      fallback={
-        <main
-          style={{
-            minHeight: "calc(100vh - 64px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "var(--color-beige)",
-          }}
-        >
-          <div style={{ width: "60px", height: "60px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" strokeWidth="1.2" width="48" height="48">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-          </div>
-        </main>
-      }
-    >
+    <Suspense fallback={<BrandLoader />}>
       <ConfirmacionContent />
     </Suspense>
   );

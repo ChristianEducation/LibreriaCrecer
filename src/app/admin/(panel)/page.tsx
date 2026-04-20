@@ -139,6 +139,7 @@ export default async function AdminPage() {
               { href: "/admin/categorias", label: "Gestionar categorias", copy: "Orden, visibilidad y hero" },
               { href: "/admin/pedidos", label: "Gestionar pedidos", copy: "Seguimiento y estados" },
               { href: "/admin/landing", label: "Gestionar landing", copy: "Hero, banners y footer" },
+              { href: "/admin/nosotros", label: "Página Conócenos", copy: "Secciones de texto e imagen de /nosotros" },
             ].map((item) => (
               <Link
                 className="rounded-[10px] border border-border bg-beige/40 px-4 py-4 transition-colors hover:border-gold/40 hover:bg-gold/5"

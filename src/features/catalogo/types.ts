@@ -81,6 +81,7 @@ export type ProductQueryParams = {
   onlyActive?: boolean;
   onlyOnSale?: boolean;
   isFeatured?: boolean;
+  onlySeleccion?: boolean;
 };
 
 export type CategoryWithProducts = {

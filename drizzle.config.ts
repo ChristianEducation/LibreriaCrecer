@@ -3,11 +3,15 @@ import { config } from "dotenv";
 
 config({ path: ".env.local", override: true });
 
-const databaseUrl = process.env.DATABASE_URL;
+const rawUrl = process.env.DATABASE_URL;
 
-if (!databaseUrl) {
+if (!rawUrl) {
   throw new Error("DATABASE_URL is not set");
 }
+
+const databaseUrl = rawUrl.includes("sslmode")
+  ? rawUrl
+  : `${rawUrl}?sslmode=require&connect_timeout=10`;
 
 export default defineConfig({
   out: "./src/integrations/drizzle/migrations",

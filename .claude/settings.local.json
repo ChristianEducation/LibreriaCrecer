@@ -10,7 +10,10 @@
       "Bash(git push:*)",
       "Bash(git commit:*)",
       "Bash(npm install:*)",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "Bash(timeout 30 bash -c 'until curl -s http://localhost:3000 > /dev/null 2>&1; do sleep 2; done')",
+      "Bash(node -e ' *)",
+      "Bash(npx drizzle-kit *)"
     ]
   }
 }

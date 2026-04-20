@@ -4,11 +4,12 @@ import { CategoryCard } from "./CategoryCard";
 
 type CategoryCarouselProps = {
   categories: CatalogCategory[];
+  panoramaUrl?: string | null;
 };
 
-export function CategoryCarousel({ categories }: CategoryCarouselProps) {
+export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselProps) {
   return (
-    <section className="page-px bg-beige" id="categorias" style={{ paddingTop: "2.5rem", paddingBottom: "2.5rem" }}>
+    <section className="page-px bg-beige" id="categorias" style={{ paddingTop: "5rem", paddingBottom: "5rem" }}>
       {/* Header */}
       <div style={{ marginBottom: "2.5rem" }}>
         <p
@@ -51,11 +52,14 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
             gap: "16px",
           }}
         >
-          {categories.map((cat) => (
+          {categories.map((cat, index) => (
             <CategoryCard
               imageUrl={cat.imageUrl}
               key={cat.id}
               name={cat.name}
+              panoramaIndex={index}
+              panoramaTotal={categories.length}
+              panoramaUrl={panoramaUrl ?? null}
               productCount={cat.productCount}
               slug={cat.slug}
             />

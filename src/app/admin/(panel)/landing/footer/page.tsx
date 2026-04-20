@@ -25,6 +25,17 @@ type FooterBanner = {
   metadata?: FooterMetadata | null;
 };
 
+type FooterContentData = {
+  id?: string;
+  brandDescription?: string | null;
+  catalogLinks?: string | null;
+  infoLinks?: string | null;
+  address?: string | null;
+  mapsUrl?: string | null;
+  copyrightText?: string | null;
+  designCredit?: string | null;
+};
+
 const defaultMetadata: FooterMetadata = {
   opacity: 0.8,
   fadeStart: 40,
@@ -33,8 +44,26 @@ const defaultMetadata: FooterMetadata = {
   artSpaceWidth: 36,
 };
 
+function toUiFormat(raw: string) {
+  return raw
+    .split("|||")
+    .filter(Boolean)
+    .map((l) => l.replace("::", " :: "))
+    .join("\n");
+}
+
+function toDbFormat(raw: string) {
+  return raw
+    .split("\n")
+    .filter(Boolean)
+    .map((l) => l.trim().replace(" :: ", "::"))
+    .join("|||");
+}
+
 export default function AdminLandingFooterPage() {
   const { toast } = useToast();
+
+  // --- Imagen ilustrativa ---
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +75,22 @@ export default function AdminLandingFooterPage() {
   const [metadata, setMetadata] = useState<FooterMetadata>(defaultMetadata);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+
+  // --- Contenido de texto ---
+  const [contentLoading, setContentLoading] = useState(true);
+  const [contentSaving, setContentSaving] = useState(false);
+  const [contentError, setContentError] = useState<string | null>(null);
+  const [brandDescription, setBrandDescription] = useState(
+    "Una libreria cristiana pensada para acompanar el estudio, la devocion y la vida diaria con una seleccion curada de titulos.",
+  );
+  const [catalogLinksUi, setCatalogLinksUi] = useState(
+    "Coleccion completa :: /productos\nNovedades :: /productos?filter=nuevo\nOfertas :: /productos?filter=oferta",
+  );
+  const [infoLinksUi, setInfoLinksUi] = useState("Mi carrito :: /carrito\nCheckout :: /checkout");
+  const [address, setAddress] = useState("Arturo Prat 470 / Antofagasta, Chile");
+  const [mapsUrl, setMapsUrl] = useState("https://maps.google.com/?q=Arturo+Prat+470+Antofagasta");
+  const [copyrightText, setCopyrightText] = useState("© 2026 Crecer Libreria. Todos los derechos reservados.");
+  const [designCredit, setDesignCredit] = useState("Diseño: Hultur Studio");
 
   const previewUrl = useMemo(
     () => (imageFile ? URL.createObjectURL(imageFile) : currentImageUrl),
@@ -95,8 +140,41 @@ export default function AdminLandingFooterPage() {
     }
   }
 
+  async function loadFooterContent() {
+    setContentLoading(true);
+    setContentError(null);
+
+    try {
+      const response = await fetch("/api/admin/landing/footer-content", { cache: "no-store" });
+      const payload = (await response.json().catch(() => null)) as
+        | { data?: FooterContentData | null; message?: string }
+        | null;
+
+      if (!response.ok) {
+        setContentError(payload?.message ?? "No se pudo cargar el contenido del footer.");
+        return;
+      }
+
+      const data = payload?.data;
+      if (data) {
+        if (data.brandDescription) setBrandDescription(data.brandDescription);
+        if (data.catalogLinks) setCatalogLinksUi(toUiFormat(data.catalogLinks));
+        if (data.infoLinks) setInfoLinksUi(toUiFormat(data.infoLinks));
+        if (data.address) setAddress(data.address);
+        if (data.mapsUrl) setMapsUrl(data.mapsUrl);
+        if (data.copyrightText) setCopyrightText(data.copyrightText);
+        if (data.designCredit) setDesignCredit(data.designCredit);
+      }
+    } catch {
+      setContentError("Error de red. Intenta nuevamente.");
+    } finally {
+      setContentLoading(false);
+    }
+  }
+
   useEffect(() => {
     void loadFooterBanner();
+    void loadFooterContent();
   }, []);
 
   async function handleSubmit(event: React.FormEvent) {
@@ -174,17 +252,53 @@ export default function AdminLandingFooterPage() {
     }
   }
 
+  async function handleContentSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setContentSaving(true);
+    setContentError(null);
+
+    try {
+      const response = await fetch("/api/admin/landing/footer-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brandDescription,
+          catalogLinks: toDbFormat(catalogLinksUi),
+          infoLinks: toDbFormat(infoLinksUi),
+          address,
+          mapsUrl,
+          copyrightText,
+          designCredit,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+        const message = payload?.message ?? "No se pudo guardar el contenido.";
+        setContentError(message);
+        toast({ message, variant: "error" });
+        return;
+      }
+
+      toast({ message: "Contenido del footer guardado correctamente." });
+    } catch {
+      setContentError("Error de red. Intenta nuevamente.");
+    } finally {
+      setContentSaving(false);
+    }
+  }
+
   function updateMetadata<K extends keyof FooterMetadata>(key: K, value: number) {
     setMetadata((prev) => ({ ...prev, [key]: value }));
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-10">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-serif text-[2rem] leading-none text-text">Footer</h1>
           <p className="mt-2 text-sm font-light text-text-light">
-            Ajusta la ilustracion editorial del footer y su comportamiento visual sobre el fondo.
+            Ajusta la ilustracion editorial del footer, su comportamiento visual y el contenido de texto.
           </p>
         </div>
         <Link
@@ -195,93 +309,204 @@ export default function AdminLandingFooterPage() {
         </Link>
       </div>
 
-      {loading ? <p className="text-sm text-text-light">Cargando configuracion del footer...</p> : null}
-      {error ? <p className="text-sm text-error">{error}</p> : null}
+      {/* Sección imagen */}
+      <div className="space-y-6">
+        <h2 className="font-serif text-[1.35rem] text-text">Imagen ilustrativa</h2>
+        {loading ? <p className="text-sm text-text-light">Cargando configuracion del footer...</p> : null}
+        {error ? <p className="text-sm text-error">{error}</p> : null}
 
-      {!loading ? (
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+        {!loading ? (
+          <form className="space-y-6" onSubmit={(e) => { void handleSubmit(e); }}>
+            <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+              <section className="rounded-[2px] border border-border bg-white p-6">
+                <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Contenido</h3>
+                <div className="space-y-4">
+                  <label className="block space-y-1">
+                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Titulo</span>
+                    <input
+                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                      onChange={(event) => setTitle(event.target.value)}
+                      value={title}
+                    />
+                  </label>
+                  <label className="block space-y-1">
+                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Descripcion</span>
+                    <textarea
+                      className="min-h-28 w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                      onChange={(event) => setDescription(event.target.value)}
+                      value={description}
+                    />
+                  </label>
+                  <label className="block space-y-1">
+                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Link opcional</span>
+                    <input
+                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                      onChange={(event) => setLinkUrl(event.target.value)}
+                      placeholder="https://..."
+                      value={linkUrl}
+                    />
+                  </label>
+                  <AdminToggle checked={isActive} label="Footer activo" onChange={setIsActive} />
+                </div>
+              </section>
+
+              <section className="rounded-[2px] border border-border bg-white p-6">
+                <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Ilustracion</h3>
+                <AdminUploadZone
+                  hint="Recomendado: arte horizontal con buena mezcla sobre beige."
+                  onFileSelect={setImageFile}
+                  previewUrl={previewUrl}
+                />
+              </section>
+            </div>
+
             <section className="rounded-[2px] border border-border bg-white p-6">
-              <h2 className="mb-4 text-[0.82rem] font-semibold text-text">Contenido</h2>
-              <div className="space-y-4">
-                <label className="block space-y-1">
-                  <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Titulo</span>
-                  <input
-                    className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                    onChange={(event) => setTitle(event.target.value)}
-                    value={title}
-                  />
-                </label>
-                <label className="block space-y-1">
-                  <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Descripcion</span>
-                  <textarea
-                    className="min-h-28 w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                    onChange={(event) => setDescription(event.target.value)}
-                    value={description}
-                  />
-                </label>
-                <label className="block space-y-1">
-                  <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Link opcional</span>
-                  <input
-                    className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                    onChange={(event) => setLinkUrl(event.target.value)}
-                    placeholder="https://..."
-                    value={linkUrl}
-                  />
-                </label>
-                <AdminToggle checked={isActive} label="Footer activo" onChange={setIsActive} />
+              <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Parametros visuales</h3>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                {[
+                  { key: "opacity", label: "Opacidad", step: 0.05, min: 0, max: 1 },
+                  { key: "fadeStart", label: "Inicio fade", step: 1, min: 0, max: 100 },
+                  { key: "fadeEnd", label: "Fin fade", step: 1, min: 0, max: 100 },
+                  { key: "imgWidth", label: "Ancho imagen", step: 1, min: 0, max: 100 },
+                  { key: "artSpaceWidth", label: "Espacio arte", step: 1, min: 0, max: 100 },
+                ].map((field) => (
+                  <label className="space-y-1" key={field.key}>
+                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">{field.label}</span>
+                    <input
+                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                      max={field.max}
+                      min={field.min}
+                      onChange={(event) =>
+                        updateMetadata(field.key as keyof FooterMetadata, Number(event.target.value))
+                      }
+                      step={field.step}
+                      type="number"
+                      value={metadata[field.key as keyof FooterMetadata]}
+                    />
+                  </label>
+                ))}
               </div>
             </section>
 
-            <section className="rounded-[2px] border border-border bg-white p-6">
-              <h2 className="mb-4 text-[0.82rem] font-semibold text-text">Ilustracion</h2>
-              <AdminUploadZone
-                hint="Recomendado: arte horizontal con buena mezcla sobre beige."
-                onFileSelect={setImageFile}
-                previewUrl={previewUrl}
-              />
-            </section>
-          </div>
+            <div className="flex gap-3">
+              <button
+                className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                disabled={saving}
+                type="submit"
+              >
+                {saving ? "Guardando..." : "Guardar footer"}
+              </button>
+            </div>
+          </form>
+        ) : null}
+      </div>
 
-          <section className="rounded-[2px] border border-border bg-white p-6">
-            <h2 className="mb-4 text-[0.82rem] font-semibold text-text">Parametros visuales</h2>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-              {[
-                { key: "opacity", label: "Opacidad", step: 0.05, min: 0, max: 1 },
-                { key: "fadeStart", label: "Inicio fade", step: 1, min: 0, max: 100 },
-                { key: "fadeEnd", label: "Fin fade", step: 1, min: 0, max: 100 },
-                { key: "imgWidth", label: "Ancho imagen", step: 1, min: 0, max: 100 },
-                { key: "artSpaceWidth", label: "Espacio arte", step: 1, min: 0, max: 100 },
-              ].map((field) => (
-                <label className="space-y-1" key={field.key}>
-                  <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">{field.label}</span>
-                  <input
-                    className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                    max={field.max}
-                    min={field.min}
-                    onChange={(event) =>
-                      updateMetadata(field.key as keyof FooterMetadata, Number(event.target.value))
-                    }
-                    step={field.step}
-                    type="number"
-                    value={metadata[field.key as keyof FooterMetadata]}
+      {/* Sección contenido de texto */}
+      <div className="space-y-6">
+        <h2 className="font-serif text-[1.35rem] text-text">Contenido de texto</h2>
+        {contentLoading ? <p className="text-sm text-text-light">Cargando contenido...</p> : null}
+        {contentError ? <p className="text-sm text-error">{contentError}</p> : null}
+
+        {!contentLoading ? (
+          <form className="space-y-6" onSubmit={(e) => { void handleContentSubmit(e); }}>
+            <div className="grid gap-6 xl:grid-cols-2">
+              <section className="rounded-[2px] border border-border bg-white p-6">
+                <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Branding</h3>
+                <div className="space-y-4">
+                  <label className="block space-y-1">
+                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Descripción</span>
+                    <textarea
+                      className="min-h-[80px] w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                      onChange={(e) => setBrandDescription(e.target.value)}
+                      rows={3}
+                      value={brandDescription}
+                    />
+                  </label>
+                  <label className="block space-y-1">
+                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Copyright</span>
+                    <input
+                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                      onChange={(e) => setCopyrightText(e.target.value)}
+                      value={copyrightText}
+                    />
+                  </label>
+                  <label className="block space-y-1">
+                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Crédito de diseño</span>
+                    <input
+                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                      onChange={(e) => setDesignCredit(e.target.value)}
+                      value={designCredit}
+                    />
+                  </label>
+                </div>
+              </section>
+
+              <section className="rounded-[2px] border border-border bg-white p-6">
+                <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Ubicación</h3>
+                <div className="space-y-4">
+                  <label className="block space-y-1">
+                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Dirección</span>
+                    <input
+                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                      onChange={(e) => setAddress(e.target.value)}
+                      value={address}
+                    />
+                  </label>
+                  <label className="block space-y-1">
+                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">URL Google Maps</span>
+                    <input
+                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                      onChange={(e) => setMapsUrl(e.target.value)}
+                      placeholder="https://maps.google.com/..."
+                      value={mapsUrl}
+                    />
+                  </label>
+                </div>
+              </section>
+            </div>
+
+            <div className="grid gap-6 xl:grid-cols-2">
+              <section className="rounded-[2px] border border-border bg-white p-6">
+                <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Links de catálogo</h3>
+                <label className="block space-y-1">
+                  <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">
+                    Un link por línea — formato: <code>Nombre :: /ruta</code>
+                  </span>
+                  <textarea
+                    className="min-h-[120px] w-full rounded-[8px] border border-border px-3 py-2.5 font-mono text-sm focus:border-gold focus:outline-none"
+                    onChange={(e) => setCatalogLinksUi(e.target.value)}
+                    value={catalogLinksUi}
                   />
                 </label>
-              ))}
-            </div>
-          </section>
+              </section>
 
-          <div className="flex gap-3">
-            <button
-              className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-              disabled={saving}
-              type="submit"
-            >
-              {saving ? "Guardando..." : "Guardar footer"}
-            </button>
-          </div>
-        </form>
-      ) : null}
+              <section className="rounded-[2px] border border-border bg-white p-6">
+                <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Links de información</h3>
+                <label className="block space-y-1">
+                  <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">
+                    Un link por línea — formato: <code>Nombre :: /ruta</code>
+                  </span>
+                  <textarea
+                    className="min-h-[120px] w-full rounded-[8px] border border-border px-3 py-2.5 font-mono text-sm focus:border-gold focus:outline-none"
+                    onChange={(e) => setInfoLinksUi(e.target.value)}
+                    value={infoLinksUi}
+                  />
+                </label>
+              </section>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                disabled={contentSaving}
+                type="submit"
+              >
+                {contentSaving ? "Guardando..." : "Guardar contenido"}
+              </button>
+            </div>
+          </form>
+        ) : null}
+      </div>
     </section>
   );
 }

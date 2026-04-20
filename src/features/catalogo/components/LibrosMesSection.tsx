@@ -115,7 +115,7 @@ export function LibrosMesSection({ items }: LibrosMesSectionProps) {
   }
 
   return (
-    <section className="page-px bg-white" id="libros-mes" style={{ paddingTop: "2.5rem", paddingBottom: "2.5rem" }}>
+    <section className="page-px bg-white" id="libros-mes" style={{ paddingTop: "5rem", paddingBottom: "5rem" }}>
         <div className="libros-mes-grid">
           <div>
             <p className="section-eyebrow libros-mes-eyebrow flex items-center gap-2 font-sans uppercase tracking-[0.35em] text-gold">
