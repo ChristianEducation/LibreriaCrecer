@@ -7,7 +7,7 @@ type QuoteSectionProps = {
 export function QuoteSection({ quote, author, backgroundImageUrl }: QuoteSectionProps) {
   return (
     <section
-      className="page-px relative overflow-hidden bg-moss"
+      className="page-px relative overflow-hidden bg-[var(--foreground)]"
       style={{ paddingTop: "6.25rem", paddingBottom: "6.25rem" }}
     >
       {backgroundImageUrl ? (
@@ -31,11 +31,11 @@ export function QuoteSection({ quote, author, backgroundImageUrl }: QuoteSection
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(232,208,96,0.18),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(200,168,48,0.14),transparent_28%)]" />
 
       <div className="relative z-[1] max-w-4xl">
-        <span className="block font-serif text-[100px] leading-none text-gold/25">&ldquo;</span>
-        <blockquote className="-mt-8 max-w-3xl font-serif text-[clamp(20px,2.4vw,30px)] italic leading-[1.55] text-white/90">
+        <span className="font-display block text-[100px] leading-none text-gold/25">&ldquo;</span>
+        <blockquote className="font-display editorial-emphasis -mt-8 max-w-3xl text-[clamp(22px,2.6vw,32px)] leading-[1.5] text-white/92">
           {quote}
         </blockquote>
-        <p className="mt-8 text-[10px] uppercase tracking-[0.28em] text-gold">{author}</p>
+        <p className="font-editorial mt-8 text-[10px] uppercase tracking-[0.28em] text-gold">{author}</p>
       </div>
     </section>
   );

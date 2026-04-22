@@ -16,10 +16,14 @@ export function ProductGrid({ products }: ProductGridProps) {
     return (
       <div className="flex min-h-[320px] items-center justify-center border border-dashed border-border bg-white/70 px-6 text-center">
         <div className="max-w-md space-y-3">
-          <p className="text-[10px] uppercase tracking-[0.26em] text-gold">Sin resultados</p>
-          <h3 className="font-serif text-[28px] text-moss">Aun no hay libros para este filtro</h3>
-          <p className="text-sm font-light leading-[1.8] text-text-light">
-            Prueba otra categoria u orden para descubrir mas titulos disponibles.
+          <p className="font-editorial text-[10px] uppercase tracking-[0.28em] text-gold" style={{ fontWeight: 500 }}>
+            Sin resultados
+          </p>
+          <h3 className="font-display text-[30px] text-moss" style={{ letterSpacing: "-0.015em" }}>
+            Aún no hay libros <em className="editorial-emphasis">para este filtro</em>
+          </h3>
+          <p className="font-editorial text-sm font-light leading-[1.8] text-text-light">
+            Prueba otra categoría u orden para descubrir más títulos disponibles.
           </p>
         </div>
       </div>

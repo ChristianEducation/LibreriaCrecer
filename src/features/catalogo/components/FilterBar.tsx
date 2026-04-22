@@ -77,15 +77,16 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
         {/* Izquierda: label + chips de filtro (desktop) */}
         <div className="flex items-center gap-3">
           <span
-            className="font-sans uppercase"
+            className="font-editorial uppercase"
             style={{
               fontSize: "10px",
-              letterSpacing: "0.22em",
+              letterSpacing: "0.24em",
               color: "var(--text-light)",
               whiteSpace: "nowrap",
+              fontWeight: 500,
             }}
           >
-            FILTRAR
+            Filtrar
           </span>
           <div className="hidden items-center gap-2 md:flex">
             {filterChips.map((chip) => {
@@ -155,7 +156,7 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
             </button>
           </form>
 
-          <p style={{ fontSize: "12px", color: "var(--text-light)", whiteSpace: "nowrap" }}>
+          <p className="font-editorial" style={{ fontSize: "12px", color: "var(--text-light)", whiteSpace: "nowrap" }}>
             {totalResults} {totalResults === 1 ? "producto" : "productos"}
           </p>
 

@@ -151,15 +151,15 @@ export function PageHeader({
 
         {/* Título */}
         <h1
-          className="font-serif font-normal leading-[1.04] text-white"
-          style={{ fontSize: "clamp(36px,4vw,56px)" }}
+          className="font-display font-normal leading-[1.04] text-white"
+          style={{ fontSize: "clamp(42px,4.6vw,64px)", letterSpacing: "-0.015em" }}
         >
           {activeCategoryData ? (
             activeCategoryData.name
           ) : (
             <>
               Nuestra{" "}
-              <em className="font-normal italic" style={{ color: "rgba(232,210,140,0.85)" }}>
+              <em className="editorial-emphasis" style={{ color: "rgba(232,210,140,0.9)" }}>
                 colección
               </em>
             </>
@@ -168,7 +168,7 @@ export function PageHeader({
 
         {/* Subtítulo */}
         <p
-          className="font-light text-white/55"
+          className="font-editorial font-light text-white/60"
           style={{ fontSize: "14px", lineHeight: 1.8, marginTop: "1rem", maxWidth: "42rem" }}
         >
           {subtitle}

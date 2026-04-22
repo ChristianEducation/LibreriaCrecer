@@ -2,6 +2,7 @@ export { Badge } from "./Badge";
 export { BrandLoader } from "./BrandLoader";
 export { Button } from "./Button";
 export { CartPanel } from "./CartPanel";
+export { FloatingCartButton } from "./FloatingCartButton";
 export { Input, Textarea } from "./Input";
 export { Logo } from "./Logo";
 export { Navbar } from "./Navbar";

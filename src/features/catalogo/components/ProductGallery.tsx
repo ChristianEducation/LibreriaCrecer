@@ -70,19 +70,19 @@ function PlaceholderBook({
       <div className="flex h-[88%] w-[78%] flex-col items-center justify-center border border-white/[0.12] px-5 py-7 text-center">
         {productAuthor ? (
           <>
-            <span className="mb-4 text-[11px] uppercase tracking-[0.18em] text-white/[0.55]">
+            <span className="font-editorial mb-4 text-[11px] uppercase tracking-[0.22em] text-white/[0.55]">
               {productAuthor}
             </span>
             <div className="mb-4 h-px w-[40%] bg-white/[0.15]" />
           </>
         ) : null}
 
-        <span className="font-serif text-[26px] italic leading-[1.2] text-white/[0.92]">
+        <span className="editorial-emphasis text-[28px] leading-[1.2] text-white/[0.92]">
           {productTitle}
         </span>
 
         <div className="my-4 h-px w-[40%] bg-white/[0.15]" />
-        <span className="text-[9px] uppercase tracking-[0.2em] text-white/[0.3]">
+        <span className="font-editorial text-[9px] uppercase tracking-[0.2em] text-white/[0.3]">
           Crecer Libreria Cristiana
         </span>
       </div>

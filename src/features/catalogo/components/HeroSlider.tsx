@@ -87,10 +87,18 @@ export function HeroSlider({ slides }: HeroSliderProps) {
 
   const activeSlide = items[activeIndex] ?? fallbackSlide;
 
+  const [hasScrolled, setHasScrolled] = useState(false);
+  useEffect(() => {
+    function onScroll() {
+      setHasScrolled(window.scrollY > 80);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <section className="hero-wrapper">
-      {/* Alturas y paddings alineados con docs/index.html: .hero-wrapper, .hero, .hero-content */}
-      <div className="relative flex h-[82vh] min-h-[580px] items-center justify-center bg-moss text-center md:h-[88vh]">
+    <section className="hero-full">
+      <div className="relative flex h-full w-full items-center justify-center bg-moss text-center">
         {activeSlide.imageUrl ? (
           <Image
             alt={activeSlide.title ?? "Hero principal"}
@@ -114,12 +122,12 @@ export function HeroSlider({ slides }: HeroSliderProps) {
               <span className="h-1 w-1 rounded-full bg-gold" />
             </div>
 
-            <h1 className="mb-[22px] font-serif text-[clamp(40px,5.5vw,72px)] font-normal leading-[1.08] tracking-[-0.01em] text-white">
+            <h1 className="font-display mb-[22px] text-[clamp(44px,6vw,82px)] font-normal leading-[1.05] tracking-[-0.015em] text-white">
               {heroCopy.titleStart}
               <br />
-              <em className="font-normal text-[rgba(232,210,140,0.9)]">{heroCopy.titleEmphasis}</em>
+              <em className="editorial-emphasis text-[rgba(232,210,140,0.92)]">{heroCopy.titleEmphasis}</em>
             </h1>
-            <p className="max-w-[420px] text-[15px] font-light leading-[1.8] tracking-[0.01em] text-white/72" style={{ marginBottom: "4rem" }}>
+            <p className="font-editorial max-w-[440px] text-[15px] font-light leading-[1.8] tracking-[0.01em] text-white/72" style={{ marginBottom: "4rem" }}>
               {heroCopy.description}
             </p>
 
@@ -164,15 +172,15 @@ export function HeroSlider({ slides }: HeroSliderProps) {
           ) : null}
 
           {items.length > 1 ? (
-            <div className="absolute bottom-7 left-1/2 z-[3] flex -translate-x-1/2 items-center justify-center">
+            <div className="absolute bottom-7 right-6 z-[3] flex items-center md:bottom-9 md:right-10">
               <div className="flex items-center gap-2">
                 {items.map((item, index) => (
                   <button
                     aria-label={`Ir al slide ${index + 1}`}
                     className={cx(
-                      "h-[11px] w-[11px] rounded-full border transition-all duration-300 md:h-3 md:w-3",
+                      "h-[10px] w-[10px] rounded-full border transition-all duration-300 md:h-[11px] md:w-[11px]",
                       index === activeIndex
-                        ? "border-gold bg-gold shadow-[0_0_0_5px_rgba(217,186,30,0.18)]"
+                        ? "border-gold bg-gold shadow-[0_0_0_4px_rgba(217,186,30,0.18)]"
                         : "border-white/55 bg-white/38 hover:border-white/75 hover:bg-white/58",
                     )}
                     key={item.id}
@@ -184,6 +192,12 @@ export function HeroSlider({ slides }: HeroSliderProps) {
             </div>
           ) : null}
         </div>
+
+        <div
+          aria-hidden="true"
+          className="hero-scroll-indicator"
+          style={{ opacity: hasScrolled ? 0 : 1 }}
+        />
       </div>
     </section>
   );

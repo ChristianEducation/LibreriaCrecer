@@ -100,28 +100,44 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
     <div style={{ paddingTop: "4px" }}>
       {/* Eyebrow — categorías */}
       {product.categories.length > 0 && (
-        <p style={{ fontSize: "9px", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "10px", display: "flex", alignItems: "center", gap: "10px" }}>
+        <p
+          className="font-editorial"
+          style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "12px", display: "flex", alignItems: "center", gap: "10px", fontWeight: 500 }}
+        >
           <span style={{ width: "20px", height: "1px", background: "var(--gold)", flexShrink: 0, display: "inline-block" }} />
           {product.categories.map((c) => c.name).join(" · ")}
         </p>
       )}
 
       {/* Título */}
-      <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(28px,3vw,40px)", fontWeight: 400, color: "var(--moss)", lineHeight: 1.1, letterSpacing: "-0.01em", marginBottom: "4px" }}>
+      <h1
+        className="font-display"
+        style={{
+          fontSize: "clamp(30px,3.2vw,44px)",
+          fontWeight: 400,
+          color: "var(--moss)",
+          lineHeight: 1.08,
+          letterSpacing: "-0.015em",
+          marginBottom: "6px",
+        }}
+      >
         {product.title}
       </h1>
 
       {/* Autor */}
       {product.author && (
-        <p style={{ fontSize: "14px", color: "var(--text-light)", marginBottom: "20px", fontWeight: 300 }}>
-          por <span style={{ color: "var(--moss)" }}>{product.author}</span>
+        <p className="font-editorial" style={{ fontSize: "14px", color: "var(--text-light)", marginBottom: "20px", fontWeight: 300 }}>
+          por{" "}
+          <em className="editorial-emphasis" style={{ color: "var(--moss)", fontStyle: "italic" }}>
+            {product.author}
+          </em>
         </p>
       )}
 
       {/* Referencia */}
       {(product.sku ?? product.code) && (
-        <p style={{ fontSize: "11px", color: "var(--text-light)", letterSpacing: "0.06em", marginBottom: "12px" }}>
-          Referencia {product.sku ?? product.code}
+        <p className="font-editorial" style={{ fontSize: "11px", color: "var(--text-light)", letterSpacing: "0.06em", marginBottom: "12px" }}>
+          Referencia <strong style={{ fontWeight: 500, color: "var(--text-mid)" }}>{product.sku ?? product.code}</strong>
         </p>
       )}
 
@@ -144,19 +160,25 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
       <div style={{ marginBottom: "24px" }}>
         {product.salePrice && product.salePrice < product.price ? (
           <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
-            <span style={{ fontFamily: "var(--font-serif)", fontSize: "38px", fontWeight: 500, color: "var(--moss)", letterSpacing: "-0.01em", lineHeight: 1 }}>
+            <span
+              className="font-display"
+              style={{ fontSize: "40px", fontWeight: 400, color: "var(--moss)", letterSpacing: "-0.015em", lineHeight: 1 }}
+            >
               {formatCLP(product.salePrice)}
             </span>
-            <span style={{ fontSize: "18px", color: "var(--text-light)", textDecoration: "line-through", fontWeight: 300 }}>
+            <span className="font-editorial" style={{ fontSize: "18px", color: "var(--text-light)", textDecoration: "line-through", fontWeight: 300 }}>
               {formatCLP(product.price)}
             </span>
           </div>
         ) : (
-          <span style={{ fontFamily: "var(--font-serif)", fontSize: "38px", fontWeight: 500, color: "var(--moss)", letterSpacing: "-0.01em", lineHeight: 1 }}>
+          <span
+            className="font-display"
+            style={{ fontSize: "40px", fontWeight: 400, color: "var(--moss)", letterSpacing: "-0.015em", lineHeight: 1 }}
+          >
             {formatCLP(product.price)}
           </span>
         )}
-        <p style={{ fontSize: "12px", color: "var(--text-light)", marginTop: "4px", fontWeight: 300 }}>
+        <p className="font-editorial" style={{ fontSize: "12px", color: "var(--text-light)", marginTop: "6px", fontWeight: 300 }}>
           Impuestos incluidos · Envío calculado al checkout
         </p>
       </div>
@@ -166,7 +188,10 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
 
       {/* Descripción */}
       {product.description && (
-        <div style={{ fontSize: "14px", lineHeight: 1.85, color: "var(--moss)", fontWeight: 300, marginBottom: "20px" }}>
+        <div
+          className="font-editorial"
+          style={{ fontSize: "14px", lineHeight: 1.85, color: "var(--text-mid)", fontWeight: 300, marginBottom: "20px" }}
+        >
           {product.description}
         </div>
       )}
@@ -175,15 +200,23 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
       {(product.coverType ?? product.pages) && (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "28px" }}>
           {product.coverType && (
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-mid)" }}>
+            <div
+              className="font-editorial"
+              style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-mid)" }}
+            >
               <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: "var(--gold)", flexShrink: 0 }} />
               {product.coverType}
             </div>
           )}
           {product.pages && (
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-mid)" }}>
+            <div
+              className="font-editorial"
+              style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-mid)" }}
+            >
               <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: "var(--gold)", flexShrink: 0 }} />
-              {product.pages} páginas
+              <span>
+                <strong style={{ fontWeight: 500, color: "var(--text)" }}>{product.pages}</strong> páginas
+              </span>
             </div>
           )}
         </div>
@@ -250,7 +283,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
       </div>
 
       {/* Badges de confianza */}
-      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", paddingTop: "20px", marginTop: "4px", borderTop: "1px solid var(--border)" }}>
+      <div className="font-editorial" style={{ display: "flex", gap: "20px", flexWrap: "wrap", paddingTop: "20px", marginTop: "4px", borderTop: "1px solid var(--border)" }}>
         <span style={{ display: "flex", alignItems: "center", gap: "7px", fontSize: "11px", color: "var(--text-light)" }}>
           <TruckIcon /> Envío a todo Chile
         </span>

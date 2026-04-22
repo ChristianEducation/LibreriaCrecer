@@ -9,7 +9,7 @@ type CategoryCarouselProps = {
 
 export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselProps) {
   return (
-    <section className="page-px bg-beige" id="categorias" style={{ paddingTop: "5rem", paddingBottom: "5rem" }}>
+    <section className="page-px bg-beige-warm" id="categorias" style={{ paddingTop: "5rem", paddingBottom: "5rem" }}>
       {/* Header */}
       <div style={{ marginBottom: "2.5rem" }}>
         <p

@@ -26,6 +26,7 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
         <div className="page-px">
           {/* Breadcrumb */}
           <p
+            className="font-editorial"
             style={{
               fontSize: "11px",
               lineHeight: 1,
@@ -33,6 +34,7 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
               display: "flex",
               flexWrap: "wrap",
               alignItems: "center",
+              letterSpacing: "0.02em",
             }}
           >
             <Link
@@ -94,15 +96,17 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
             >
               <div>
                 <p
+                  className="font-editorial"
                   style={{
-                    fontSize: "9px",
+                    fontSize: "10px",
                     letterSpacing: "0.3em",
                     textTransform: "uppercase",
                     color: "var(--gold)",
-                    marginBottom: "8px",
+                    marginBottom: "10px",
                     display: "flex",
                     alignItems: "center",
                     gap: "10px",
+                    fontWeight: 500,
                   }}
                 >
                   <span
@@ -117,20 +121,23 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
                   También podría interesarte
                 </p>
                 <h2
+                  className="font-display"
                   style={{
-                    fontFamily: "var(--font-serif)",
-                    fontSize: "clamp(24px,2.2vw,34px)",
+                    fontSize: "clamp(26px,2.4vw,38px)",
                     fontWeight: 400,
                     color: "var(--moss)",
-                    lineHeight: 1.1,
+                    lineHeight: 1.08,
+                    letterSpacing: "-0.015em",
                   }}
                 >
-                  Títulos relacionados
+                  Títulos{" "}
+                  <em className="editorial-emphasis">relacionados</em>
                 </h2>
               </div>
 
               {product.categories[0] && (
                 <Link
+                  className="font-editorial"
                   href={`/productos?cat=${product.categories[0].slug}`}
                   style={{
                     fontSize: "12px",

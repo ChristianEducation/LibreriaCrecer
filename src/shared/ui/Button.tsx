@@ -12,13 +12,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "border-transparent bg-gold text-white hover:-translate-y-px hover:bg-gold-light",
-        moss: "border-transparent bg-moss text-white hover:-translate-y-px hover:bg-moss-mid",
+        primary:
+          "rounded-full border-transparent bg-gold text-white hover:-translate-y-px hover:bg-gold-light active:scale-[0.97] active:transition-none",
+        moss: "rounded-full border-transparent bg-moss text-white hover:-translate-y-px hover:bg-moss-mid active:scale-[0.97] active:transition-none",
         outline: "border-moss bg-transparent text-moss hover:bg-moss hover:text-white",
         ghost:
           "rounded-none border-x-0 border-t-0 border-b border-b-transparent bg-transparent px-0 py-1 text-[12px] font-medium uppercase tracking-[0.08em] text-moss hover:border-b-moss",
         "add-to-cart":
-          "border-transparent bg-gold text-white hover:scale-[1.03] hover:bg-gold-light",
+          "rounded-full border-transparent bg-gold text-white hover:scale-[1.03] hover:bg-gold-light active:scale-[0.97] active:transition-none",
         secondary:
           "rounded-none border-x-0 border-t-0 border-b border-b-white/25 bg-transparent px-0 py-1 text-[12px] font-medium uppercase tracking-[0.08em] text-white/70 hover:border-b-gold-light hover:text-gold-light",
       },

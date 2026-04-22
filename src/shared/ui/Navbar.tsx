@@ -169,20 +169,41 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
     setIsMobileMenuOpen(false);
   }
 
+  const isHome = pathname === "/";
+  const isTransparent = isHome && !isScrolled && variant === "default";
+
   return (
     <>
       <header
         className={cx(
-          "sticky top-0 z-[100] border-b border-border bg-[color-mix(in_srgb,var(--beige)_95%,transparent)] backdrop-blur-xl transition-shadow duration-300",
-          isScrolled ? "shadow-[0_2px_24px_rgba(58,48,1,0.08)]" : "",
+          "z-[100] transition-[background-color,box-shadow,border-color] duration-300",
+          isHome ? "fixed inset-x-0 top-0" : "sticky top-0",
+          isTransparent
+            ? "border-b border-transparent bg-transparent"
+            : "border-b border-border bg-[color-mix(in_srgb,var(--beige)_95%,transparent)] backdrop-blur-xl",
+          isScrolled && !isTransparent ? "shadow-[0_2px_24px_rgba(58,48,1,0.08)]" : "",
         )}
       >
         <div className="page-px flex h-16 items-center justify-between gap-5">
           <Link className="flex shrink-0 items-center gap-[10px]" href="/">
             <Logo size="navbar" />
             <span className="flex flex-col">
-              <span className="font-serif text-[18px] font-medium text-moss">Crecer Libreria</span>
-              <span className="text-[9px] uppercase tracking-[0.22em] text-gold">Libreria cristiana</span>
+              <span
+                className={cx(
+                  "font-serif text-[18px] font-medium transition-colors",
+                  isTransparent ? "text-white" : "text-moss",
+                )}
+              >
+                Crecer Libreria
+              </span>
+              <span
+                className={cx(
+                  "text-[9px] uppercase tracking-[0.22em] transition-colors",
+                  isTransparent ? "text-white/80" : "text-gold",
+                )}
+              >
+                Libreria cristiana
+              </span>
             </span>
           </Link>
 
@@ -202,7 +223,12 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                 onSubmit={handleSearch}
               >
                 <input
-                  className="h-10 w-full rounded border border-border bg-beige-warm py-2 pl-4 pr-10 text-[14px] text-text transition-[border-color,background-color] duration-200 placeholder:text-text-light focus:border-gold focus:bg-white focus:outline-none"
+                  className={cx(
+                    "h-10 w-full rounded border py-2 pl-4 pr-10 text-[14px] transition-[border-color,background-color,color] duration-200 focus:outline-none",
+                    isTransparent
+                      ? "border-white/30 bg-white/10 text-white placeholder:text-white/60 focus:border-white/60 focus:bg-white/15"
+                      : "border-border bg-beige-warm text-text placeholder:text-text-light focus:border-gold focus:bg-white",
+                  )}
                   placeholder="Buscar libros, autores..."
                   type="search"
                   value={searchQuery}
@@ -210,7 +236,10 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                 />
                 <button
                   aria-label="Buscar"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-light transition-colors hover:text-moss"
+                  className={cx(
+                    "absolute right-3 top-1/2 -translate-y-1/2 transition-colors",
+                    isTransparent ? "text-white/80 hover:text-white" : "text-text-light hover:text-moss",
+                  )}
                   type="submit"
                 >
                   <SearchIcon />
@@ -221,8 +250,12 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
               <nav className="hidden items-center gap-7 lg:flex">
                 <Link
                   className={cx(
-                    "text-[13px] tracking-[0.04em] transition-colors hover:text-moss",
-                    pathname === "/productos" || pathname.startsWith("/productos/") ? "font-medium text-moss" : "text-text-mid",
+                    "text-[13px] tracking-[0.04em] transition-colors",
+                    isTransparent
+                      ? "text-white/85 hover:text-white"
+                      : pathname === "/productos" || pathname.startsWith("/productos/")
+                        ? "font-medium text-moss"
+                        : "text-text-mid hover:text-moss",
                   )}
                   href="/productos"
                 >
@@ -231,8 +264,12 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
 
                 <Link
                   className={cx(
-                    "text-[13px] tracking-[0.04em] transition-colors hover:text-moss",
-                    pathname === "/nosotros" ? "font-medium text-moss" : "text-text-mid",
+                    "text-[13px] tracking-[0.04em] transition-colors",
+                    isTransparent
+                      ? "text-white/85 hover:text-white"
+                      : pathname === "/nosotros"
+                        ? "font-medium text-moss"
+                        : "text-text-mid hover:text-moss",
                   )}
                   href="/nosotros"
                 >
@@ -247,8 +284,12 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                 >
                   <button
                     className={cx(
-                      "text-[13px] tracking-[0.04em] transition-colors hover:text-moss",
-                      pathname.startsWith("/productos") ? "font-medium text-moss" : "text-text-mid",
+                      "text-[13px] tracking-[0.04em] transition-colors",
+                      isTransparent
+                        ? "text-white/85 hover:text-white"
+                        : pathname.startsWith("/productos")
+                          ? "font-medium text-moss"
+                          : "text-text-mid hover:text-moss",
                     )}
                     onClick={() => setIsCategoriesOpen((current) => !current)}
                     type="button"
@@ -303,8 +344,12 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                   return (
                     <Link
                       className={cx(
-                        "text-[13px] tracking-[0.04em] transition-colors hover:text-moss",
-                        isActive ? "font-medium text-moss" : "text-text-mid",
+                        "text-[13px] tracking-[0.04em] transition-colors",
+                        isTransparent
+                          ? "text-white/85 hover:text-white"
+                          : isActive
+                            ? "font-medium text-moss"
+                            : "text-text-mid hover:text-moss",
                       )}
                       href={link.href}
                       key={link.href}
@@ -319,7 +364,10 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
               <div className="flex shrink-0 items-center gap-3">
                 <button
                   aria-expanded={isCartOpen}
-                  className="relative flex items-center gap-1.5 text-moss transition-opacity hover:opacity-70"
+                  className={cx(
+                    "relative flex items-center gap-1.5 transition-opacity hover:opacity-70",
+                    isTransparent ? "text-white" : "text-moss",
+                  )}
                   onClick={() => setIsCartOpen((current) => !current)}
                   type="button"
                 >
@@ -335,7 +383,10 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                 <button
                   aria-expanded={isMobileMenuOpen}
                   aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
-                  className="flex items-center justify-center text-moss transition-opacity hover:opacity-70 lg:hidden"
+                  className={cx(
+                    "flex items-center justify-center transition-opacity hover:opacity-70 lg:hidden",
+                    isTransparent ? "text-white" : "text-moss",
+                  )}
                   onClick={() => setIsMobileMenuOpen((current) => !current)}
                   type="button"
                 >

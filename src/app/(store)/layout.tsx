@@ -2,7 +2,7 @@ import { asc, eq } from "drizzle-orm";
 
 import { db, schema } from "@/integrations/drizzle";
 import { Footer } from "@/shared/ui/Footer";
-import { Navbar } from "@/shared/ui";
+import { FloatingCartButton, Navbar } from "@/shared/ui";
 import { TopBanner } from "@/shared/ui/TopBanner";
 
 type StoreLayoutProps = {
@@ -31,6 +31,7 @@ export default async function StoreLayout({ children }: StoreLayoutProps) {
       <Navbar categories={categories} />
       {children}
       <Footer />
+      <FloatingCartButton />
     </>
   );
 }
