@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { cx } from "class-variance-authority";
 
 import { useCart } from "@/features/carrito/hooks";
-import { Badge, Button } from "@/shared/ui";
+import { Badge } from "@/shared/ui";
 import { useScrollReveal } from "@/shared/hooks";
 import { formatCLP } from "@/shared/utils/formatters";
 
@@ -22,6 +22,7 @@ export interface ProductCardProps {
   isOnSale?: boolean;
   stockQuantity?: number;
   className?: string;
+  variant?: "default" | "clean";
 }
 
 function BookFallbackIcon() {
@@ -56,6 +57,7 @@ export function ProductCard({
   const { addItem } = useCart();
   const revealRef = useScrollReveal<HTMLDivElement>();
   const [isAdded, setIsAdded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const hasDiscount = isOnSale || (salePrice !== null && salePrice !== undefined && salePrice < price);
   const effectivePrice = hasDiscount && salePrice ? salePrice : price;
@@ -65,19 +67,14 @@ export function ProductCard({
     if (hasDiscount) {
       return <Badge variant="sale">Oferta</Badge>;
     }
-
     if (isNew) {
       return <Badge variant="new">Nuevo</Badge>;
     }
-
     return null;
   }, [hasDiscount, isNew]);
 
   useEffect(() => {
-    if (!isAdded) {
-      return;
-    }
-
+    if (!isAdded) return;
     const timeoutId = window.setTimeout(() => setIsAdded(false), 1800);
     return () => window.clearTimeout(timeoutId);
   }, [isAdded]);
@@ -88,7 +85,7 @@ export function ProductCard({
 
   return (
     <article
-      className={cx("group reveal cursor-pointer", className)}
+      className={cx("reveal cursor-pointer", className)}
       onClick={handleNavigate}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -96,18 +93,38 @@ export function ProductCard({
           handleNavigate();
         }
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       ref={revealRef}
       role="link"
       tabIndex={0}
     >
-      <div className="relative aspect-[2/3] overflow-hidden rounded bg-[linear-gradient(145deg,var(--beige-warm),var(--beige-mid))] shadow-[0_0_0.5px_rgba(58,48,1,0.14),_0_2px_6px_rgba(58,48,1,0.10)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1 group-hover:shadow-[4px_12px_30px_rgba(58,48,1,0.22)]">
+      {/* Imagen */}
+      <div
+        style={{
+          position: "relative",
+          aspectRatio: "2/3",
+          overflow: "hidden",
+          borderRadius: "var(--radius-md)",
+          background: "linear-gradient(145deg, var(--beige-warm), var(--beige-mid))",
+          boxShadow: isHovered
+            ? "4px 12px 30px rgba(58,48,1,0.22)"
+            : "0 0 0.5px rgba(58,48,1,0.14), 0 2px 6px rgba(58,48,1,0.10)",
+          transform: isHovered ? "translateY(-4px)" : "translateY(0)",
+          transition: "transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s cubic-bezier(0.22,1,0.36,1)",
+        }}
+      >
         {mainImageUrl ? (
           <Image
             alt={title}
-            className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.04]"
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
             src={mainImageUrl}
+            style={{
+              objectFit: "cover",
+              transform: isHovered ? "scale(1.04)" : "scale(1)",
+              transition: "transform 0.6s ease-out",
+            }}
           />
         ) : (
           <div className="flex h-full items-center justify-center">
@@ -115,6 +132,7 @@ export function ProductCard({
           </div>
         )}
 
+        {/* Badges */}
         {(badge ?? isLowStock) ? (
           <div className="absolute left-2 top-2 z-[2] flex flex-col gap-1">
             {badge}
@@ -122,37 +140,18 @@ export function ProductCard({
           </div>
         ) : null}
 
-        {/* Gradiente suave hacia el footer para lectura del overlay */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-[linear-gradient(to_top,rgba(20,16,4,0.6)_0%,rgba(20,16,4,0)_100%)]" />
-
-        {/* Overlay glassmorphism con autor / título / precio */}
+        {/* Hover overlay + botón agregar */}
         <div
-          className="glass-overlay absolute inset-x-0 bottom-0 px-3 transition-opacity duration-300 group-hover:opacity-0"
-          style={{ paddingBlock: "0.65rem" }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(20,16,4,0.35)",
+            opacity: isHovered ? 1 : 0,
+            transition: "opacity 0.25s ease",
+            pointerEvents: isHovered ? "auto" : "none",
+          }}
         >
-          <p className="mb-0.5 text-[9px] uppercase tracking-[0.05em] text-white/65">
-            {author ?? "Edicion seleccionada"}
-          </p>
-          <h3 className="font-serif text-[13px] font-medium leading-[1.25] text-white line-clamp-2">
-            {title}
-          </h3>
-          {hasDiscount && salePrice ? (
-            <div className="mt-1 flex items-baseline gap-1.5">
-              <span className="text-[10px] text-white/55 line-through">{formatCLP(price)}</span>
-              <span className="text-[12px] font-medium text-[rgb(232,210,140)]">{formatCLP(salePrice)}</span>
-            </div>
-          ) : (
-            <p className="mt-1 text-[12px] font-medium text-[rgb(232,210,140)]">{formatCLP(price)}</p>
-          )}
-        </div>
-
-        {/* Hover panel: CTA agregar */}
-        <div className="absolute inset-0 flex items-end justify-center bg-[rgba(20,16,4,0.72)] p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <Button
-            className={cx(
-              "min-w-[140px] shadow-[0_10px_22px_rgba(0,0,0,0.25)]",
-              isAdded ? "bg-moss hover:bg-moss" : "",
-            )}
+          <button
             onClick={(event) => {
               event.stopPropagation();
               addItem({
@@ -167,12 +166,73 @@ export function ProductCard({
               });
               setIsAdded(true);
             }}
-            size="sm"
-            variant="add-to-cart"
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              paddingTop: "14px",
+              paddingBottom: "14px",
+              background: isAdded ? "var(--moss)" : "var(--gold)",
+              color: "white",
+              fontSize: "11px",
+              letterSpacing: "0.1em",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              border: "none",
+              cursor: "pointer",
+              borderRadius: "0 0 var(--radius-md) var(--radius-md)",
+              transition: "background 0.2s",
+            }}
+            type="button"
           >
             {isAdded ? "Agregado" : "Agregar"}
-          </Button>
+          </button>
         </div>
+      </div>
+
+      {/* Info debajo — siempre visible */}
+      <div style={{ paddingTop: "10px" }}>
+        {author ? (
+          <p style={{
+            fontSize: "10px",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: "var(--text-light)",
+            marginBottom: "3px",
+          }}>
+            {author}
+          </p>
+        ) : null}
+        <h3
+          style={{
+            fontSize: "13px",
+            fontWeight: 600,
+            color: "var(--text)",
+            lineHeight: 1.3,
+            marginBottom: "4px",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
+          {title}
+        </h3>
+        {hasDiscount && salePrice ? (
+          <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+            <span style={{ fontSize: "11px", color: "var(--text-light)", textDecoration: "line-through" }}>
+              {formatCLP(price)}
+            </span>
+            <span style={{ fontSize: "13px", color: "var(--gold-light)" }}>
+              {formatCLP(salePrice)}
+            </span>
+          </div>
+        ) : (
+          <p style={{ fontSize: "13px", color: "var(--gold-light)" }}>
+            {formatCLP(effectivePrice)}
+          </p>
+        )}
       </div>
     </article>
   );

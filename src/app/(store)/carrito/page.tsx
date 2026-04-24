@@ -144,13 +144,8 @@ export default function CarritoPage() {
     <main style={{ minHeight: "60vh", background: "var(--color-beige)" }}>
       <div className="page-px" style={{ paddingTop: "48px", paddingBottom: "80px" }}>
         <h1
-          style={{
-            fontFamily: "var(--font-serif)",
-            fontSize: "clamp(28px,3vw,38px)",
-            fontWeight: 400,
-            color: "var(--color-moss)",
-            marginBottom: "32px",
-          }}
+          className="heading-xl font-normal"
+          style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", color: "var(--moss)", marginBottom: "32px" }}
         >
           Mi carrito
         </h1>
@@ -218,11 +213,11 @@ export default function CarritoPage() {
                     key={item.productId}
                     style={{
                       borderBottom: "1px solid var(--color-border)",
-                      paddingBottom: "20px",
-                      marginBottom: "20px",
+                      paddingTop: "1.5rem",
+                      paddingBottom: "1.5rem",
                     }}
                   >
-                    <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
+                    <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
                       {/* Image */}
                       <div
                         style={{
@@ -294,7 +289,7 @@ export default function CarritoPage() {
                               display: "flex",
                               alignItems: "center",
                               border: "1px solid var(--color-border)",
-                              borderRadius: "2px",
+                              borderRadius: "var(--radius-md)",
                               overflow: "hidden",
                             }}
                           >
@@ -306,6 +301,7 @@ export default function CarritoPage() {
                                 height: "36px",
                                 background: "var(--color-beige)",
                                 border: "none",
+                                borderRadius: "var(--radius-md) 0 0 var(--radius-md)",
                                 fontSize: "16px",
                                 color: "var(--color-moss)",
                                 cursor: "pointer",
@@ -336,6 +332,7 @@ export default function CarritoPage() {
                                 height: "36px",
                                 background: "var(--color-beige)",
                                 border: "none",
+                                borderRadius: "0 var(--radius-md) var(--radius-md) 0",
                                 fontSize: "16px",
                                 color: "var(--color-moss)",
                                 cursor: "pointer",
@@ -403,9 +400,10 @@ export default function CarritoPage() {
               <p
                 style={{
                   fontSize: "10px",
-                  letterSpacing: "0.18em",
+                  letterSpacing: "0.15em",
                   textTransform: "uppercase",
-                  color: "var(--color-text-light)",
+                  fontWeight: 500,
+                  color: "var(--gold)",
                   marginBottom: "8px",
                 }}
               >
@@ -421,7 +419,7 @@ export default function CarritoPage() {
                     flex: 1,
                     padding: "10px 14px",
                     border: "1px solid var(--color-border)",
-                    borderRadius: "2px",
+                    borderRadius: "var(--radius-lg)",
                     fontSize: "13px",
                     background: "var(--color-white)",
                     outline: "none",
@@ -437,7 +435,7 @@ export default function CarritoPage() {
                     background: "var(--color-moss)",
                     color: "white",
                     border: "none",
-                    borderRadius: "2px",
+                    borderRadius: "var(--radius-lg)",
                     fontSize: "11px",
                     fontWeight: 500,
                     letterSpacing: "0.1em",
@@ -467,7 +465,7 @@ export default function CarritoPage() {
             style={{
               background: "var(--color-white)",
               border: "1px solid var(--color-border)",
-              borderRadius: "2px",
+              borderRadius: "var(--radius-lg)",
               position: "sticky",
               top: "80px",
               overflow: "hidden",
@@ -485,10 +483,11 @@ export default function CarritoPage() {
             >
               <span
                 style={{
-                  fontFamily: "var(--font-serif)",
+                  fontFamily: "var(--font-inter)",
                   fontSize: "18px",
-                  fontWeight: 400,
-                  color: "var(--color-moss)",
+                  fontWeight: 700,
+                  letterSpacing: "-0.025em",
+                  color: "var(--text)",
                 }}
               >
                 Resumen
@@ -573,10 +572,10 @@ export default function CarritoPage() {
                 style={{
                   width: "100%",
                   padding: "14px",
-                  background: "var(--color-moss)",
+                  background: "var(--gold)",
                   color: "white",
                   border: "none",
-                  borderRadius: "2px",
+                  borderRadius: "var(--radius-xl)",
                   fontSize: "12px",
                   fontWeight: 500,
                   letterSpacing: "0.12em",

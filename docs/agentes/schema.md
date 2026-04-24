@@ -273,7 +273,7 @@ Relación 1:1 con `orders`. Solo existe si `delivery_method = "shipping"`.
 ### 12. `featured_products`
 **Archivo:** `src/integrations/drizzle/schema/landing.ts`
 
-Selección curada de productos por sección editorial.
+Selección editorial de productos.
 
 | Campo | Tipo | Notas |
 |---|---|---|
@@ -287,7 +287,7 @@ Selección curada de productos por sección editorial.
 | `updated_at` | timestamp tz | default now |
 
 **Valores de `section` en uso:**
-- `"monthly_selection"` → `LibrosMesSection` del landing
+- `"monthly_selection"` → selección editorial única del sitio (`LibrosMesSection` del landing + filtro `?filter=seleccion`)
 
 ---
 

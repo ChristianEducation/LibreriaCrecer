@@ -30,12 +30,12 @@ export function QuoteSection({ quote, author, backgroundImageUrl }: QuoteSection
       <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(to_right,transparent,rgba(200,168,48,0.7),transparent)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(232,208,96,0.18),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(200,168,48,0.14),transparent_28%)]" />
 
-      <div className="relative z-[1] max-w-4xl">
-        <span className="font-display block text-[100px] leading-none text-gold/25">&ldquo;</span>
-        <blockquote className="font-display editorial-emphasis -mt-8 max-w-3xl text-[clamp(22px,2.6vw,32px)] leading-[1.5] text-white/92">
+      <div className="relative z-[1] max-w-4xl" style={{ textAlign: "center", alignItems: "center", justifyContent: "center", margin: "0 auto", display: "flex", flexDirection: "column" }}>
+        <span className="font-display block" style={{ fontSize: "100px", lineHeight: "1", color: "rgba(255,255,255,0.6)", marginBottom: "-1rem" }}>&ldquo;</span>
+        <blockquote className="font-display editorial-emphasis max-w-3xl text-[clamp(22px,2.6vw,32px)] text-white/92" style={{ margin: "0 auto", lineHeight: 1.3 }}>
           {quote}
         </blockquote>
-        <p className="font-editorial mt-8 text-[10px] uppercase tracking-[0.28em] text-gold">{author}</p>
+        <p className="font-editorial text-[10px] uppercase tracking-[0.28em] text-gold" style={{ textAlign: "center", marginTop: "2rem" }}>{author}</p>
       </div>
     </section>
   );

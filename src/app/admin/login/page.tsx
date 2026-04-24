@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 
 import { AdminLoginForm } from "@/features/admin/components/admin-login-form";
@@ -25,7 +26,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-moss p-6">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden p-6" style={{ background: "linear-gradient(135deg, #3a3001 0%, #5a4802 50%, #3a3001 100%)" }}>
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_80%,rgba(217,186,30,0.06)_0%,transparent_55%),radial-gradient(ellipse_at_80%_20%,rgba(217,186,30,0.04)_0%,transparent_55%),radial-gradient(ellipse_at_50%_50%,rgba(138,115,2,0.4)_0%,transparent_70%)]" />
       <div className="absolute left-12 top-12 h-12 w-12 opacity-[0.06] before:absolute before:left-1/2 before:top-0 before:h-full before:w-px before:-translate-x-1/2 before:bg-gold before:content-[''] after:absolute after:left-0 after:top-1/2 after:h-px after:w-full after:-translate-y-1/2 after:bg-gold after:content-['']" />
       <div className="absolute bottom-12 right-12 h-8 w-8 opacity-[0.06] before:absolute before:left-1/2 before:top-0 before:h-full before:w-px before:-translate-x-1/2 before:bg-gold before:content-[''] after:absolute after:left-0 after:top-1/2 after:h-px after:w-full after:-translate-y-1/2 after:bg-gold after:content-['']" />
@@ -37,7 +38,10 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
         Volver al sitio
       </Link>
 
-      <AdminLoginForm nextPath={nextPath} />
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: "420px" }}>
+        <Image src="/images/Logo-Crecer.png" alt="Crecer Librería" width={48} height={48} style={{ objectFit: "contain", marginBottom: "1.5rem" }} />
+        <AdminLoginForm nextPath={nextPath} />
+      </div>
     </main>
   );
 }

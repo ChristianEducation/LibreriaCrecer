@@ -227,7 +227,7 @@ JWT en cookie HTTP-only `admin-session` (24h, firmado con `jose`). Middleware Ed
 
 **Secciones y su fuente de datos:**
 - Hero slides → tabla `hero_slides` (admin)
-- Selección del mes → tabla `featured_products` + filtro `?filter=seleccion` en catálogo (admin)
+- Selección del mes → tabla `featured_products` con sección canónica `monthly_selection` + filtro `?filter=seleccion` en catálogo (admin)
 - Categorías → tabla `categories` activas con imagen panorámica opcional (admin `/admin/landing/categorias`)
 - Recién llegados → 10 productos más recientes (automático)
 - Hero intermedio → tabla `banners` con `position="hero_intermedio"` (admin)
@@ -281,6 +281,7 @@ Las secciones tienen `title`, `content`, `imageUrl`, `imagePosition` ("right"|"l
 **Navbar (CAT5):**
 - Link "Conócenos" agregado en desktop (antes del dropdown Categorías) y en el drawer móvil
 - `navLinksAfterCategories` actualizado: `?filter=seleccion` (Selección del mes) y `?filter=nuevo` (Recién llegados)
+- La selección editorial del sitio es única: home, header, catálogo y admin apuntan a `monthly_selection`
 
 ---
 
@@ -645,7 +646,7 @@ import { BrandLoader } from "@/shared/ui/BrandLoader";
 | `coupons` | Cupones de descuento (percentage o fixed), vigencia, usos |
 | `hero_slides` | Slides del hero rotativo del landing |
 | `banners` | Banners por position (`hero_intermedio`, `footer_illustration`, `categories_panorama`, etc.) |
-| `featured_products` | Selección curada por sección (`libros_mes` → filtro `?filter=seleccion`) |
+| `featured_products` | Selección editorial única (`monthly_selection` → home + filtro `?filter=seleccion`) |
 | `admin_users` | Usuarios del panel admin con password_hash |
 | `footer_content` | Texto editable del footer: descripción, links catálogo, links info, dirección, copyright (**nueva — Abril 2026**) |
 | `about_sections` | Secciones de /nosotros: título, contenido, imageUrl, imagePosition, displayOrder, isActive (**nueva — Abril 2026**) |

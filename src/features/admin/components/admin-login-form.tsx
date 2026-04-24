@@ -6,22 +6,12 @@ import { cx } from "class-variance-authority";
 import { useForm } from "react-hook-form";
 
 import { useToast } from "@/shared/hooks";
-import { Button } from "@/shared/ui";
 
 import { AdminLoginSchema, type AdminLoginInput } from "../schemas";
 
 type AdminLoginFormProps = {
   nextPath?: string;
 };
-
-function BrandCross() {
-  return (
-    <span className="relative block size-9">
-      <span className="absolute left-1/2 top-0 h-full w-[1.5px] -translate-x-1/2 bg-gold" />
-      <span className="absolute left-0 top-1/2 h-[1.5px] w-full -translate-y-1/2 bg-gold" />
-    </span>
-  );
-}
 
 function MailIcon() {
   return (
@@ -93,7 +83,7 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
 
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as { message?: string } | null;
-        const message = payload?.message ?? "No se pudo iniciar sesion.";
+        const message = payload?.message ?? "No se pudo iniciar sesión.";
         setErrorMessage(message);
         toast({ message, variant: "error" });
         return;
@@ -102,106 +92,103 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
       toast({ message: "Acceso verificado. Redirigiendo al panel..." });
       window.location.href = nextPath ?? "/admin";
     } catch {
-      const message = "Ocurrio un error de red. Intenta nuevamente.";
+      const message = "Ocurrió un error de red. Intenta nuevamente.";
       setErrorMessage(message);
       toast({ message, variant: "error" });
     }
   }
 
   return (
-    <div className="relative z-[1] w-full max-w-[400px] overflow-hidden rounded-[3px] bg-[#F8F5E6] shadow-[0_32px_80px_rgba(0,0,0,0.35)]">
-      <div className="relative bg-moss px-10 pb-7 pt-8 text-center">
-        <div className="absolute inset-x-10 bottom-0 h-px bg-[linear-gradient(to_right,transparent,rgba(217,186,30,0.3),transparent)]" />
-        <div className="mb-4 flex justify-center">
-          <BrandCross />
+    <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "420px", background: "var(--beige)", borderRadius: "var(--radius-lg)", boxShadow: "0 24px 60px rgba(0,0,0,0.3)", padding: "2.5rem" }}>
+      <h1 style={{ fontFamily: "var(--font-castoro)", fontSize: "28px", color: "var(--text)", letterSpacing: "-0.02em", fontWeight: 400 }}>Ingresar</h1>
+      <p style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: "var(--text-light)", marginBottom: "1.5rem", marginTop: "4px" }}>Acceso restringido al equipo interno</p>
+
+      {errorMessage ? (
+        <div style={{ marginBottom: "1.25rem", display: "flex", alignItems: "center", gap: "8px", borderRadius: "var(--radius-md)", border: "1px solid rgba(220,38,38,0.2)", background: "rgba(220,38,38,0.06)", padding: "10px 14px", fontSize: "12px", color: "var(--error, #dc2626)" }}>
+          <svg aria-hidden="true" style={{ width: "14px", height: "14px", flexShrink: 0 }} fill="none" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+            <path d="M12 8v4m0 4h.01" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+          </svg>
+          <span>{errorMessage}</span>
         </div>
-        <span className="block font-serif text-[20px] text-white">Crecer Libreria</span>
-        <span className="text-[9px] uppercase tracking-[0.28em] text-gold">Panel de Administracion</span>
-      </div>
+      ) : null}
 
-      <div className="px-10 pb-10 pt-9">
-        <h1 className="font-serif text-[22px] text-moss">Ingresar</h1>
-        <p className="mb-7 mt-1 text-[12px] font-light text-text-light">Acceso restringido al equipo interno</p>
-
-        {errorMessage ? (
-          <div className="mb-5 flex items-center gap-2 rounded-[2px] border border-error/20 bg-error/8 px-[14px] py-[10px] text-[12px] text-error">
-            <svg aria-hidden="true" className="size-[14px] shrink-0" fill="none" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-              <path d="M12 8v4m0 4h.01" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-            </svg>
-            <span>{errorMessage}</span>
-          </div>
-        ) : null}
-
-        <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-          <label className="block">
-            <span className="mb-[5px] block text-[10px] uppercase tracking-[0.18em] text-text-light">
-              Correo electronico
+      <form style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }} onSubmit={form.handleSubmit(onSubmit)}>
+        <label style={{ display: "block" }}>
+          <span style={{ marginBottom: "6px", display: "block", fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)" }}>
+            Correo Electrónico
+          </span>
+          <span style={{ position: "relative", display: "block" }}>
+            <input
+              className={cx(
+                "w-full border text-sm text-text outline-none transition-all duration-200 placeholder:text-text-light focus:border-gold focus:bg-white focus:shadow-[0_0_0_3px_rgba(217,186,30,0.1)]",
+                errors.email ? "border-error" : "border-border",
+              )}
+              style={{ borderRadius: "var(--radius-lg)", paddingLeft: "14px", paddingRight: "40px", paddingTop: "10px", paddingBottom: "10px", background: "var(--beige-warm)", width: "100%" }}
+              id="email"
+              placeholder="admin@crecerlibreria.cl"
+              type="email"
+              {...form.register("email")}
+            />
+            <span style={{ pointerEvents: "none", position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }}>
+              <MailIcon />
             </span>
-            <span className="relative block">
-              <input
-                className={cx(
-                  "w-full rounded-[2px] border bg-beige px-[14px] py-[11px] pr-10 text-sm text-text outline-none transition-all duration-200 placeholder:text-text-light focus:border-gold focus:bg-white focus:shadow-[0_0_0_3px_rgba(217,186,30,0.1)]",
-                  errors.email ? "border-error" : "border-border",
-                )}
-                id="email"
-                placeholder="admin@crecerlibreria.cl"
-                type="email"
-                {...form.register("email")}
-              />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-light">
-                <MailIcon />
-              </span>
-            </span>
-            {errors.email ? <span className="mt-1 block text-[11px] text-error">{errors.email.message}</span> : null}
+          </span>
+          {errors.email ? <span style={{ marginTop: "4px", display: "block", fontSize: "11px", color: "var(--error, #dc2626)" }}>{errors.email.message}</span> : null}
+        </label>
+
+        <label style={{ display: "block" }}>
+          <span style={{ marginBottom: "6px", display: "block", fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)" }}>
+            Contraseña
+          </span>
+          <span style={{ position: "relative", display: "block" }}>
+            <input
+              className={cx(
+                "w-full border text-sm text-text outline-none transition-all duration-200 placeholder:text-text-light focus:border-gold focus:bg-white focus:shadow-[0_0_0_3px_rgba(217,186,30,0.1)]",
+                errors.password ? "border-error" : "border-border",
+              )}
+              style={{ borderRadius: "var(--radius-lg)", paddingLeft: "14px", paddingRight: "40px", paddingTop: "10px", paddingBottom: "10px", background: "var(--beige-warm)", width: "100%" }}
+              id="password"
+              placeholder="••••••••"
+              type={showPassword ? "text" : "password"}
+              {...form.register("password")}
+            />
+            <button
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--text-light)", padding: 0 }}
+              onClick={() => setShowPassword((prev) => !prev)}
+              type="button"
+            >
+              <EyeIcon off={showPassword} />
+            </button>
+          </span>
+          {errors.password ? (
+            <span style={{ marginTop: "4px", display: "block", fontSize: "11px", color: "var(--error, #dc2626)" }}>{errors.password.message}</span>
+          ) : null}
+        </label>
+
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "var(--text-light)" }}>
+            <input className="accent-moss" type="checkbox" />
+            <span>Recordarme</span>
           </label>
+          <span style={{ fontSize: "12px", color: "var(--gold)" }}>Acceso seguro</span>
+        </div>
 
-          <label className="block">
-            <span className="mb-[5px] block text-[10px] uppercase tracking-[0.18em] text-text-light">
-              Contrasena
-            </span>
-            <span className="relative block">
-              <input
-                className={cx(
-                  "w-full rounded-[2px] border bg-beige px-[14px] py-[11px] pr-10 text-sm text-text outline-none transition-all duration-200 placeholder:text-text-light focus:border-gold focus:bg-white focus:shadow-[0_0_0_3px_rgba(217,186,30,0.1)]",
-                  errors.password ? "border-error" : "border-border",
-                )}
-                id="password"
-                placeholder="••••••••"
-                type={showPassword ? "text" : "password"}
-                {...form.register("password")}
-              />
-              <button
-                aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-light transition-colors hover:text-moss"
-                onClick={() => setShowPassword((prev) => !prev)}
-                type="button"
-              >
-                <EyeIcon off={showPassword} />
-              </button>
-            </span>
-            {errors.password ? (
-              <span className="mt-1 block text-[11px] text-error">{errors.password.message}</span>
-            ) : null}
-          </label>
+        <button
+          disabled={isSubmitting}
+          type="submit"
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", paddingTop: "14px", paddingBottom: "14px", background: "var(--gold)", color: "white", border: "none", borderRadius: "var(--radius-xl)", fontSize: "12px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", cursor: isSubmitting ? "not-allowed" : "pointer", opacity: isSubmitting ? 0.7 : 1, transition: "background 0.2s" }}
+        >
+          {isSubmitting ? "Verificando..." : "Ingresar"}
+        </button>
+      </form>
 
-          <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 text-[12px] text-text-light">
-              <input className="accent-moss" type="checkbox" />
-              <span>Recordarme</span>
-            </label>
-            <span className="text-[12px] text-gold">Acceso seguro</span>
-          </div>
-
-          <Button className="w-full justify-center" loading={isSubmitting} type="submit" variant="moss">
-            Ingresar
-          </Button>
-        </form>
-
-        <p className="mt-6 flex items-center justify-center gap-2 text-[11px] text-text-light before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
-          Acceso seguro · SSL
-        </p>
-      </div>
+      <p style={{ marginTop: "1.5rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "11px", color: "var(--text-light)" }}>
+        <span style={{ flex: 1, height: "1px", background: "var(--border)" }} />
+        Acceso seguro · SSL
+        <span style={{ flex: 1, height: "1px", background: "var(--border)" }} />
+      </p>
     </div>
   );
 }

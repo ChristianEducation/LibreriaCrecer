@@ -37,8 +37,8 @@ const castoro = Castoro({
 });
 
 export const metadata: Metadata = {
-  title: "Crecer Libreria Cristiana",
-  description: "Tienda online de Crecer Libreria Cristiana",
+  title: "Crecer Librería Católica",
+  description: "Tienda online de Crecer Librería Católica",
 };
 
 export default function RootLayout({

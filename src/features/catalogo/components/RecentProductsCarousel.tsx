@@ -87,7 +87,7 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
     : products;
 
   return (
-    <section className="page-px bg-white" id="recien-llegados" style={{ paddingTop: "5rem", paddingBottom: "5rem" }}>
+    <section className="page-px bg-white" id="recien-llegados" style={{ paddingTop: "8rem", paddingBottom: "8rem" }}>
       {/* Header */}
       <div
         style={{
@@ -99,12 +99,11 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
       >
         <div>
           <p
-            className="section-eyebrow font-sans uppercase text-gold"
+            className="eyebrow"
             style={{
               display: "flex",
               alignItems: "center",
               gap: "12px",
-              letterSpacing: "0.35em",
               marginBottom: "10px",
             }}
           >
@@ -120,10 +119,10 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
             Recién llegados
           </p>
           <h2
-            className="font-serif font-normal text-moss"
-            style={{ fontSize: "clamp(1.75rem, 3vw, 2.75rem)", lineHeight: 1.15, letterSpacing: "-0.01em" }}
+            className="heading-xl font-normal"
+            style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", color: "var(--moss)" }}
           >
-            Lo último <em className="font-normal italic">en tienda</em>
+            Lo último en tienda
           </h2>
         </div>
 
@@ -162,6 +161,7 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
                 salePrice={product.salePrice}
                 slug={product.slug}
                 title={product.title}
+                variant="clean"
               />
             ))}
           </div>

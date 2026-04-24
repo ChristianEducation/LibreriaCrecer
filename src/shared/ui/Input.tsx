@@ -21,8 +21,22 @@ const fieldBaseStyles = cva(
   },
 );
 
-const labelClassName =
-  "mb-2 block text-[10px] font-medium uppercase tracking-[0.18em] text-text-light";
+const labelStyle: React.CSSProperties = {
+  marginBottom: "8px",
+  display: "block",
+  fontSize: "10px",
+  fontWeight: 500,
+  letterSpacing: "0.15em",
+  textTransform: "uppercase",
+  color: "var(--gold)",
+};
+const fieldStyle: React.CSSProperties = {
+  paddingLeft: "14px",
+  paddingRight: "14px",
+  paddingTop: "10px",
+  paddingBottom: "10px",
+  borderRadius: "var(--radius-lg)",
+};
 const metaClassName = "mt-2 text-[11px] leading-relaxed";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -49,7 +63,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
   return (
     <div className={cx("w-full", wrapperClassName)}>
       {label ? (
-        <label className={labelClassName} htmlFor={inputId}>
+        <label style={labelStyle} htmlFor={inputId}>
           {label}
         </label>
       ) : null}
@@ -57,6 +71,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
         className={cx(fieldBaseStyles({ hasError: Boolean(error) }), className)}
         id={inputId}
         ref={ref}
+        style={fieldStyle}
         {...props}
       />
       {error ? <p className={cx(metaClassName, "text-error")}>{error}</p> : null}
@@ -75,7 +90,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(fun
   return (
     <div className={cx("w-full", wrapperClassName)}>
       {label ? (
-        <label className={labelClassName} htmlFor={textareaId}>
+        <label style={labelStyle} htmlFor={textareaId}>
           {label}
         </label>
       ) : null}
@@ -88,6 +103,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(fun
         id={textareaId}
         ref={ref}
         rows={rows}
+        style={fieldStyle}
         {...props}
       />
       {error ? <p className={cx(metaClassName, "text-error")}>{error}</p> : null}

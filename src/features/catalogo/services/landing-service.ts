@@ -1,7 +1,12 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
 import { banners, featuredProducts, products, heroSlides } from "@/integrations/drizzle/schema";
+import {
+  MONTHLY_SELECTION_SECTION,
+  MONTHLY_SELECTION_SECTION_ALIASES,
+  normalizeCuratedSection,
+} from "@/shared/config/landing";
 
 import type { CuratedProduct, ProductCategoryRef } from "../types";
 
@@ -57,14 +62,17 @@ export async function getCategoriesPanorama() {
 }
 
 export async function getCuratedProducts(section?: string): Promise<CuratedProduct[]> {
-  const whereClause = section
-    ? and(
-        eq(featuredProducts.isActive, true),
-        eq(products.isActive, true),
-        eq(products.inStock, true),
-        eq(featuredProducts.section, section),
-      )
-    : and(eq(featuredProducts.isActive, true), eq(products.isActive, true), eq(products.inStock, true));
+  const normalizedSection = normalizeCuratedSection(section);
+  const sectionCondition =
+    normalizedSection === MONTHLY_SELECTION_SECTION
+      ? inArray(featuredProducts.section, [...MONTHLY_SELECTION_SECTION_ALIASES])
+      : eq(featuredProducts.section, normalizedSection);
+  const whereClause = and(
+    eq(featuredProducts.isActive, true),
+    eq(products.isActive, true),
+    eq(products.inStock, true),
+    sectionCondition,
+  );
 
   const curatedRows = await db
     .select({

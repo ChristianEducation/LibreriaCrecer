@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AdminToggle } from "@/features/admin/components";
+import { MONTHLY_SELECTION_SECTION } from "@/shared/config/landing";
 import { useToast } from "@/shared/hooks";
 
 type CuratedRow = {
@@ -28,17 +29,13 @@ type ProductOption = {
 type CuratedFormState = {
   id?: string;
   product_id: string;
-  section: string;
   description: string;
   display_order: number;
   is_active: boolean;
 };
 
-const PRESET_SECTIONS = ["monthly_selection", "liturgical_reading"];
-
 const initialForm: CuratedFormState = {
   product_id: "",
-  section: "monthly_selection",
   description: "",
   display_order: 0,
   is_active: true,
@@ -50,25 +47,15 @@ export default function AdminLandingSeleccionPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSection, setSelectedSection] = useState<string>("monthly_selection");
   const [form, setForm] = useState<CuratedFormState>(initialForm);
   const [productSearch, setProductSearch] = useState("");
   const [productOptions, setProductOptions] = useState<ProductOption[]>([]);
 
-  const sections = useMemo(() => {
-    const dynamic = Array.from(new Set(items.map((item) => item.section)));
-    return Array.from(new Set([...PRESET_SECTIONS, ...dynamic]));
-  }, [items]);
-
-  const visibleItems = useMemo(
-    () => items.filter((item) => item.section === selectedSection),
-    [items, selectedSection],
-  );
-
-  async function fetchItems(section?: string) {
+  async function fetchItems() {
     setLoading(true);
+    setError(null);
     try {
-      const query = section ? `?section=${encodeURIComponent(section)}` : "";
+      const query = `?section=${encodeURIComponent(MONTHLY_SELECTION_SECTION)}`;
       const response = await fetch(`/api/admin/landing/seleccion${query}`, { cache: "no-store" });
       const payload = (await response.json().catch(() => null)) as { data?: CuratedRow[]; message?: string } | null;
 
@@ -118,7 +105,7 @@ export default function AdminLandingSeleccionPage() {
     try {
       const payload = {
         product_id: form.product_id,
-        section: form.section,
+        section: MONTHLY_SELECTION_SECTION,
         description: form.description || undefined,
         display_order: Number(form.display_order || 0),
         is_active: form.is_active,
@@ -145,7 +132,7 @@ export default function AdminLandingSeleccionPage() {
       setForm(initialForm);
       setProductSearch("");
       setProductOptions([]);
-      toast({ message: "Seleccion curada actualizada." });
+      toast({ message: "Selección del mes actualizada." });
       await fetchItems();
     } finally {
       setSaving(false);
@@ -156,16 +143,14 @@ export default function AdminLandingSeleccionPage() {
     setForm({
       id: item.id,
       product_id: item.productId,
-      section: item.section,
       description: item.description ?? "",
       display_order: item.displayOrder,
       is_active: item.isActive,
     });
-    setSelectedSection(item.section);
   }
 
   async function removeItem(id: string) {
-    if (!window.confirm("Eliminar este producto curado?")) return;
+    if (!window.confirm("Quitar este producto de la selección del mes?")) return;
 
     const response = await fetch(`/api/admin/landing/seleccion/${id}`, { method: "DELETE" });
     if (!response.ok) {
@@ -175,12 +160,12 @@ export default function AdminLandingSeleccionPage() {
       return;
     }
 
-    toast({ message: "Producto removido de la seleccion." });
+    toast({ message: "Producto quitado de la selección del mes." });
     await fetchItems();
   }
 
   async function moveItem(id: string, direction: "up" | "down") {
-    const sectionItems = [...visibleItems];
+    const sectionItems = [...items];
     const currentIndex = sectionItems.findIndex((item) => item.id === id);
     if (currentIndex < 0) return;
 
@@ -195,7 +180,7 @@ export default function AdminLandingSeleccionPage() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        section: selectedSection,
+        section: MONTHLY_SELECTION_SECTION,
         productIds: reordered.map((item) => item.id),
       }),
     });
@@ -207,31 +192,25 @@ export default function AdminLandingSeleccionPage() {
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-[2rem] leading-none text-text">Seleccion curada</h1>
-          <p className="mt-2 text-sm font-light text-text-light">Arma colecciones editoriales para el home.</p>
+          <h1 className="font-serif text-[2rem] leading-none text-text">Selección del mes</h1>
+          <p className="mt-2 text-sm font-light text-text-light">
+            Esta es la única selección editorial del sitio. El orden manual se replica en el home y en el filtro del catálogo.
+          </p>
         </div>
         <Link href="/admin/landing" className="rounded-[8px] border border-border px-3 py-2 text-sm text-text-mid">
           Volver a Landing
         </Link>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {sections.map((section) => (
-          <button
-            key={section}
-            type="button"
-            onClick={() => setSelectedSection(section)}
-            className={`rounded-[8px] border px-3 py-1.5 text-sm ${
-              selectedSection === section ? "border-gold bg-gold/10 text-moss" : "border-border bg-white text-text-mid"
-            }`}
-          >
-            {section}
-          </button>
-        ))}
+      <div className="rounded-[2px] border border-border bg-beige/50 px-4 py-3 text-sm text-text-light">
+        La sección técnica usada internamente es <span className="font-medium text-text">{MONTHLY_SELECTION_SECTION}</span>.
+        No se crean colecciones paralelas desde esta pantalla.
       </div>
 
       <form onSubmit={submitForm} className="space-y-4 rounded-[2px] border border-border bg-white p-6">
-        <h2 className="text-[0.82rem] font-semibold text-text">{form.id ? "Editar seleccion" : "Agregar producto"}</h2>
+        <h2 className="text-[0.82rem] font-semibold text-text">
+          {form.id ? "Editar producto en selección" : "Agregar producto a selección"}
+        </h2>
 
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-2">
@@ -259,18 +238,16 @@ export default function AdminLandingSeleccionPage() {
           </div>
 
           <div className="space-y-2">
-            <input
-              value={form.section}
-              onChange={(event) => setForm((prev) => ({ ...prev, section: event.target.value }))}
-              placeholder="Seccion (ej: monthly_selection)"
-              className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-            />
+            <label className="block text-xs font-medium uppercase tracking-[0.08em] text-text-light">
+              Orden manual
+            </label>
             <input
               type="number"
               value={form.display_order}
               onChange={(event) => setForm((prev) => ({ ...prev, display_order: Number(event.target.value || 0) }))}
               className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
             />
+            <p className="text-xs text-text-light">Usa números pequeños para destacar primero los libros principales.</p>
           </div>
         </div>
 
@@ -295,17 +272,17 @@ export default function AdminLandingSeleccionPage() {
           </button>
           {form.id ? (
             <button type="button" onClick={() => setForm(initialForm)} className="rounded-[8px] border border-border px-4 py-2 text-sm text-text-mid">
-              Cancelar edicion
+              Cancelar edición
             </button>
           ) : null}
         </div>
       </form>
 
-      {loading ? <p className="text-sm text-text-light">Cargando seleccion...</p> : null}
+      {loading ? <p className="text-sm text-text-light">Cargando selección...</p> : null}
       {!loading ? (
         <div className="space-y-2 rounded-[2px] border border-border bg-white p-4">
-          {visibleItems.length === 0 ? <p className="text-sm text-text-light">No hay productos en esta seccion.</p> : null}
-          {visibleItems.map((item, index) => (
+          {items.length === 0 ? <p className="text-sm text-text-light">No hay productos en la selección del mes.</p> : null}
+          {items.map((item, index) => (
             <article key={item.id} className="flex items-center justify-between rounded-[10px] border border-border p-3">
               <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -335,7 +312,7 @@ export default function AdminLandingSeleccionPage() {
                 <button
                   type="button"
                   onClick={() => moveItem(item.id, "down")}
-                  disabled={index === visibleItems.length - 1}
+                  disabled={index === items.length - 1}
                   className="rounded-[8px] border border-border px-2 py-1 text-sm text-text-mid disabled:opacity-50"
                 >
                   Abajo

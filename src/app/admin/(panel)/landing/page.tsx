@@ -6,7 +6,7 @@ export default function AdminLandingPage() {
       <div>
         <h1 className="font-serif text-[2rem] leading-none text-text">Gestion del landing</h1>
         <p className="mt-2 text-sm font-light text-text-light">
-          Administra hero, banners, seleccion curada y la ilustracion editorial del footer.
+          Administra hero, banners, seleccion del mes y la ilustracion editorial del footer.
         </p>
       </div>
 
@@ -20,8 +20,8 @@ export default function AdminLandingPage() {
           <p className="mt-2 text-sm font-light text-text-light">Bloques visuales entre secciones del home.</p>
         </Link>
         <Link href="/admin/landing/seleccion" className="rounded-[10px] border border-border bg-white p-5 transition-colors hover:border-gold/40 hover:bg-gold/5">
-          <p className="font-medium text-text">Seleccion curada</p>
-          <p className="mt-2 text-sm font-light text-text-light">Colecciones editoriales y orden manual de productos.</p>
+          <p className="font-medium text-text">Seleccion del mes</p>
+          <p className="mt-2 text-sm font-light text-text-light">Coleccion editorial unica con orden manual para home y catalogo.</p>
         </Link>
         <Link href="/admin/landing/footer" className="rounded-[10px] border border-border bg-white p-5 transition-colors hover:border-gold/40 hover:bg-gold/5">
           <p className="font-medium text-text">Footer</p>

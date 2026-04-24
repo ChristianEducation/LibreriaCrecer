@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 
 import { useCart, useCartSummary } from "@/features/carrito/hooks";
 import { CreateOrderSchema, type CreateOrderSchemaInput } from "@/features/checkout/schemas";
-import { Button, Input, Textarea } from "@/shared/ui";
+import { Input, Textarea } from "@/shared/ui";
 import { formatCLP } from "@/shared/utils/formatters";
 
 type DeliveryOptionId = "pickup" | "chilexpress";
@@ -123,7 +123,7 @@ function CheckoutStep({
 
 function SectionTitle({ number, children }: { number: number; children: React.ReactNode }) {
   return (
-    <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "20px", fontWeight: 400, color: "var(--color-moss)", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid var(--color-border)", display: "flex", alignItems: "center", gap: "10px" }}>
+    <h2 style={{ fontFamily: "var(--font-inter)", fontSize: "16px", fontWeight: 600, letterSpacing: "-0.02em", color: "var(--color-moss)", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid var(--color-border)", display: "flex", alignItems: "center", gap: "10px" }}>
       <span style={{ width: "24px", height: "24px", borderRadius: "50%", background: "var(--color-moss)", color: "white", fontFamily: "var(--font-sans)", fontSize: "11px", fontWeight: 500, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         {number}
       </span>
@@ -313,7 +313,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                   <label
                     key={option.id}
                     onClick={() => setSelectedDeliveryOption(option.id)}
-                    style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 16px", border: `1px solid ${isSelected ? "var(--color-gold)" : "var(--color-border)"}`, borderRadius: "2px", cursor: "pointer", background: isSelected ? "rgba(217,186,30,0.05)" : "var(--color-white)", transition: "border-color 0.2s, background 0.2s" }}
+                    style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 16px", border: `1px solid ${isSelected ? "var(--color-gold)" : "var(--color-border)"}`, borderRadius: "var(--radius-lg)", cursor: "pointer", background: isSelected ? "rgba(217,186,30,0.05)" : "var(--color-white)", transition: "border-color 0.2s, background 0.2s" }}
                   >
                     {/* Radio visual */}
                     <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `1.5px solid ${isSelected ? "var(--color-gold)" : "var(--color-border)"}`, flexShrink: 0, position: "relative" }}>
@@ -376,12 +376,12 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                   />
 
                   <div>
-                    <label className="mb-2 block text-[10px] font-medium uppercase tracking-[0.18em] text-text-light">
+                    <label style={{ marginBottom: "8px", display: "block", fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)" }}>
                       Region
                     </label>
                     <select
                       className={cx(fieldClassName, errors.address?.region?.message ? errorFieldClassName : "")}
-                      style={{ width: "100%" }}
+                      style={{ width: "100%", paddingLeft: "14px", paddingRight: "14px", paddingTop: "10px", paddingBottom: "10px", borderRadius: "var(--radius-lg)" }}
                       {...register("address.region")}
                       defaultValue=""
                     >
@@ -431,13 +431,17 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
           {submitError ? <p className="text-[11px] text-error">{submitError}</p> : null}
 
           <div>
-            <Button className="w-full justify-center" loading={isSubmitting} type="submit" variant="moss">
-              Confirmar pedido
-            </Button>
+            <button
+              disabled={isSubmitting}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", paddingTop: "16px", paddingBottom: "16px", paddingLeft: "2rem", paddingRight: "2rem", background: "var(--moss)", color: "white", border: "none", borderRadius: "var(--radius-xl)", fontSize: "12px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", cursor: isSubmitting ? "not-allowed" : "pointer", opacity: isSubmitting ? 0.7 : 1, transition: "background 0.2s" }}
+              type="submit"
+            >
+              {isSubmitting ? "Procesando..." : "Confirmar pedido"}
+            </button>
           </div>
         </div>
 
-        <aside style={{ background: "var(--color-white)", border: "1px solid var(--color-border)", borderRadius: "2px", position: "sticky", top: "80px", overflow: "hidden" }}>
+        <aside style={{ background: "var(--color-white)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-lg)", position: "sticky", top: "80px", overflow: "hidden" }}>
           {/* Header */}
           <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid var(--color-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontFamily: "var(--font-serif)", fontSize: "18px", color: "var(--color-moss)" }}>Tu pedido</span>
@@ -448,13 +452,15 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
           <div style={{ maxHeight: "280px", overflowY: "auto", padding: "8px 0" }}>
             {items.map((item) => (
               <div key={item.productId} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 24px" }}>
-                <div style={{ width: "36px", flexShrink: 0, aspectRatio: "2/3", background: "linear-gradient(145deg, var(--color-beige-warm), var(--color-beige-mid))", borderRadius: "1px", position: "relative", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                  {item.imageUrl ? (
-                    <Image alt={item.title} fill sizes="36px" src={item.imageUrl} style={{ objectFit: "cover" }} />
-                  ) : (
-                    <BookIcon className="size-3 text-moss/20" />
-                  )}
-                  <span style={{ position: "absolute", top: "-5px", right: "-5px", width: "16px", height: "16px", borderRadius: "50%", background: "var(--color-moss)", color: "white", fontSize: "9px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ position: "relative", width: "36px", flexShrink: 0, aspectRatio: "2/3" }}>
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(145deg, var(--color-beige-warm), var(--color-beige-mid))", borderRadius: "1px", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    {item.imageUrl ? (
+                      <Image alt={item.title} fill sizes="36px" src={item.imageUrl} style={{ objectFit: "cover" }} />
+                    ) : (
+                      <BookIcon className="size-3 text-moss/20" />
+                    )}
+                  </div>
+                  <span style={{ position: "absolute", top: "-6px", right: "-6px", width: "18px", height: "18px", borderRadius: "50%", background: "var(--gold)", color: "white", fontSize: "9px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {item.quantity}
                   </span>
                 </div>
@@ -493,12 +499,14 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
 
           {/* Confirm button */}
           <div style={{ padding: "16px 24px", borderTop: "1px solid var(--color-border)" }}>
-            <Button className="w-full justify-center" loading={isSubmitting} type="submit" variant="moss">
-              <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <ShieldIcon />
-                <span>{isSubmitting ? "Procesando..." : "Confirmar pedido"}</span>
-              </span>
-            </Button>
+            <button
+              disabled={isSubmitting}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", paddingTop: "16px", paddingBottom: "16px", background: "var(--moss)", color: "white", border: "none", borderRadius: "var(--radius-xl)", fontSize: "12px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", cursor: isSubmitting ? "not-allowed" : "pointer", opacity: isSubmitting ? 0.7 : 1, transition: "background 0.2s" }}
+              type="submit"
+            >
+              <ShieldIcon />
+              <span>{isSubmitting ? "Procesando..." : "Confirmar pedido"}</span>
+            </button>
             <p style={{ marginTop: "12px", textAlign: "center", fontSize: "10px", color: "var(--color-text-light)" }}>
               Compra 100% segura · SSL
             </p>

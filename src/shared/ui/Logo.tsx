@@ -18,7 +18,7 @@ export function Logo({ size = "navbar", className }: LogoProps) {
 
   return (
     <Image
-      alt="Crecer Librería Cristiana"
+      alt="Crecer Librería Católica"
       className={className}
       height={0}
       priority={size === "navbar" || size === "splash"}

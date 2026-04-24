@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cx } from "class-variance-authority";
+import { BlurFade } from "@/shared/ui/BlurFade";
 
 type HeroSlide = {
   id: string;
@@ -20,7 +21,7 @@ type HeroSliderProps = {
 
 const fallbackSlide: HeroSlide = {
   id: "fallback",
-  title: "Crecer Librería Cristiana",
+  title: "Crecer Librería Católica",
   subtitle: "Librería Católica · Antofagasta",
   imageUrl: "",
   linkUrl: "/productos",
@@ -28,12 +29,21 @@ const fallbackSlide: HeroSlide = {
 };
 
 const heroCopy = {
-  eyebrow: "Libreria Catolica · Antofagasta",
-  titleStart: "Al servicio de la fe,",
-  titleEmphasis: "la educacion y la cultura",
+  eyebrow: "Librería Católica · Antofagasta",
+  fallbackTitle: "Al servicio de la fe, la educación y la cultura",
   description:
-    "Una cuidada seleccion de libros y textos para el crecimiento personal y comunitario en la sociedad actual.",
+    "Una cuidada selección de libros y textos para el crecimiento personal y comunitario en la sociedad actual.",
 } as const;
+
+function splitTitle(title: string | null): { first: string; second: string | null } {
+  if (!title) return { first: "", second: null };
+  const commaIndex = title.indexOf(",");
+  if (commaIndex === -1) return { first: title, second: null };
+  return {
+    first: title.slice(0, commaIndex + 1),
+    second: title.slice(commaIndex + 1).trim(),
+  };
+}
 
 /** Solo chevron, sin contorno — navegación del carrusel */
 function HeroNavChevron({ direction }: { direction: "left" | "right" }) {
@@ -87,6 +97,11 @@ export function HeroSlider({ slides }: HeroSliderProps) {
 
   const activeSlide = items[activeIndex] ?? fallbackSlide;
 
+  // DEBUG TEMPORAL — eliminar cuando se confirme que title llega correctamente
+  useEffect(() => {
+    console.warn("[HeroSlider] activeSlide:", activeSlide);
+  }, [activeSlide]);
+
   const [hasScrolled, setHasScrolled] = useState(false);
   useEffect(() => {
     function onScroll() {
@@ -110,39 +125,97 @@ export function HeroSlider({ slides }: HeroSliderProps) {
           />
         ) : null}
 
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(58,48,1,0.25)_0%,rgba(58,48,1,0.68)_100%)]" />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.50) 50%, rgba(0,0,0,0.75) 100%)" }} />
         <div className="absolute inset-x-0 top-0 h-40 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.08),transparent)]" />
 
         <div className="absolute inset-0 z-[2] flex items-center justify-center px-5 md:px-10">
           {/* .hero-content: max-width 740px; .hero-tag mb 28px; h1 mb 22px; .hero-desc mb 44px; .hero-actions */}
-          <div className="flex w-full max-w-[740px] flex-col items-center text-white">
-            <div className="mb-7 inline-flex items-center gap-2 border border-gold/35 bg-gold/8 px-4 py-[5px] text-[10px] uppercase tracking-[0.22em] text-white/85">
-              <span className="h-1 w-1 rounded-full bg-gold" />
-              {heroCopy.eyebrow}
-              <span className="h-1 w-1 rounded-full bg-gold" />
-            </div>
-
-            <h1 className="font-display mb-[22px] text-[clamp(44px,6vw,82px)] font-normal leading-[1.05] tracking-[-0.015em] text-white">
-              {heroCopy.titleStart}
-              <br />
-              <em className="editorial-emphasis text-[rgba(232,210,140,0.92)]">{heroCopy.titleEmphasis}</em>
-            </h1>
-            <p className="font-editorial max-w-[440px] text-[15px] font-light leading-[1.8] tracking-[0.01em] text-white/72" style={{ marginBottom: "4rem" }}>
-              {heroCopy.description}
-            </p>
-
-            <div className="flex items-center justify-center gap-4">
-              <Link
-                className="inline-flex items-center gap-2 border border-white/35 text-[13px] uppercase tracking-[0.14em] text-white/85 transition-colors duration-200 hover:border-gold hover:text-gold"
-                href="/productos"
-                style={{ padding: "0.45rem 1.1rem" }}
+          <div
+            className="flex w-full flex-col items-center text-white"
+            style={{ paddingTop: "120px", maxWidth: "560px", margin: "0 auto", textAlign: "center" }}
+          >
+            <BlurFade delay={0.1} inView>
+              <p
+                style={{
+                  marginBottom: "1.75rem",
+                  background: "none",
+                  border: "none",
+                  padding: "0",
+                  color: "#ffffff",
+                  fontSize: "9px",
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                }}
               >
-                Ver colección
-                <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </Link>
-            </div>
+                {heroCopy.eyebrow}
+              </p>
+            </BlurFade>
+
+            <BlurFade delay={0.25} inView>
+              <h1
+                className="heading-display font-normal"
+                style={{ fontSize: "clamp(42px, 5vw, 64px)", lineHeight: 1.05, letterSpacing: "-0.015em", marginBottom: "16px" }}
+              >
+                {(() => {
+                  const { first, second } = splitTitle(activeSlide.title ?? heroCopy.fallbackTitle);
+                  return (
+                    <>
+                      <span style={{ fontFamily: "var(--font-inter)", fontWeight: 400, color: "#ffffff" }}>
+                        {first}
+                      </span>
+                      {second ? (
+                        <>
+                          <br />
+                          <em style={{ fontFamily: "var(--font-castoro)", fontStyle: "italic", fontWeight: 400, color: "#ffffff" }}>
+                            {second}
+                          </em>
+                        </>
+                      ) : null}
+                    </>
+                  );
+                })()}
+              </h1>
+            </BlurFade>
+
+            <BlurFade delay={0.4} inView>
+              <p
+                className="font-light"
+                style={{
+                  fontSize: "15px",
+                  maxWidth: "480px",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  marginBottom: "32px",
+                  lineHeight: "1.7",
+                  color: "#ffffff",
+                }}
+              >
+                {heroCopy.description}
+              </p>
+            </BlurFade>
+
+            <BlurFade delay={0.55} inView>
+              <div className="flex items-center justify-center gap-4">
+                <Link
+                  className="inline-flex items-center gap-2 text-[13px] uppercase tracking-[0.14em] text-white transition-opacity duration-200 hover:opacity-80"
+                  href="/productos"
+                  style={{
+                    paddingTop: "14px",
+                    paddingBottom: "14px",
+                    paddingLeft: "2rem",
+                    paddingRight: "2rem",
+                    fontSize: "12px",
+                    background: "#c8a830",
+                    borderRadius: "var(--radius-xl)",
+                  }}
+                >
+                  Ver colección
+                  <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </BlurFade>
           </div>
 
           {items.length > 1 ? (
@@ -195,9 +268,21 @@ export function HeroSlider({ slides }: HeroSliderProps) {
 
         <div
           aria-hidden="true"
-          className="hero-scroll-indicator"
-          style={{ opacity: hasScrolled ? 0 : 1 }}
-        />
+          style={{
+            position: "absolute",
+            left: "50%",
+            bottom: "clamp(1.5rem, 3vw, 2.5rem)",
+            transform: "translateX(-50%)",
+            opacity: hasScrolled ? 0 : 0.7,
+            transition: "opacity 0.4s ease",
+            zIndex: 5,
+            pointerEvents: "none",
+          }}
+        >
+          <svg className="scroll-bounce" fill="none" height="32" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="32">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
       </div>
     </section>
   );

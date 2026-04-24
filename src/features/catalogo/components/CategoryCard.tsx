@@ -33,7 +33,7 @@ export function CategoryCard({
         position: "relative",
         aspectRatio: "3/2",
         overflow: "hidden",
-        borderRadius: "2px",
+        borderRadius: "var(--radius-sm)",
         transition: "transform 0.3s ease",
         textDecoration: "none",
       }}

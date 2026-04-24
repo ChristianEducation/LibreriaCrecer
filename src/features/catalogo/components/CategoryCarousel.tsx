@@ -9,50 +9,30 @@ type CategoryCarouselProps = {
 
 export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselProps) {
   return (
-    <section className="page-px bg-beige-warm" id="categorias" style={{ paddingTop: "5rem", paddingBottom: "5rem" }}>
-      {/* Header */}
-      <div style={{ marginBottom: "2.5rem" }}>
-        <p
-          className="section-eyebrow font-sans uppercase text-gold"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            letterSpacing: "0.35em",
-            marginBottom: "10px",
-          }}
-        >
-          <span
-            style={{
-              width: "24px",
-              height: "1px",
-              background: "var(--gold)",
-              flexShrink: 0,
-              display: "inline-block",
-            }}
-          />
-          Explorar
-        </p>
-        <h2
-          className="font-serif font-normal text-moss"
-          style={{ fontSize: "clamp(1.75rem, 3vw, 2.75rem)", lineHeight: 1.15, letterSpacing: "-0.01em" }}
-        >
-          Categorías
-        </h2>
-      </div>
+    <section className="page-px bg-beige-warm" id="categorias" style={{ paddingTop: "8rem", paddingBottom: "8rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "12px" }}>
+        {/* Celda 1 — bloque de título */}
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", aspectRatio: "3/2" }}>
+          <p
+            className="eyebrow"
+            style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}
+          >
+            <span style={{ width: "20px", height: "1px", background: "var(--gold)", flexShrink: 0, display: "inline-block" }} />
+            Explorar
+          </p>
+          <h2
+            className="heading-xl font-normal"
+            style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", color: "var(--moss)" }}
+          >
+            Categorías
+          </h2>
+        </div>
 
-      {/* Grid */}
-      {categories.length === 0 ? (
-        <p style={{ fontSize: "13px", color: "var(--color-text-light)" }}>No hay categorías disponibles.</p>
-      ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-            gap: "16px",
-          }}
-        >
-          {categories.map((cat, index) => (
+        {/* Celdas 2-10 — cards */}
+        {categories.length === 0 ? (
+          <p style={{ fontSize: "13px", color: "var(--text-light)", gridColumn: "2 / -1" }}>No hay categorías disponibles.</p>
+        ) : (
+          categories.map((cat, index) => (
             <CategoryCard
               imageUrl={cat.imageUrl}
               key={cat.id}
@@ -63,9 +43,9 @@ export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselPr
               productCount={cat.productCount}
               slug={cat.slug}
             />
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </section>
   );
 }

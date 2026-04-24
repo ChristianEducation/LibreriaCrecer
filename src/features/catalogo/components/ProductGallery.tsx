@@ -83,7 +83,7 @@ function PlaceholderBook({
 
         <div className="my-4 h-px w-[40%] bg-white/[0.15]" />
         <span className="font-editorial text-[9px] uppercase tracking-[0.2em] text-white/[0.3]">
-          Crecer Libreria Cristiana
+          Crecer Librería Católica
         </span>
       </div>
     </div>

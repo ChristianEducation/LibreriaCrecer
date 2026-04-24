@@ -13,7 +13,7 @@ interface BrandLoaderProps {
 export function BrandLoader({ className }: BrandLoaderProps) {
   return (
     <div
-      aria-label="Cargando Crecer Librería Cristiana"
+      aria-label="Cargando Crecer Librería Católica"
       className={`fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-beige${className ? ` ${className}` : ""}`}
       role="status"
     >

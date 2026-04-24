@@ -34,7 +34,12 @@ test.describe("Catálogo /productos", () => {
     await expect(page).toHaveURL(/filter=oferta/);
   });
 
-  test.skip("chip 'Todos' limpia el filtro en la URL", async ({ page }) => {
+  test("chip 'Selección del mes' actualiza la URL con filter=seleccion", async ({ page }) => {
+    await page.getByRole("button", { name: "Selección del mes" }).first().click();
+    await expect(page).toHaveURL(/filter=seleccion/);
+  });
+
+  test.skip("chip 'Todos' limpia el filtro en la URL", async () => {
     // SKIP: El chip "Todos" usa router.push("/productos") de Next.js App Router,
     // que no dispara eventos de navegación detectables por Playwright cuando
     // la URL actual ya tiene un filter= (viene de navegación client-side previa).

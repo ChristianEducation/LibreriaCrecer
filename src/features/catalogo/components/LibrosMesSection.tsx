@@ -63,21 +63,18 @@ function BookTile({ item }: { item: CuratedProduct }) {
             src={product.mainImageUrl}
           />
         ) : null}
+      </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-[linear-gradient(to_top,rgba(20,16,4,0.55)_0%,rgba(20,16,4,0)_100%)]" />
-
-        <div
-          className="glass-overlay absolute inset-x-0 bottom-0 px-3 py-2.5"
-          style={{ paddingBlock: "0.65rem" }}
-        >
-          <p className="libros-mes-brand mb-0.5 tracking-[0.05em] uppercase text-white/65">
-            {product.author ?? "Selección especial"}
-          </p>
-          <h3 className="libros-mes-libro-title mb-1 font-serif font-medium leading-[1.25] text-white line-clamp-2">
-            {product.title}
-          </h3>
-          <p className="libros-mes-price font-medium text-[rgb(232,210,140)]">{formatCLP(price)}</p>
-        </div>
+      <div style={{ paddingTop: "10px" }}>
+        <p style={{ fontFamily: "var(--font-inter)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-light)" }}>
+          {product.author ?? "Selección especial"}
+        </p>
+        <h3 style={{ fontFamily: "var(--font-inter)", fontSize: "14px", fontWeight: 600, color: "var(--text)", marginTop: "4px", lineHeight: 1.25, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+          {product.title}
+        </h3>
+        <p style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: "var(--gold-light)", marginTop: "4px" }}>
+          {formatCLP(price)}
+        </p>
       </div>
     </Link>
   );
@@ -125,29 +122,32 @@ export function LibrosMesSection({ items }: LibrosMesSectionProps) {
   }
 
   return (
-    <section className="page-px bg-white" id="libros-mes" style={{ paddingTop: "5rem", paddingBottom: "5rem" }}>
+    <section className="page-px bg-white" id="libros-mes" style={{ paddingTop: "9rem", paddingBottom: "10rem" }}>
         <div className="libros-mes-grid">
           <div>
-            <p className="section-eyebrow libros-mes-eyebrow flex items-center gap-2 font-sans uppercase tracking-[0.35em] text-gold">
-              <span className="libros-mes-eyebrow-line h-px shrink-0 bg-gold" />
-              Selección especial
+            <p
+              className="eyebrow libros-mes-eyebrow flex items-center gap-2"
+              style={{ marginBottom: "0.75rem" }}
+            >
+              <span className="libros-mes-eyebrow-line h-px shrink-0" style={{ background: "var(--gold)" }} />
+              SELECCIÓN ESPECIAL
             </p>
-            <h2 className="libros-mes-title font-display font-normal text-moss">
+            <h2 className="heading-xl libros-mes-title font-normal" style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", fontWeight: 400, color: "var(--moss)" }}>
               Selección
               <br />
-              <em className="editorial-emphasis text-moss">del mes</em>
+              del mes
             </h2>
-            <p className="libros-mes-body font-editorial text-text-light">
+            <p className="libros-mes-body text-text-light" style={{ fontFamily: "var(--font-inter)" }}>
               Una selección de obras particularmente <strong className="font-semibold text-text-mid">relevantes e inspiradoras</strong>:
-              desde estudios bíblicos y devocionales hasta <em className="editorial-emphasis text-text-mid">biografías de figuras católicas</em>.
+              desde estudios bíblicos y devocionales hasta <em style={{ fontFamily: "var(--font-inter)", fontStyle: "normal", fontWeight: 600, color: "var(--text-mid)" }}>biografías de figuras católicas</em>.
             </p>
           </div>
 
-          <div className="flex items-center gap-0">
+          <div className="flex items-center" style={{ gap: "16px" }}>
             {items.length > 0 && (
               <button
                 aria-label="Anterior"
-                className="libros-mes-btn shrink-0 flex items-center justify-center rounded-[2px] border border-border bg-transparent text-text-mid transition-all duration-[220ms] hover:border-moss hover:bg-moss hover:text-white"
+                className="libros-nav-round"
                 onClick={() => scrollByDirection(-1)}
                 type="button"
               >
@@ -171,7 +171,7 @@ export function LibrosMesSection({ items }: LibrosMesSectionProps) {
             {items.length > 0 && (
               <button
                 aria-label="Siguiente"
-                className="libros-mes-btn shrink-0 flex items-center justify-center rounded-[2px] border border-border bg-transparent text-text-mid transition-all duration-[220ms] hover:border-moss hover:bg-moss hover:text-white"
+                className="libros-nav-round"
                 onClick={() => scrollByDirection(1)}
                 type="button"
               >

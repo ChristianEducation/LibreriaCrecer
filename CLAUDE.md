@@ -172,7 +172,7 @@ Valores de `position` en uso:
 }
 ```
 
-**featured_products** — `product_id` (FK), `section` (string libre), `description` editorial, `display_order`, `is_active`
+**featured_products** — `product_id` (FK), `section` (usar `monthly_selection` como valor canónico), `description` editorial, `display_order`, `is_active`
 
 **admin_users** — `email`, `password_hash` (bcrypt, 12 rounds), `name`, `is_active`
 
@@ -543,7 +543,7 @@ npm run test:e2e:report   # Ver reporte HTML del último run
 - Seed es idempotente (usa `onConflictDoNothing`)
 
 ### Navbar
-Links en orden: Colección → Categorías (dropdown con hover) → Selección del mes (`/#libros-mes`) → Recién llegados (`/#recien-llegados`)
+Links en orden: Colección → Categorías (dropdown con hover) → Selección del mes (`/productos?filter=seleccion`) → Recién llegados (`/productos?filter=nuevo`)
 - Dropdown de Categorías: inline styles, `opacity + translateY` transition, delay 150ms en `onMouseLeave` para que el cursor pueda llegar al menú sin que se cierre
 - El dropdown muestra "Ver toda la colección" + categorías dinámicas pasadas como prop
 

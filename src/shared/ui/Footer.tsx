@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
 
@@ -34,12 +35,12 @@ const defaultFooterBanner: FooterBannerMetadata & { imageUrl: string | null } = 
 
 const defaultFooterContent = {
   brandDescription:
-    "Una libreria cristiana pensada para acompanar el estudio, la devocion y la vida diaria con una seleccion curada de titulos.",
-  catalogLinks: "Coleccion completa::/productos|||Novedades::/productos?filter=nuevo|||Ofertas::/productos?filter=oferta",
+    "Una librería católica pensada para acompañar el estudio, la devoción y la vida diaria con una selección curada de títulos.",
+  catalogLinks: "Colección completa::/productos|||Novedades::/productos?filter=nuevo|||Ofertas::/productos?filter=oferta",
   infoLinks: "Mi carrito::/carrito|||Checkout::/checkout",
   address: "Arturo Prat 470 / Antofagasta, Chile",
   mapsUrl: "https://maps.google.com/?q=Arturo+Prat+470+Antofagasta",
-  copyrightText: "© 2026 Crecer Libreria. Todos los derechos reservados.",
+  copyrightText: "© 2026 Crecer Librería. Todos los derechos reservados.",
   designCredit: "Diseño: Hultur Studio",
 };
 
@@ -123,15 +124,6 @@ async function getFooterContent() {
   }
 }
 
-function BrandCross() {
-  return (
-    <span className="relative block h-5 w-5">
-      <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-gold" />
-      <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-gold" />
-    </span>
-  );
-}
-
 export async function Footer() {
   const [banner, content] = await Promise.all([getFooterBanner(), getFooterContent()]);
   const mid = Math.round((banner.fadeStart + banner.fadeEnd) / 2);
@@ -140,7 +132,7 @@ export async function Footer() {
   const infoLinks = parseLinks(content.infoLinks);
 
   return (
-    <footer className="relative overflow-hidden bg-beige-warm">
+    <footer className="relative overflow-hidden" style={{ background: "var(--beige-warm)" }}>
       <div
         className="absolute inset-x-0 top-0 h-px"
         style={{
@@ -181,27 +173,23 @@ export async function Footer() {
       <div className="relative z-[3] flex min-h-[280px] items-stretch">
         {hasIllustration ? <div style={{ width: `${banner.artSpaceWidth}%` }} /> : null}
 
-        <div className="flex-1 px-8 pb-0 pt-10 md:px-14">
+        <div className="flex-1 page-px" style={{ paddingTop: "5rem", paddingBottom: "3rem" }}>
           <div className="grid grid-cols-1 gap-7 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
             <div>
-              <div className="mb-4 flex items-center gap-3">
-                <BrandCross />
-                <div>
-                  <p className="font-serif text-[17px] text-text">Crecer Libreria</p>
-                  <p className="text-[7px] uppercase tracking-[0.22em] text-gold">Fe, lectura y formacion</p>
-                </div>
-              </div>
-              <p className="max-w-[240px] text-[11px] font-light leading-[1.75] text-text-light">
+              <Image src="/images/Logo-Crecer.png" alt="Crecer Librería" width={44} height={44} style={{ objectFit: "contain", marginBottom: "12px" }} />
+              <p style={{ fontFamily: "var(--font-castoro)", fontSize: "18px", color: "var(--text)", fontWeight: 400 }}>Crecer Libreria</p>
+              <p style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "12px", marginTop: "2px" }}>Fe, lectura y formación</p>
+              <p style={{ fontFamily: "var(--font-inter)", fontSize: "13px", lineHeight: 1.7, color: "var(--text-light)", maxWidth: "240px" }}>
                 {content.brandDescription}
               </p>
             </div>
 
             <div>
-              <h4 className="mb-[14px] text-[7px] uppercase tracking-[0.28em] text-gold">Catalogo</h4>
+              <h4 style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "16px" }}>Catálogo</h4>
               <div className="flex flex-col gap-2">
                 {catalogLinks.map((link) => (
                   <Link
-                    className="text-[11px] font-light text-text-mid transition-colors hover:text-moss"
+                    style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: "var(--text-mid)", lineHeight: 2, textDecoration: "none" }}
                     href={link.href}
                     key={link.href}
                   >
@@ -212,11 +200,11 @@ export async function Footer() {
             </div>
 
             <div>
-              <h4 className="mb-[14px] text-[7px] uppercase tracking-[0.28em] text-gold">Informacion</h4>
+              <h4 style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "16px" }}>Información</h4>
               <div className="flex flex-col gap-2">
                 {infoLinks.map((link) => (
                   <Link
-                    className="text-[11px] font-light text-text-mid transition-colors hover:text-moss"
+                    style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: "var(--text-mid)", lineHeight: 2, textDecoration: "none" }}
                     href={link.href}
                     key={link.href}
                   >
@@ -227,7 +215,7 @@ export async function Footer() {
             </div>
 
             <div>
-              <h4 className="mb-[14px] text-[7px] uppercase tracking-[0.28em] text-gold">Ubicacion</h4>
+              <h4 style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "16px" }}>Ubicación</h4>
               <div className="flex items-start gap-[7px] text-text-mid">
                 <svg aria-hidden="true" className="mt-0.5 size-[14px] shrink-0 text-gold" fill="none" viewBox="0 0 24 24">
                   <path
@@ -237,7 +225,7 @@ export async function Footer() {
                   />
                   <circle cx="12" cy="9" fill="currentColor" r="1.75" />
                 </svg>
-                <p className="text-[11px] font-light">{content.address}</p>
+                <p style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: "var(--text-mid)" }}>{content.address}</p>
               </div>
               <a
                 className="mt-3 inline-block border-b border-b-gold/30 text-[9px] font-medium uppercase tracking-[0.1em] text-gold transition-colors hover:border-b-gold"
@@ -252,11 +240,14 @@ export async function Footer() {
         </div>
       </div>
 
-      <div className="relative z-[3] flex flex-col gap-2 border-t border-t-[rgba(115,96,2,0.1)] px-14 pb-5 pt-[14px] text-[10px] text-text-light md:flex-row md:items-center md:justify-between">
+      <div
+        className="relative z-[3] page-px flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
+        style={{ borderTop: "1px solid var(--border)", paddingTop: "1.5rem", paddingBottom: "1.5rem", fontFamily: "var(--font-inter)", fontSize: "11px", color: "var(--text-light)" }}
+      >
         <p>{content.copyrightText}</p>
         <div className="flex items-center gap-3">
           <p>{content.designCredit}</p>
-          <Link className="opacity-60 no-underline transition-opacity hover:opacity-100" href="/admin/login" style={{ fontSize: "10px", color: "inherit", textDecoration: "none" }}>·</Link>
+          <Link href="/admin/login" style={{ fontSize: "11px", color: "var(--text-light)", textDecoration: "none", opacity: 0.5 }}>·</Link>
         </div>
       </div>
     </footer>

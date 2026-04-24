@@ -23,6 +23,7 @@
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "drizzle-orm": "^0.45.1",
+    "framer-motion": "^12.38.0",
     "jose": "^6.2.1",
     "lottie-react": "^2.4.1",
     "next": "15.2.4",

@@ -81,7 +81,7 @@ export default function AdminLandingFooterPage() {
   const [contentSaving, setContentSaving] = useState(false);
   const [contentError, setContentError] = useState<string | null>(null);
   const [brandDescription, setBrandDescription] = useState(
-    "Una libreria cristiana pensada para acompanar el estudio, la devocion y la vida diaria con una seleccion curada de titulos.",
+    "Una librería católica pensada para acompañar el estudio, la devoción y la vida diaria con una selección curada de títulos.",
   );
   const [catalogLinksUi, setCatalogLinksUi] = useState(
     "Coleccion completa :: /productos\nNovedades :: /productos?filter=nuevo\nOfertas :: /productos?filter=oferta",

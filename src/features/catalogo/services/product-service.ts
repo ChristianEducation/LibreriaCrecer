@@ -14,6 +14,7 @@ import {
 
 import { db } from "@/integrations/drizzle";
 import { categories, featuredProducts, productCategories, productImages, products } from "@/integrations/drizzle/schema";
+import { MONTHLY_SELECTION_SECTION_ALIASES } from "@/shared/config/landing";
 
 import type {
   CatalogProduct,
@@ -41,6 +42,33 @@ type ProductRow = {
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 12;
 const DEFAULT_SLIDER_LIMIT = 6;
+
+function buildMonthlySelectionSubquery() {
+  return db
+    .select({ productId: featuredProducts.productId })
+    .from(featuredProducts)
+    .where(
+      and(
+        inArray(featuredProducts.section, [...MONTHLY_SELECTION_SECTION_ALIASES]),
+        eq(featuredProducts.isActive, true),
+      ),
+    );
+}
+
+function getMonthlySelectionOrderClause() {
+  const aliasValues = sql.join(
+    MONTHLY_SELECTION_SECTION_ALIASES.map((section) => sql`${section}`),
+    sql`, `,
+  );
+
+  return sql<number>`coalesce((
+    select min(${featuredProducts.displayOrder})
+    from ${featuredProducts}
+    where ${featuredProducts.productId} = ${products.id}
+      and ${featuredProducts.isActive} = true
+      and ${featuredProducts.section} in (${aliasValues})
+  ), 2147483647)`;
+}
 
 function calculateDiscountPercentage(price: number, salePrice: number | null): number {
   if (!salePrice || salePrice >= price) {
@@ -160,12 +188,7 @@ function buildProductConditions({
   }
 
   if (onlySeleccion) {
-    const seleccionSubquery = db
-      .select({ productId: featuredProducts.productId })
-      .from(featuredProducts)
-      .where(and(eq(featuredProducts.section, "libros_mes"), eq(featuredProducts.isActive, true)));
-
-    conditions.push(inArray(products.id, seleccionSubquery));
+    conditions.push(inArray(products.id, buildMonthlySelectionSubquery()));
   }
 
   return conditions.length > 0 ? and(...conditions) : undefined;
@@ -203,7 +226,11 @@ export async function getProducts(params: ProductQueryParams): Promise<ProductLi
     })
     .from(products)
     .where(whereClause)
-    .orderBy(...getSortClause(sortBy))
+    .orderBy(
+      ...(params.onlySeleccion
+        ? [asc(getMonthlySelectionOrderClause()), asc(products.title)]
+        : getSortClause(sortBy)),
+    )
     .limit(limit)
     .offset(offset);
 

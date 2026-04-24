@@ -47,13 +47,13 @@ En `buildProductConditions()`, agregar la condición correspondiente cuando `onl
 
 ```typescript
 if (onlySeleccion) {
-  // Subquery: IDs de productos que están en featured_products con section = 'libros_mes'
+  // Subquery: IDs de productos que están en featured_products con section = 'monthly_selection'
   const seleccionSubquery = db
     .select({ productId: featuredProducts.productId })
     .from(featuredProducts)
     .where(
       and(
-        eq(featuredProducts.section, "libros_mes"),
+        eq(featuredProducts.section, "monthly_selection"),
         eq(featuredProducts.isActive, true)
       )
     );
@@ -310,7 +310,7 @@ Leer el archivo del dashboard admin (`src/app/admin/(panel)/page.tsx`) para ver 
 - [ ] `FilterBar.tsx` muestra chip "Selección del mes"
 - [ ] Navbar desktop: links apuntan a `/productos?filter=seleccion` y `/productos?filter=nuevo`
 - [ ] Navbar mobile (drawer): mismos links actualizados
-- [ ] `/productos?filter=seleccion` muestra solo los productos de `featured_products` con `section = 'libros_mes'`
+- [ ] `/productos?filter=seleccion` muestra solo los productos de `featured_products` con `section = 'monthly_selection'`
 - [ ] `/productos?filter=nuevo` sigue funcionando igual que antes
 
 ### Parte B — Página /nosotros

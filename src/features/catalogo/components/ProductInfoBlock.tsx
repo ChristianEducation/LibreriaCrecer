@@ -101,8 +101,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
       {/* Eyebrow — categorías */}
       {product.categories.length > 0 && (
         <p
-          className="font-editorial"
-          style={{ fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "12px", display: "flex", alignItems: "center", gap: "10px", fontWeight: 500 }}
+          style={{ fontFamily: "var(--font-inter)", fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "12px", display: "flex", alignItems: "center", gap: "10px" }}
         >
           <span style={{ width: "20px", height: "1px", background: "var(--gold)", flexShrink: 0, display: "inline-block" }} />
           {product.categories.map((c) => c.name).join(" · ")}
@@ -228,10 +227,10 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
       {/* Fila agregar al carrito */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
         {/* Control de cantidad */}
-        <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--border)", borderRadius: "2px", overflow: "hidden", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", flexShrink: 0, overflow: "hidden" }}>
           <button
             onClick={decrement}
-            style={{ width: "36px", height: "48px", background: "var(--beige-warm)", border: "none", fontSize: "18px", color: "var(--text-mid)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            style={{ width: "36px", height: "48px", background: "var(--beige-warm)", border: "none", borderRadius: "var(--radius-md) 0 0 var(--radius-md)", fontSize: "18px", color: "var(--text-mid)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
             type="button"
           >
             −
@@ -246,7 +245,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
           />
           <button
             onClick={increment}
-            style={{ width: "36px", height: "48px", background: "var(--beige-warm)", border: "none", fontSize: "18px", color: "var(--text-mid)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            style={{ width: "36px", height: "48px", background: "var(--beige-warm)", border: "none", borderRadius: "0 var(--radius-md) var(--radius-md) 0", fontSize: "18px", color: "var(--text-mid)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
             type="button"
           >
             +
@@ -263,7 +262,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
             background: added ? "var(--moss-mid, #8A7302)" : "var(--moss)",
             color: "white",
             border: "none",
-            borderRadius: "2px",
+            borderRadius: "var(--radius-xl)",
             fontSize: "12px",
             fontWeight: 500,
             letterSpacing: "0.1em",
@@ -284,13 +283,13 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
 
       {/* Badges de confianza */}
       <div className="font-editorial" style={{ display: "flex", gap: "20px", flexWrap: "wrap", paddingTop: "20px", marginTop: "4px", borderTop: "1px solid var(--border)" }}>
-        <span style={{ display: "flex", alignItems: "center", gap: "7px", fontSize: "11px", color: "var(--text-light)" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: "7px", fontSize: "11px", color: "var(--text-light)", borderRadius: "var(--radius-xl)", padding: "6px 12px", border: "1px solid var(--border)" }}>
           <TruckIcon /> Envío a todo Chile
         </span>
-        <span style={{ display: "flex", alignItems: "center", gap: "7px", fontSize: "11px", color: "var(--text-light)" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: "7px", fontSize: "11px", color: "var(--text-light)", borderRadius: "var(--radius-xl)", padding: "6px 12px", border: "1px solid var(--border)" }}>
           <ShieldIcon /> Compra segura
         </span>
-        <span style={{ display: "flex", alignItems: "center", gap: "7px", fontSize: "11px", color: "var(--text-light)" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: "7px", fontSize: "11px", color: "var(--text-light)", borderRadius: "var(--radius-xl)", padding: "6px 12px", border: "1px solid var(--border)" }}>
           <MapPinIcon /> Retiro en tienda · Antofagasta
         </span>
       </div>

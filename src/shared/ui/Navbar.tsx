@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cx } from "class-variance-authority";
@@ -9,7 +10,6 @@ import { useCartSummary } from "@/features/carrito/hooks";
 import { useCartHydration } from "@/features/carrito/useCartHydration";
 
 import { CartPanel } from "./CartPanel";
-import { Logo } from "./Logo";
 
 function SearchIcon() {
   return (
@@ -92,7 +92,6 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
   const { totalItems } = useCartSummary();
   const categoriesRef = useRef<HTMLLIElement | null>(null);
   const categoriesCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const safeTotalItems = hydrated ? totalItems : 0;
 
   function handleCategoriesMouseEnter() {
     if (categoriesCloseTimeout.current) {
@@ -186,23 +185,31 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
       >
         <div className="page-px flex h-16 items-center justify-between gap-5">
           <Link className="flex shrink-0 items-center gap-[10px]" href="/">
-            <Logo size="navbar" />
+            <Image
+                src="/images/Logo-Crecer.png"
+                alt="Crecer Librería"
+                width={44}
+                height={44}
+                style={{ objectFit: "contain" }}
+              />
             <span className="flex flex-col">
               <span
                 className={cx(
-                  "font-serif text-[18px] font-medium transition-colors",
+                  "font-serif font-medium transition-colors",
                   isTransparent ? "text-white" : "text-moss",
                 )}
+                style={{ fontSize: "16px" }}
               >
-                Crecer Libreria
+                Crecer Librería
               </span>
               <span
                 className={cx(
-                  "text-[9px] uppercase tracking-[0.22em] transition-colors",
+                  "uppercase tracking-[0.22em] transition-colors",
                   isTransparent ? "text-white/80" : "text-gold",
                 )}
+                style={{ fontSize: "11px", textAlign: "center", width: "100%", marginTop: "-2px", fontWeight: 600 }}
               >
-                Libreria cristiana
+                C A T Ó L I C A
               </span>
             </span>
           </Link>
@@ -219,12 +226,12 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
               {/* Desktop search */}
               <form
                 className="relative hidden flex-1 lg:block"
-                style={{ maxWidth: "300px" }}
+                style={{ maxWidth: "300px", borderRadius: "var(--radius-xl)" }}
                 onSubmit={handleSearch}
               >
                 <input
                   className={cx(
-                    "h-10 w-full rounded border py-2 pl-4 pr-10 text-[14px] transition-[border-color,background-color,color] duration-200 focus:outline-none",
+                    "h-10 w-full border text-[14px] transition-[border-color,background-color,color] duration-200 focus:outline-none",
                     isTransparent
                       ? "border-white/30 bg-white/10 text-white placeholder:text-white/60 focus:border-white/60 focus:bg-white/15"
                       : "border-border bg-beige-warm text-text placeholder:text-text-light focus:border-gold focus:bg-white",
@@ -232,6 +239,7 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                   placeholder="Buscar libros, autores..."
                   type="search"
                   value={searchQuery}
+                  style={{ paddingLeft: "16px", paddingRight: "16px", borderRadius: "var(--radius-xl)" }}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <button
@@ -247,7 +255,7 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
               </form>
 
               {/* Desktop nav — hidden on mobile */}
-              <nav className="hidden items-center gap-7 lg:flex">
+              <nav className="hidden items-center gap-5 lg:flex">
                 <Link
                   className={cx(
                     "text-[13px] tracking-[0.04em] transition-colors",
@@ -364,17 +372,29 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
               <div className="flex shrink-0 items-center gap-3">
                 <button
                   aria-expanded={isCartOpen}
-                  className={cx(
-                    "relative flex items-center gap-1.5 transition-opacity hover:opacity-70",
-                    isTransparent ? "text-white" : "text-moss",
-                  )}
+                  aria-label="Abrir carrito"
+                  className="navbar-cart-btn"
                   onClick={() => setIsCartOpen((current) => !current)}
                   type="button"
                 >
                   <CartIcon />
-                  {safeTotalItems > 0 && (
-                    <span className="flex size-4 items-center justify-center rounded-full bg-gold text-[9px] font-semibold text-white">
-                      {safeTotalItems}
+                  {hydrated && totalItems > 0 && (
+                    <span
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "16px",
+                        height: "16px",
+                        borderRadius: "50%",
+                        background: "white",
+                        color: "var(--gold)",
+                        fontSize: "9px",
+                        fontWeight: 600,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {totalItems}
                     </span>
                   )}
                 </button>

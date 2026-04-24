@@ -9,10 +9,7 @@ function getPersistApi() {
 }
 
 export function useCartHydration() {
-  const [hydrated, setHydrated] = useState(() => {
-    const persistApi = getPersistApi();
-    return persistApi ? persistApi.hasHydrated() : true;
-  });
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const persistApi = getPersistApi();

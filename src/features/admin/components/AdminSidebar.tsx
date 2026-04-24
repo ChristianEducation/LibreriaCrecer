@@ -35,7 +35,7 @@ const sections: { label: string; items: SidebarItem[] }[] = [
     items: [
       { href: "/admin/landing/hero", label: "Hero", icon: "◆" },
       { href: "/admin/landing/banners", label: "Banners", icon: "▤" },
-      { href: "/admin/landing/seleccion", label: "Seleccion curada", icon: "✦" },
+      { href: "/admin/landing/seleccion", label: "Seleccion del mes", icon: "✦" },
       { href: "/admin/landing/footer", label: "Footer", icon: "—" },
     ],
   },

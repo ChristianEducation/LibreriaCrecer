@@ -21,17 +21,17 @@
   --color-error: #c0392b;
   --color-info: #2980b9;
   --color-warning: #e67e22;
-  --font-serif: var(--font-eb-garamond);
-  --font-sans: var(--font-dm-sans);
+  --font-serif: var(--font-castoro);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-castoro);
   --font-editorial: var(--font-inter);
-  --radius: 2px;
-  --radius-sm: 2px;
-  --radius-md: 2px;
-  --radius-lg: 2px;
-  --radius-xl: 2px;
-  --radius-hero: 16px;
+  --radius: 6px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-hero: 24px;
   --text-eyebrow: 13px;
 }
 
@@ -70,7 +70,7 @@ body {
   overflow-x: hidden;
   background: var(--beige);
   color: var(--text);
-  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -146,38 +146,14 @@ body {
   background: var(--text);
 }
 
-/* Indicador de scroll del hero */
-.hero-scroll-indicator {
-  position: absolute;
-  left: 50%;
-  bottom: clamp(1.5rem, 3vw, 2.5rem);
-  transform: translateX(-50%);
-  width: 36px;
-  height: 56px;
-  border: 1.5px solid rgba(255, 255, 255, 0.55);
-  border-radius: 999px;
-  display: flex;
-  justify-content: center;
-  padding-top: 8px;
-  pointer-events: none;
-  transition: opacity 0.4s ease;
-  z-index: 5;
+/* Indicador de scroll del hero — chevron animado */
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(7px); }
 }
 
-.hero-scroll-indicator::after {
-  content: "";
-  width: 3px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.85);
-  animation: heroScrollDot 1.8s cubic-bezier(0.6, 0.2, 0.4, 1) infinite;
-}
-
-@keyframes heroScrollDot {
-  0% { transform: translateY(0); opacity: 0; }
-  30% { opacity: 1; }
-  80% { transform: translateY(20px); opacity: 0; }
-  100% { transform: translateY(20px); opacity: 0; }
+.scroll-bounce {
+  animation: scrollBounce 1.6s ease-in-out infinite;
 }
 
 /* Glassmorphism overlay para tarjetas con imagen completa */
@@ -237,13 +213,32 @@ body {
     }
   }
 
+  .heading-display {
+    font-family: var(--font-castoro), Georgia, serif;
+    letter-spacing: -0.04em;
+    line-height: 1.0;
+  }
+
+  .heading-xl {
+    font-family: var(--font-castoro), Georgia, serif;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+
+  .heading-lg {
+    font-family: var(--font-castoro), Georgia, serif;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
   .section-eyebrow {
-    font-size: 12px;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--gold);
   }
 
   .libros-mes-eyebrow {
     margin-bottom: var(--lm-eyebrow-mb);
-    font-size: 12px;
   }
 
   .libros-mes-eyebrow-line {
@@ -298,6 +293,77 @@ body {
 
   .libros-mes-price {
     font-size: var(--lm-price);
+  }
+
+  /* ── Design system typography scale ── */
+  .text-display {
+    font-family: var(--font-castoro);
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    letter-spacing: -0.04em;
+    line-height: 1.0;
+  }
+  .text-h1 {
+    font-family: var(--font-inter);
+    font-size: clamp(2rem, 3.5vw, 3.5rem);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .text-h2 {
+    font-family: var(--font-inter);
+    font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+  .text-h3 {
+    font-family: var(--font-inter);
+    font-size: clamp(1.1rem, 1.5vw, 1.5rem);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .text-body {
+    font-family: var(--font-inter);
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--text);
+  }
+  .text-body-sm {
+    font-family: var(--font-inter);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-light);
+  }
+  .text-caption {
+    font-family: var(--font-inter);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-light);
+  }
+  .eyebrow {
+    font-family: var(--font-inter);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  /* ── Section vertical rhythm ── */
+  .section-padding {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+  .section-padding-lg {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+  .section-padding-sm {
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
+  }
+
+  /* ── Pricing ── */
+  .price-color {
+    color: var(--gold-light);
   }
 }
 
@@ -357,7 +423,7 @@ body {
 
 /* RecentProductsCarousel — grid responsive auto-fill */
 .recent-products-grid {
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1.5rem;
 }
 
@@ -396,6 +462,45 @@ body {
 
 .filter-bar-chips-mobile::-webkit-scrollbar {
   display: none;
+}
+
+/* LibrosMesSection — botones prev/next redondos */
+.libros-nav-round {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--moss);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 220ms ease, border-color 220ms ease, color 220ms ease;
+}
+.libros-nav-round:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: white;
+}
+
+/* Navbar — botón carrito con fondo gold */
+.navbar-cart-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold);
+  color: white;
+  padding: 8px 12px;
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 200ms ease;
+}
+.navbar-cart-btn:hover {
+  background: var(--gold-light);
 }
 
 @keyframes spin {

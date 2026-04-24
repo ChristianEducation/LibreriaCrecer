@@ -3,6 +3,11 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/integrations/drizzle";
 import { banners, featuredProducts, heroSlides, products } from "@/integrations/drizzle/schema";
 import { deleteImage, STORAGE_BUCKETS, uploadBannerImage as uploadBannerImageToStorage } from "@/integrations/supabase";
+import {
+  MONTHLY_SELECTION_SECTION,
+  MONTHLY_SELECTION_SECTION_ALIASES,
+  normalizeCuratedSection,
+} from "@/shared/config/landing";
 
 import type {
   BannerInput,
@@ -187,8 +192,15 @@ export async function uploadBannerImage(file: File) {
   throw new Error(uploadResult.error.message);
 }
 
+function getCuratedSectionCondition(section?: string) {
+  const normalizedSection = normalizeCuratedSection(section);
+  return normalizedSection === MONTHLY_SELECTION_SECTION
+    ? inArray(featuredProducts.section, [...MONTHLY_SELECTION_SECTION_ALIASES])
+    : eq(featuredProducts.section, normalizedSection);
+}
+
 export async function getCuratedProductsAdmin(section?: string) {
-  const whereClause = section ? eq(featuredProducts.section, section) : undefined;
+  const whereClause = getCuratedSectionCondition(section);
 
   const rows = await db
     .select({
@@ -210,9 +222,12 @@ export async function getCuratedProductsAdmin(section?: string) {
     .from(featuredProducts)
     .innerJoin(products, eq(products.id, featuredProducts.productId))
     .where(whereClause)
-    .orderBy(asc(featuredProducts.section), asc(featuredProducts.displayOrder), asc(featuredProducts.createdAt));
+    .orderBy(asc(featuredProducts.displayOrder), asc(featuredProducts.createdAt));
 
-  return rows;
+  return rows.map((row) => ({
+    ...row,
+    section: normalizeCuratedSection(row.section),
+  }));
 }
 
 export async function addCuratedProduct(data: CuratedProductInput) {
@@ -220,14 +235,16 @@ export async function addCuratedProduct(data: CuratedProductInput) {
     .insert(featuredProducts)
     .values({
       productId: data.product_id,
-      section: data.section,
+      section: normalizeCuratedSection(data.section),
       description: data.description ?? null,
       displayOrder: data.display_order,
       isActive: data.is_active,
     })
     .returning();
 
-  const [withProduct] = await getCuratedProductsAdmin().then((rows) => rows.filter((row) => row.id === created.id));
+  const [withProduct] = await getCuratedProductsAdmin(MONTHLY_SELECTION_SECTION).then((rows) =>
+    rows.filter((row) => row.id === created.id),
+  );
   return withProduct ?? created;
 }
 
@@ -235,7 +252,7 @@ export async function updateCuratedProduct(id: string, data: UpdateCuratedProduc
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
   if ("product_id" in data && data.product_id) updateData.productId = data.product_id;
-  if ("section" in data && data.section) updateData.section = data.section;
+  if ("section" in data && data.section) updateData.section = normalizeCuratedSection(data.section);
   if ("description" in data) updateData.description = data.description ?? null;
   if ("display_order" in data && typeof data.display_order === "number")
     updateData.displayOrder = data.display_order;
@@ -249,7 +266,7 @@ export async function updateCuratedProduct(id: string, data: UpdateCuratedProduc
 
   if (!updated) return null;
 
-  const rows = await getCuratedProductsAdmin();
+  const rows = await getCuratedProductsAdmin(MONTHLY_SELECTION_SECTION);
   return rows.find((row) => row.id === updated.id) ?? null;
 }
 
@@ -265,7 +282,7 @@ export async function reorderCuratedProducts(section: string, productIds: string
   const rows = await db
     .select({ id: featuredProducts.id })
     .from(featuredProducts)
-    .where(and(eq(featuredProducts.section, section), inArray(featuredProducts.id, productIds)));
+    .where(and(getCuratedSectionCondition(section), inArray(featuredProducts.id, productIds)));
 
   const ids = new Set(rows.map((row) => row.id));
 
@@ -275,7 +292,11 @@ export async function reorderCuratedProducts(section: string, productIds: string
 
       await tx
         .update(featuredProducts)
-        .set({ displayOrder: index, updatedAt: new Date() })
+        .set({
+          section: normalizeCuratedSection(section),
+          displayOrder: index,
+          updatedAt: new Date(),
+        })
         .where(eq(featuredProducts.id, productIds[index]));
     }
   });

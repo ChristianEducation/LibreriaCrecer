@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { MONTHLY_SELECTION_SECTION, normalizeCuratedSection } from "@/shared/config/landing";
+
 const optionalString = z
   .string()
   .trim()
@@ -46,7 +48,7 @@ export const UpdateBannerSchema = BannerSchema.partial();
 
 export const CuratedProductSchema = z.object({
   product_id: z.string().uuid(),
-  section: z.string().trim().min(1),
+  section: z.string().trim().min(1).default(MONTHLY_SELECTION_SECTION).transform(normalizeCuratedSection),
   description: optionalString,
   display_order: z.number().int().default(0),
   is_active: z.boolean().default(true),

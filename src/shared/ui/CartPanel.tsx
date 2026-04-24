@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { cx } from "class-variance-authority";
 
 import { useCart, useCartSummary } from "@/features/carrito/hooks";
 import { useIsMobile } from "@/shared/hooks/useIsMobile";
@@ -37,7 +36,7 @@ function CartEmptyIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth="1.4"
-      style={{ width: "32px", height: "32px", color: "var(--color-moss)", opacity: 0.15 }}
+      style={{ width: "32px", height: "32px", color: "var(--moss)", opacity: 0.15 }}
       viewBox="0 0 24 24"
     >
       <path
@@ -65,25 +64,18 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+    if (!isOpen) return;
 
     function handlePointerDown(event: MouseEvent) {
-      if (!panelRef.current?.contains(event.target as Node)) {
-        onClose();
-      }
+      if (!panelRef.current?.contains(event.target as Node)) onClose();
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
+      if (event.key === "Escape") onClose();
     }
 
     document.addEventListener("mousedown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
-
     return () => {
       document.removeEventListener("mousedown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
@@ -91,93 +83,233 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
   }, [isOpen, onClose]);
 
   const itemLabel = useMemo(() => {
-    if (isEmpty) {
-      return "Vacio";
-    }
-
+    if (isEmpty) return "Vacío";
     return `${totalItems} ${totalItems === 1 ? "producto" : "productos"}`;
   }, [isEmpty, totalItems]);
 
   return (
     <div
       aria-hidden={!isOpen}
-      className={cx(
-        "fixed z-[200] translate-y-[-8px] bg-beige/95 opacity-0 backdrop-blur-xl transition-all duration-200 ease-out",
-        isOpen ? "pointer-events-auto visible translate-y-0 opacity-100" : "pointer-events-none invisible",
-      )}
+      ref={panelRef}
       style={{
+        position: "fixed",
+        zIndex: 200,
         top: "80px",
         right: isMobile ? 0 : "24px",
         left: isMobile ? 0 : "auto",
-        width: isMobile ? "100vw" : "320px",
-        borderRadius: "2px",
-        border: "1px solid var(--color-border)",
+        width: isMobile ? "100vw" : "340px",
+        borderRadius: "var(--radius-lg)",
+        border: "1px solid var(--border)",
         boxShadow: "0 20px 48px rgba(58,48,1,0.14)",
+        background: "rgba(245,243,232,0.97)",
+        backdropFilter: "blur(20px)",
+        opacity: isOpen ? 1 : 0,
+        transform: isOpen ? "translateY(0)" : "translateY(-8px)",
+        visibility: isOpen ? "visible" : "hidden",
+        pointerEvents: isOpen ? "auto" : "none",
+        transition: "opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0.2s ease-out",
       }}
-      ref={panelRef}
     >
-      <div className="flex items-center justify-between border-b border-border" style={{ padding: "16px 18px 14px" }}>
-        <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "16px", fontWeight: 500, color: "var(--color-moss)" }}>Mi carrito</h3>
-        <p style={{ fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--color-text-light)" }}>{itemLabel}</p>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "20px 24px 16px",
+          borderBottom: "1px solid var(--border)",
+        }}
+      >
+        <h3
+          style={{
+            fontFamily: "var(--font-inter)",
+            fontSize: "18px",
+            fontWeight: 600,
+            letterSpacing: "-0.02em",
+            color: "var(--text)",
+          }}
+        >
+          Mi carrito
+        </h3>
+        <p
+          style={{
+            fontFamily: "var(--font-inter)",
+            fontSize: "10px",
+            fontWeight: 500,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--gold)",
+          }}
+        >
+          {itemLabel}
+        </p>
       </div>
 
+      {/* Body */}
       {isEmpty ? (
-        <div className="flex flex-col items-center justify-center text-center" style={{ height: "182px", paddingLeft: "18px", paddingRight: "18px" }}>
-          <div className="mb-3">
+        <div
+          style={{
+            height: "182px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0 24px",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ marginBottom: "12px" }}>
             <CartEmptyIcon />
           </div>
-          <p className="text-[13px] text-text-light">Tu carrito está vacío</p>
+          <p style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: "var(--text-light)" }}>
+            Tu carrito está vacío
+          </p>
         </div>
       ) : (
         <div style={{ height: "182px", overflowY: "auto" }}>
           {items.map((item) => (
             <div
-              className="flex items-center gap-3 px-[18px] py-[10px] transition-colors hover:bg-beige-warm"
               key={item.productId}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "12px 24px",
+                borderBottom: "1px solid var(--border)",
+              }}
             >
-              <div className="relative w-[34px] shrink-0 overflow-hidden rounded-[1px] bg-[linear-gradient(145deg,var(--beige-warm),var(--beige-mid))] aspect-[2/3]">
+              {/* Thumbnail */}
+              <div
+                style={{
+                  position: "relative",
+                  width: "36px",
+                  aspectRatio: "2/3",
+                  flexShrink: 0,
+                  overflow: "hidden",
+                  borderRadius: "2px",
+                  background: "linear-gradient(145deg, var(--beige-warm), var(--beige-mid))",
+                }}
+              >
                 {item.imageUrl ? (
                   <img
                     alt={item.title}
-                    className="h-full w-full object-cover"
                     src={item.imageUrl}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center">
+                  <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center" }}>
                     <BookIcon className="size-4 text-moss opacity-20" />
                   </div>
                 )}
               </div>
 
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-serif text-[13px] font-medium text-text">{item.title}</p>
-                <p className="mt-px truncate text-[11px] text-text-light">{item.author ?? "Crecer Libreria"}</p>
+              {/* Info */}
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <p
+                  style={{
+                    fontFamily: "var(--font-inter)",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "var(--text)",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {item.title}
+                </p>
+                <p
+                  style={{
+                    fontFamily: "var(--font-inter)",
+                    fontSize: "12px",
+                    color: "var(--text-light)",
+                    marginTop: "2px",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {item.author ?? "Crecer Libreria"}
+                </p>
               </div>
 
-              <div className="flex shrink-0 flex-col items-end gap-2">
-                <p className="text-[13px] font-medium text-gold">{formatCLP(item.price * item.quantity)}</p>
-                <div className="flex items-center gap-1">
+              {/* Price + controls */}
+              <div style={{ display: "flex", flexShrink: 0, flexDirection: "column", alignItems: "flex-end", gap: "6px" }}>
+                <p
+                  style={{
+                    fontFamily: "var(--font-inter)",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "var(--gold-light)",
+                  }}
+                >
+                  {formatCLP(item.price * item.quantity)}
+                </p>
+                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                   <button
-                    className="flex size-[18px] items-center justify-center rounded-[1px] border border-border text-[11px] text-text-mid transition-colors hover:border-moss hover:bg-moss hover:text-white"
                     onClick={() => decrementQuantity(item.productId)}
                     type="button"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "var(--radius-md)",
+                      border: "1px solid var(--border)",
+                      background: "transparent",
+                      color: "var(--text)",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                    }}
                   >
-                    -
+                    −
                   </button>
-                  <span className="min-w-4 text-center text-[11px] text-text-light">{item.quantity}</span>
+                  <span
+                    style={{
+                      minWidth: "20px",
+                      textAlign: "center",
+                      fontFamily: "var(--font-inter)",
+                      fontSize: "13px",
+                      color: "var(--text)",
+                    }}
+                  >
+                    {item.quantity}
+                  </span>
                   <button
-                    className="flex size-[18px] items-center justify-center rounded-[1px] border border-border text-[11px] text-text-mid transition-colors hover:border-moss hover:bg-moss hover:text-white"
                     onClick={() => incrementQuantity(item.productId)}
                     type="button"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "var(--radius-md)",
+                      border: "1px solid var(--border)",
+                      background: "transparent",
+                      color: "var(--text)",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                    }}
                   >
                     +
                   </button>
                   <button
-                    className="ml-1 text-[11px] text-text-light transition-colors hover:text-error"
                     onClick={() => removeItem(item.productId)}
                     type="button"
+                    style={{
+                      marginLeft: "4px",
+                      fontFamily: "var(--font-inter)",
+                      fontSize: "11px",
+                      color: "var(--text-light)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: "4px",
+                    }}
                   >
-                    x
+                    ×
                   </button>
                 </div>
               </div>
@@ -186,25 +318,55 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
         </div>
       )}
 
-      <div className="border-t border-border" style={{ padding: "14px 18px 16px" }}>
-        <div className="mb-4 flex items-end justify-between gap-4">
-          <span className="text-[10px] uppercase tracking-[0.2em] text-text-light">Total</span>
-          <span className="font-serif text-[20px] font-medium text-moss">{formatCLP(total)}</span>
+      {/* Footer */}
+      <div style={{ padding: "16px 24px 20px", borderTop: "1px solid var(--border)" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: "16px" }}>
+          <span
+            style={{
+              fontFamily: "var(--font-inter)",
+              fontSize: "10px",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--text-light)",
+            }}
+          >
+            Total
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-inter)",
+              fontSize: "22px",
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              color: "var(--text)",
+            }}
+          >
+            {formatCLP(total)}
+          </span>
         </div>
 
         <Link
           aria-disabled={isEmpty}
-          className={cx(
-            "block w-full rounded border border-transparent bg-moss px-4 py-3 text-center text-[11px] font-medium uppercase tracking-[0.12em] text-white transition-all duration-200",
-            isEmpty
-              ? "pointer-events-none cursor-not-allowed opacity-[0.38]"
-              : "hover:-translate-y-px hover:bg-moss-mid",
-          )}
           href="/checkout"
-          onClick={() => {
-            if (!isEmpty) {
-              onClose();
-            }
+          onClick={() => { if (!isEmpty) onClose(); }}
+          style={{
+            display: "block",
+            width: "100%",
+            paddingTop: "14px",
+            paddingBottom: "14px",
+            borderRadius: "var(--radius-xl)",
+            background: isEmpty ? "var(--border)" : "var(--gold)",
+            color: "white",
+            fontFamily: "var(--font-inter)",
+            fontSize: "12px",
+            fontWeight: 600,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            textAlign: "center",
+            textDecoration: "none",
+            pointerEvents: isEmpty ? "none" : "auto",
+            opacity: isEmpty ? 0.5 : 1,
+            transition: "background 0.2s, opacity 0.2s",
           }}
         >
           Ir al checkout

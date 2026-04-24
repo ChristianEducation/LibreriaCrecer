@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { cx } from "class-variance-authority";
 
 type SortOption = "newest" | "price_asc" | "price_desc" | "name";
 
@@ -23,7 +22,6 @@ const filterChips: Array<{ value: string; label: string }> = [
   { value: "", label: "Todos" },
   { value: "nuevo", label: "Nuevos" },
   { value: "oferta", label: "En oferta" },
-  { value: "destacado", label: "Recomendados" },
   { value: "seleccion", label: "Selección del mes" },
 ];
 
@@ -71,48 +69,45 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
       style={{ top: "64px" }}
     >
       <div
-        className="flex items-center justify-between"
-        style={{ minHeight: "52px", gap: "1rem" }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          minHeight: "52px",
+          gap: "1rem",
+        }}
       >
-        {/* Izquierda: label + chips de filtro (desktop) */}
-        <div className="flex items-center gap-3">
-          <span
-            className="font-editorial uppercase"
-            style={{
-              fontSize: "10px",
-              letterSpacing: "0.24em",
-              color: "var(--text-light)",
-              whiteSpace: "nowrap",
-              fontWeight: 500,
-            }}
-          >
-            Filtrar
-          </span>
-          <div className="hidden items-center gap-2 md:flex">
-            {filterChips.map((chip) => {
-              const isActive = chip.value === activeFilter;
-              return (
-                <button
-                  className={cx(
-                    "rounded-[2px] border transition-colors",
-                    isActive
-                      ? "border-moss bg-moss text-white"
-                      : "border-border text-text-mid hover:border-moss hover:text-moss",
-                  )}
-                  key={chip.value || "all"}
-                  onClick={() => updateFilter(chip.value)}
-                  style={{ padding: "5px 12px", fontSize: "11px" }}
-                  type="button"
-                >
-                  {chip.label}
-                </button>
-              );
-            })}
-          </div>
+        {/* Izquierda: chips de filtro */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {filterChips.map((chip) => {
+            const isActive = chip.value === activeFilter;
+            return (
+              <button
+                key={chip.value || "all"}
+                onClick={() => updateFilter(chip.value)}
+                type="button"
+                style={{
+                  borderRadius: "var(--radius-xl)",
+                  padding: "6px 16px",
+                  fontSize: "12px",
+                  fontFamily: "var(--font-inter)",
+                  fontWeight: 500,
+                  border: isActive ? "1px solid var(--moss)" : "1px solid var(--border)",
+                  background: isActive ? "var(--moss)" : "transparent",
+                  color: isActive ? "white" : "var(--text-mid)",
+                  cursor: "pointer",
+                  transition: "background 0.15s, color 0.15s, border-color 0.15s",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Derecha: búsqueda + contador + selector de orden */}
-        <div className="flex items-center gap-4">
+        {/* Derecha: búsqueda + contador + sort */}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <form onSubmit={handleSearch} style={{ position: "relative" }}>
             <input
               type="search"
@@ -123,13 +118,13 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
                 height: "32px",
                 width: "180px",
                 padding: "0 32px 0 10px",
-                border: "1px solid var(--color-border)",
-                borderRadius: "2px",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-xl)",
                 fontSize: "12px",
-                background: "var(--color-white)",
-                color: "var(--color-text)",
+                background: "var(--white)",
+                color: "var(--text)",
                 outline: "none",
-                fontFamily: "var(--font-sans)",
+                fontFamily: "var(--font-inter)",
               }}
             />
             <button
@@ -144,7 +139,7 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
                 border: "none",
                 padding: 0,
                 cursor: "pointer",
-                color: "var(--color-text-light)",
+                color: "var(--text-light)",
                 display: "flex",
                 alignItems: "center",
               }}
@@ -156,26 +151,32 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
             </button>
           </form>
 
-          <p className="font-editorial" style={{ fontSize: "12px", color: "var(--text-light)", whiteSpace: "nowrap" }}>
+          <p style={{ fontSize: "12px", color: "var(--text-light)", whiteSpace: "nowrap", fontFamily: "var(--font-inter)" }}>
             {totalResults} {totalResults === 1 ? "producto" : "productos"}
           </p>
 
-          {/* Orden desktop */}
-          <div className="hidden items-center gap-2 md:flex">
+          {/* Sort — desktop */}
+          <div className="hidden md:flex" style={{ alignItems: "center", gap: "8px" }}>
             {sortOptions.map((option) => {
               const isActive = option.value === activeSort;
               return (
                 <button
-                  className={cx(
-                    "rounded-[2px] border transition-colors",
-                    isActive
-                      ? "border-transparent bg-moss text-white"
-                      : "border-border text-text-mid hover:border-moss hover:text-moss",
-                  )}
                   key={option.value}
                   onClick={() => updateSort(option.value)}
-                  style={{ padding: "5px 12px", fontSize: "11px" }}
                   type="button"
+                  style={{
+                    borderRadius: "var(--radius-xl)",
+                    padding: "6px 16px",
+                    fontSize: "12px",
+                    fontFamily: "var(--font-inter)",
+                    fontWeight: 500,
+                    border: "1px solid var(--border)",
+                    background: isActive ? "var(--beige-warm)" : "transparent",
+                    color: "var(--text-mid)",
+                    cursor: "pointer",
+                    transition: "background 0.15s",
+                    whiteSpace: "nowrap",
+                  }}
                 >
                   {option.label}
                 </button>
@@ -183,7 +184,7 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
             })}
           </div>
 
-          {/* Orden mobile */}
+          {/* Sort — mobile */}
           <label className="flex items-center gap-2 md:hidden" style={{ fontSize: "12px", color: "var(--text-light)" }}>
             <span>Orden</span>
             <select
@@ -200,29 +201,6 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
             </select>
           </label>
         </div>
-      </div>
-
-      {/* Chips de filtro móvil — scroll horizontal, ocultos en desktop */}
-      <div className="filter-bar-chips-mobile md:hidden">
-        {filterChips.map((chip) => {
-          const isActive = chip.value === activeFilter;
-          return (
-            <button
-              className={cx(
-                "shrink-0 rounded-[2px] border transition-colors",
-                isActive
-                  ? "border-moss bg-moss text-white"
-                  : "border-border text-text-mid hover:border-moss hover:text-moss",
-              )}
-              key={chip.value || "all"}
-              onClick={() => updateFilter(chip.value)}
-              style={{ padding: "5px 12px", fontSize: "11px" }}
-              type="button"
-            >
-              {chip.label}
-            </button>
-          );
-        })}
       </div>
     </div>
   );

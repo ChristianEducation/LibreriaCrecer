@@ -4,11 +4,20 @@ export function InstagramSection() {
   const appId = process.env.NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID;
 
   return (
-    <section className="page-px bg-beige" style={{ paddingTop: "2.5rem", paddingBottom: "2.5rem" }}>
-      <p className="section-eyebrow flex items-center gap-3 font-sans uppercase tracking-[0.35em] text-gold" style={{ marginBottom: "2.5rem" }}>
-        <span className="h-px w-8 bg-gold" />
+    <section className="page-px bg-beige" style={{ paddingTop: "7rem", paddingBottom: "7rem" }}>
+      <p
+        className="eyebrow"
+        style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}
+      >
+        <span style={{ width: "32px", height: "1px", background: "var(--gold)", flexShrink: 0, display: "inline-block" }} />
         Sé parte de nuestra comunidad
       </p>
+      <h2
+        className="heading-xl font-normal"
+        style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", color: "var(--moss)", marginBottom: "2.5rem" }}
+      >
+        Síguenos
+      </h2>
       {appId ? (
         <>
           <Script

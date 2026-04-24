@@ -2,6 +2,8 @@ import { config as loadEnv } from "dotenv";
 
 loadEnv({ path: ".env.local" });
 
+import { MONTHLY_SELECTION_SECTION } from "../shared/config/landing";
+
 async function run() {
   const [{ db }, { products, categories, productCategories, featuredProducts, heroSlides }] =
     await Promise.all([
@@ -107,7 +109,14 @@ async function run() {
   if (seleccion.length > 0) {
     const existingFeatured = await db.select({ id: featuredProducts.id }).from(featuredProducts).limit(1);
     if (existingFeatured.length === 0) {
-      await db.insert(featuredProducts).values(seleccion.map((productId, i) => ({ productId, section: "monthly_selection", displayOrder: i, isActive: true })));
+      await db.insert(featuredProducts).values(
+        seleccion.map((productId, i) => ({
+          productId,
+          section: MONTHLY_SELECTION_SECTION,
+          displayOrder: i,
+          isActive: true,
+        })),
+      );
       console.warn("  → " + seleccion.length + " productos en selección del mes");
     } else {
       console.warn("  → featured_products ya existe, omitido");

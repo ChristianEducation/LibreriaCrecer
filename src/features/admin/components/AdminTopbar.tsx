@@ -12,7 +12,7 @@ const sectionTitles = [
   { match: "/admin/pedidos", title: "Gestion de pedidos" },
   { match: "/admin/landing/hero", title: "Editor del hero" },
   { match: "/admin/landing/banners", title: "Banners del landing" },
-  { match: "/admin/landing/seleccion", title: "Seleccion curada" },
+  { match: "/admin/landing/seleccion", title: "Seleccion del mes" },
   { match: "/admin/landing/footer", title: "Footer del sitio" },
   { match: "/admin/cupones", title: "Cupones" },
   { match: "/admin/landing", title: "Pagina principal" },
