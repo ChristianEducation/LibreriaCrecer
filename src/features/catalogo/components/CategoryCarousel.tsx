@@ -10,7 +10,7 @@ type CategoryCarouselProps = {
 export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselProps) {
   return (
     <section className="page-px bg-beige-warm" id="categorias" style={{ paddingTop: "8rem", paddingBottom: "8rem" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "12px" }}>
+      <div className="storefront-container category-carousel-grid">
         {/* Celda 1 — bloque de título */}
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", aspectRatio: "3/2" }}>
           <p
@@ -30,7 +30,7 @@ export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselPr
 
         {/* Celdas 2-10 — cards */}
         {categories.length === 0 ? (
-          <p style={{ fontSize: "13px", color: "var(--text-light)", gridColumn: "2 / -1" }}>No hay categorías disponibles.</p>
+          <p style={{ fontSize: "13px", color: "var(--text-light)", gridColumn: "1 / -1" }}>No hay categorías disponibles.</p>
         ) : (
           categories.map((cat, index) => (
             <CategoryCard

@@ -183,7 +183,7 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
           isScrolled && !isTransparent ? "shadow-[0_2px_24px_rgba(58,48,1,0.08)]" : "",
         )}
       >
-        <div className="page-px flex h-16 items-center justify-between gap-5">
+        <div className="storefront-container page-px flex h-16 items-center justify-between gap-5">
           <Link className="flex shrink-0 items-center gap-[10px]" href="/">
             <Image
                 src="/images/Logo-Crecer.png"

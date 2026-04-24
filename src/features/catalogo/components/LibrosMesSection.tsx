@@ -123,7 +123,7 @@ export function LibrosMesSection({ items }: LibrosMesSectionProps) {
 
   return (
     <section className="page-px bg-white" id="libros-mes" style={{ paddingTop: "9rem", paddingBottom: "10rem" }}>
-        <div className="libros-mes-grid">
+        <div className="storefront-container libros-mes-grid">
           <div>
             <p
               className="eyebrow libros-mes-eyebrow flex items-center gap-2"
@@ -143,18 +143,18 @@ export function LibrosMesSection({ items }: LibrosMesSectionProps) {
             </p>
           </div>
 
-          <div className="flex items-center" style={{ gap: "16px" }}>
+          <div className="libros-mes-slider">
             {items.length > 0 && (
               <button
                 aria-label="Anterior"
-                className="libros-nav-round"
+                className="libros-nav-round libros-mes-prev"
                 onClick={() => scrollByDirection(-1)}
                 type="button"
               >
                 <SliderChevron direction="prev" />
               </button>
             )}
-            <div className="min-w-0 flex-1 overflow-hidden">
+            <div className="libros-mes-viewport min-w-0 overflow-hidden">
               {items.length === 0 ? (
                 <EmptySlider />
               ) : (
@@ -171,7 +171,7 @@ export function LibrosMesSection({ items }: LibrosMesSectionProps) {
             {items.length > 0 && (
               <button
                 aria-label="Siguiente"
-                className="libros-nav-round"
+                className="libros-nav-round libros-mes-next"
                 onClick={() => scrollByDirection(1)}
                 type="button"
               >

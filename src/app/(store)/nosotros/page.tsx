@@ -24,141 +24,148 @@ export default async function NosotrosPage() {
 
   return (
     <main className="bg-beige">
-      {/* Hero */}
       <section
-        className="page-px relative overflow-hidden bg-moss"
-        style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+        className="page-px about-hero relative overflow-hidden"
+        style={{ paddingTop: "4.5rem", paddingBottom: "5rem" }}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(232,208,96,0.12),transparent_40%)]" />
-        <div className="relative z-[1] max-w-2xl">
-          <p
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              fontFamily: "var(--font-inter)",
-              fontSize: "10px",
-              fontWeight: 500,
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              color: "var(--gold)",
-              marginBottom: "16px",
-            }}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(232,208,96,0.16),transparent_34%),radial-gradient(circle_at_10%_85%,rgba(200,168,48,0.10),transparent_30%)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-[linear-gradient(to_right,transparent,rgba(200,168,48,0.55),transparent)]" />
+
+        <div className="relative z-[1]">
+          <nav
+            aria-label="Breadcrumb"
+            className="about-breadcrumb"
           >
-            <span style={{ width: "24px", height: "1px", background: "var(--gold)", display: "inline-block", flexShrink: 0 }} />
-            Nuestra historia
+            <Link href="/">Inicio</Link>
+            <span aria-hidden="true">/</span>
+            <span>Conócenos</span>
+          </nav>
+
+          <div className="about-hero-copy">
+            <p className="about-eyebrow">
+              <span aria-hidden="true" />
+              Librería Católica · Antofagasta
+            </p>
+            <h1 className="about-hero-title">
+              Una librería para crecer en la{" "}
+              <em>fe y la lectura</em>
+            </h1>
+            <p className="about-hero-description">
+              Acompañamos a familias, comunidades y lectores con una selección cuidada de libros,
+              biblias y artículos religiosos para la vida espiritual cotidiana.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        className="page-px about-manifesto-section"
+        style={{ paddingTop: "4.5rem", paddingBottom: "4.5rem" }}
+      >
+        <div className="about-manifesto">
+          <p className="about-eyebrow about-eyebrow--dark">
+            <span aria-hidden="true" />
+            Nuestro propósito
           </p>
-          <h1
-            className="heading-xl font-normal"
-            style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(2rem, 4vw, 3.5rem)", color: "white", letterSpacing: "-0.03em", marginBottom: "1.25rem", lineHeight: 1.1 }}
-          >
-            Conócenos
-          </h1>
-          <p
-            style={{ fontFamily: "var(--font-inter)", fontSize: "15px", lineHeight: 1.7, color: "rgba(255,255,255,0.75)", maxWidth: "480px" }}
-          >
-            Somos una librería cristiana en Antofagasta comprometida con acompañar el estudio, la devoción y la vida diaria con una selección curada de títulos.
+          <p className="about-manifesto-lead">
+            Creemos que una buena librería no solo vende libros: orienta, recomienda y abre un
+            espacio tranquilo para encontrar palabras que acompañen el camino.
+          </p>
+          <p className="about-manifesto-copy">
+            Desde Antofagasta, Librería Crecer reúne títulos para la oración, la formación, la
+            catequesis y la lectura personal, con una mirada cercana y una curaduría pensada para
+            servir a cada lector.
           </p>
         </div>
       </section>
 
-      {/* Secciones alternadas */}
       {sections.length === 0 ? (
-        <section className="page-px" style={{ paddingTop: "5rem", paddingBottom: "5rem" }}>
-          <p className="font-sans font-light text-text-light" style={{ fontSize: "15px" }}>
-            Próximamente compartiremos más sobre nuestra historia.
-          </p>
+        <section
+          className="page-px bg-white"
+          style={{ paddingTop: "5rem", paddingBottom: "5rem" }}
+        >
+          <div className="about-empty-state">
+            <p className="about-eyebrow about-eyebrow--dark">
+              <span aria-hidden="true" />
+              Nuestra historia
+            </p>
+            <h2>Pronto compartiremos más de Librería Crecer</h2>
+            <p>
+              Estamos preparando este espacio para contar mejor nuestra historia, nuestra selección
+              y el servicio que ofrecemos a la comunidad.
+            </p>
+          </div>
         </section>
       ) : (
         sections.map((section, index) => {
           const isEven = index % 2 === 0;
           const imageOnRight = section.imagePosition === "right";
+          const chapterNumber = String(index + 1).padStart(2, "0");
 
           return (
             <section
               key={section.id}
-              className="page-px"
+              className="page-px about-story-section"
               style={{
-                paddingTop: "6rem",
-                paddingBottom: "6rem",
+                paddingTop: "5.75rem",
+                paddingBottom: "5.75rem",
                 background: isEven ? "var(--beige)" : "var(--white)",
               }}
             >
-              {section.imageUrl ? (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "4rem",
-                    alignItems: "center",
-                  }}
-                  className="about-section-grid"
-                >
-                  {/* Texto */}
-                  <div style={{ order: imageOnRight ? 1 : 2 }}>
-                    <h2
-                      style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.5rem, 2.5vw, 2rem)", fontWeight: 400, letterSpacing: "-0.025em", color: "var(--moss)", lineHeight: 1.2, marginBottom: "1.25rem" }}
-                    >
-                      {section.title}
-                    </h2>
-                    <p
-                      style={{ fontFamily: "var(--font-inter)", fontSize: "15px", lineHeight: 1.7, color: "var(--text)", whiteSpace: "pre-wrap" }}
-                    >
-                      {section.content}
-                    </p>
-                  </div>
-                  {/* Imagen */}
-                  <div style={{ order: imageOnRight ? 2 : 1, borderRadius: "var(--radius-lg)", overflow: "hidden", aspectRatio: "4/3", position: "relative" }}>
+              <div className={imageOnRight ? "about-story-grid" : "about-story-grid about-story-grid--image-left"}>
+                <div className="about-story-copy">
+                  <p className="about-chapter-label">Historia {chapterNumber}</p>
+                  <h2>{section.title}</h2>
+                  <p>{section.content}</p>
+                </div>
+
+                <div className="about-story-media" aria-label={section.imageUrl ? undefined : "Ilustración editorial"}>
+                  {section.imageUrl ? (
                     <Image
                       alt={section.title}
                       fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 48vw, 520px"
                       src={section.imageUrl}
                       style={{ objectFit: "cover" }}
                     />
-                  </div>
+                  ) : (
+                    <div className="about-story-fallback">
+                      <svg aria-hidden="true" fill="none" viewBox="0 0 120 120">
+                        <path d="M28 34c12 0 22 3 32 10 10-7 20-10 32-10v52c-12 0-22 3-32 10-10-7-20-10-32-10V34Z" stroke="currentColor" strokeWidth="4" />
+                        <path d="M60 44v52" stroke="currentColor" strokeLinecap="round" strokeWidth="4" />
+                        <path d="M38 50c6 .5 11 2 16 5M38 64c6 .5 11 2 16 5M82 50c-6 .5-11 2-16 5M82 64c-6 .5-11 2-16 5" stroke="currentColor" strokeLinecap="round" strokeWidth="3" />
+                      </svg>
+                      <span>Librería Crecer</span>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div style={{ maxWidth: "720px" }}>
-                  <h2
-                    style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.5rem, 2.5vw, 2rem)", fontWeight: 400, letterSpacing: "-0.025em", color: "var(--moss)", lineHeight: 1.2, marginBottom: "1.25rem" }}
-                  >
-                    {section.title}
-                  </h2>
-                  <p
-                    style={{ fontFamily: "var(--font-inter)", fontSize: "15px", lineHeight: 1.7, color: "var(--text)", whiteSpace: "pre-wrap" }}
-                  >
-                    {section.content}
-                  </p>
-                </div>
-              )}
+              </div>
             </section>
           );
         })
       )}
 
-      {/* Call to action */}
       <section
-        className="page-px bg-beige-warm"
-        style={{ paddingTop: "6rem", paddingBottom: "6rem", textAlign: "center" }}
+        className="page-px about-cta-section"
+        style={{ paddingTop: "5rem", paddingBottom: "5.5rem" }}
       >
-        <p
-          style={{ fontFamily: "var(--font-inter)", fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "1rem" }}
-        >
-          Nuestra colección
-        </p>
-        <h2
-          className="heading-xl font-normal"
-          style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", fontWeight: 400, color: "var(--moss)", lineHeight: 1.15, marginBottom: "2rem" }}
-        >
-          Explora nuestra colección
-        </h2>
-        <Link
-          href="/productos"
-          style={{ display: "inline-flex", alignItems: "center", gap: "8px", paddingTop: "14px", paddingBottom: "14px", paddingLeft: "2rem", paddingRight: "2rem", background: "var(--gold)", color: "white", borderRadius: "var(--radius-xl)", fontSize: "12px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", textDecoration: "none" }}
-        >
-          Ver todos los libros
-        </Link>
+        <div className="about-cta">
+          <p className="about-eyebrow">
+            <span aria-hidden="true" />
+            Nuestra colección
+          </p>
+          <h2>Encuentra una lectura para este tiempo</h2>
+          <p>
+            Explora libros y artículos seleccionados con el mismo cuidado con que atendemos en
+            nuestra librería.
+          </p>
+          <Link className="about-cta-link" href="/productos">
+            Ver colección
+            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+            </svg>
+          </Link>
+        </div>
       </section>
     </main>
   );

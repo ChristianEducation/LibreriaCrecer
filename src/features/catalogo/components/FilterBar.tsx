@@ -68,17 +68,9 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
       className="page-px sticky z-[90] border-b border-b-border bg-white/95 backdrop-blur"
       style={{ top: "64px" }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          minHeight: "52px",
-          gap: "1rem",
-        }}
-      >
+      <div className="filter-bar-layout">
         {/* Izquierda: chips de filtro */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div className="filter-bar-chips-mobile">
           {filterChips.map((chip) => {
             const isActive = chip.value === activeFilter;
             return (
@@ -107,8 +99,8 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
         </div>
 
         {/* Derecha: búsqueda + contador + sort */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <form onSubmit={handleSearch} style={{ position: "relative" }}>
+        <div className="filter-bar-controls">
+          <form className="filter-bar-search" onSubmit={handleSearch}>
             <input
               type="search"
               value={searchInput}
@@ -116,7 +108,7 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
               placeholder="Buscar..."
               style={{
                 height: "32px",
-                width: "180px",
+                width: "100%",
                 padding: "0 32px 0 10px",
                 border: "1px solid var(--border)",
                 borderRadius: "var(--radius-xl)",
@@ -151,12 +143,12 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
             </button>
           </form>
 
-          <p style={{ fontSize: "12px", color: "var(--text-light)", whiteSpace: "nowrap", fontFamily: "var(--font-inter)" }}>
+          <p className="filter-bar-count" style={{ fontSize: "12px", color: "var(--text-light)", fontFamily: "var(--font-inter)" }}>
             {totalResults} {totalResults === 1 ? "producto" : "productos"}
           </p>
 
           {/* Sort — desktop */}
-          <div className="hidden md:flex" style={{ alignItems: "center", gap: "8px" }}>
+          <div className="filter-bar-sort-buttons">
             {sortOptions.map((option) => {
               const isActive = option.value === activeSort;
               return (
@@ -185,7 +177,7 @@ export function FilterBar({ totalResults, activeSort, activeFilter = "" }: Filte
           </div>
 
           {/* Sort — mobile */}
-          <label className="flex items-center gap-2 md:hidden" style={{ fontSize: "12px", color: "var(--text-light)" }}>
+          <label className="filter-bar-sort-select" style={{ fontSize: "12px", color: "var(--text-light)" }}>
             <span>Orden</span>
             <select
               className="border-none bg-transparent focus:outline-none"

@@ -23,7 +23,7 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
     <main>
       {/* Sección principal */}
       <section style={{ background: "var(--white)", paddingTop: "28px", paddingBottom: "72px" }}>
-        <div className="page-px">
+        <div className="storefront-container page-px">
           {/* Breadcrumb */}
           <p
             className="font-editorial"
@@ -84,13 +84,15 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
       {/* Sección relacionados */}
       {relatedProducts.length > 0 && (
         <section style={{ background: "var(--beige)", paddingTop: "72px", paddingBottom: "80px" }}>
-          <div className="page-px">
+          <div className="storefront-container page-px">
             {/* Header */}
             <div
               style={{
                 display: "flex",
                 alignItems: "flex-end",
                 justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "1.5rem",
                 marginBottom: "40px",
               }}
             >

@@ -88,116 +88,119 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
 
   return (
     <section className="page-px bg-white" id="recien-llegados" style={{ paddingTop: "8rem", paddingBottom: "8rem" }}>
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "space-between",
-          marginBottom: "3rem",
-        }}
-      >
-        <div>
-          <p
-            className="eyebrow"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              marginBottom: "10px",
-            }}
-          >
-            <span
-              style={{
-                width: "24px",
-                height: "1px",
-                background: "var(--gold)",
-                flexShrink: 0,
-                display: "inline-block",
-              }}
-            />
-            Recién llegados
-          </p>
-          <h2
-            className="heading-xl font-normal"
-            style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", color: "var(--moss)" }}
-          >
-            Lo último en tienda
-          </h2>
-        </div>
-
-        <Link
-          className="font-sans text-text-mid transition-colors hover:text-moss"
-          href="/productos"
-          style={{ fontSize: "13px", borderBottom: "1px solid transparent", paddingBottom: "1px" }}
+      <div className="storefront-container">
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "1.5rem",
+            marginBottom: "3rem",
+          }}
         >
-          Ver todos →
-        </Link>
-      </div>
-
-      {/* Contenido */}
-      {products.length === 0 ? (
-        <EmptyPlaceholder />
-      ) : (
-        <>
-          <div
-            className="recent-products-grid"
-            style={{
-              display: "grid",
-              opacity: visible ? 1 : 0,
-              transform: visible ? "translateY(0)" : "translateY(6px)",
-              transition: "opacity 0.3s ease, transform 0.3s ease",
-            }}
-          >
-            {visibleProducts.map((product, i) => (
-              <ProductCard
-                author={product.author}
-                id={product.id}
-                isNew
-                isOnSale={product.hasDiscount}
-                key={isCarousel ? `slot-${i}` : product.id}
-                mainImageUrl={product.mainImageUrl}
-                price={product.price}
-                salePrice={product.salePrice}
-                slug={product.slug}
-                title={product.title}
-                variant="clean"
-              />
-            ))}
-          </div>
-
-          {/* Indicador de puntos */}
-          {isCarousel && (
-            <div
+          <div>
+            <p
+              className="eyebrow"
               style={{
                 display: "flex",
-                justifyContent: "center",
-                gap: "8px",
-                marginTop: "2rem",
+                alignItems: "center",
+                gap: "12px",
+                marginBottom: "10px",
               }}
             >
-              {products.map((_, index) => (
-                <button
-                  aria-label={`Ir al producto ${index + 1}`}
-                  key={index}
-                  onClick={() => goToIndex(index)}
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: 0,
-                    background: index === startIndex ? "var(--gold)" : "var(--border)",
-                    transition: "background 0.3s",
-                  }}
-                  type="button"
+              <span
+                style={{
+                  width: "24px",
+                  height: "1px",
+                  background: "var(--gold)",
+                  flexShrink: 0,
+                  display: "inline-block",
+                }}
+              />
+              Recién llegados
+            </p>
+            <h2
+              className="heading-xl font-normal"
+              style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", color: "var(--moss)" }}
+            >
+              Lo último en tienda
+            </h2>
+          </div>
+
+          <Link
+            className="font-sans text-text-mid transition-colors hover:text-moss"
+            href="/productos"
+            style={{ fontSize: "13px", borderBottom: "1px solid transparent", paddingBottom: "1px", flexShrink: 0 }}
+          >
+            Ver todos →
+          </Link>
+        </div>
+
+        {/* Contenido */}
+        {products.length === 0 ? (
+          <EmptyPlaceholder />
+        ) : (
+          <>
+            <div
+              className="recent-products-grid"
+              style={{
+                opacity: visible ? 1 : 0,
+                transform: visible ? "translateY(0)" : "translateY(6px)",
+                transition: "opacity 0.3s ease, transform 0.3s ease",
+              }}
+            >
+              {visibleProducts.map((product, i) => (
+                <ProductCard
+                  author={product.author}
+                  id={product.id}
+                  isNew
+                  isOnSale={product.hasDiscount}
+                  key={isCarousel ? `slot-${i}` : product.id}
+                  mainImageUrl={product.mainImageUrl}
+                  price={product.price}
+                  salePrice={product.salePrice}
+                  slug={product.slug}
+                  title={product.title}
+                  variant="clean"
                 />
               ))}
             </div>
-          )}
-        </>
-      )}
+
+            {/* Indicador de puntos */}
+            {isCarousel && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "8px",
+                  marginTop: "2rem",
+                }}
+              >
+                {products.map((_, index) => (
+                  <button
+                    aria-label={`Ir al producto ${index + 1}`}
+                    key={index}
+                    onClick={() => goToIndex(index)}
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 0,
+                      background: index === startIndex ? "var(--gold)" : "var(--border)",
+                      transition: "background 0.3s",
+                    }}
+                    type="button"
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </section>
   );
 }

@@ -128,11 +128,11 @@ export function HeroSlider({ slides }: HeroSliderProps) {
         <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.50) 50%, rgba(0,0,0,0.75) 100%)" }} />
         <div className="absolute inset-x-0 top-0 h-40 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.08),transparent)]" />
 
-        <div className="absolute inset-0 z-[2] flex items-center justify-center px-5 md:px-10">
+        <div className="hero-content-shell absolute inset-0 z-[2] flex items-center justify-center">
           {/* .hero-content: max-width 740px; .hero-tag mb 28px; h1 mb 22px; .hero-desc mb 44px; .hero-actions */}
           <div
-            className="flex w-full flex-col items-center text-white"
-            style={{ paddingTop: "120px", maxWidth: "560px", margin: "0 auto", textAlign: "center" }}
+            className="hero-copy flex w-full flex-col items-center text-white"
+            style={{ maxWidth: "560px", margin: "0 auto", textAlign: "center" }}
           >
             <BlurFade delay={0.1} inView>
               <p
@@ -153,8 +153,8 @@ export function HeroSlider({ slides }: HeroSliderProps) {
 
             <BlurFade delay={0.25} inView>
               <h1
-                className="heading-display font-normal"
-                style={{ fontSize: "clamp(42px, 5vw, 64px)", lineHeight: 1.05, letterSpacing: "-0.015em", marginBottom: "16px" }}
+                className="hero-title heading-display font-normal"
+                style={{ lineHeight: 1.05, letterSpacing: "-0.015em", marginBottom: "16px" }}
               >
                 {(() => {
                   const { first, second } = splitTitle(activeSlide.title ?? heroCopy.fallbackTitle);
@@ -179,13 +179,11 @@ export function HeroSlider({ slides }: HeroSliderProps) {
 
             <BlurFade delay={0.4} inView>
               <p
-                className="font-light"
+                className="hero-description font-light"
                 style={{
-                  fontSize: "15px",
                   maxWidth: "480px",
                   marginLeft: "auto",
                   marginRight: "auto",
-                  marginBottom: "32px",
                   lineHeight: "1.7",
                   color: "#ffffff",
                 }}
@@ -197,14 +195,9 @@ export function HeroSlider({ slides }: HeroSliderProps) {
             <BlurFade delay={0.55} inView>
               <div className="flex items-center justify-center gap-4">
                 <Link
-                  className="inline-flex items-center gap-2 text-[13px] uppercase tracking-[0.14em] text-white transition-opacity duration-200 hover:opacity-80"
+                  className="hero-cta inline-flex items-center gap-2 uppercase tracking-[0.14em] text-white transition-opacity duration-200 hover:opacity-80"
                   href="/productos"
                   style={{
-                    paddingTop: "14px",
-                    paddingBottom: "14px",
-                    paddingLeft: "2rem",
-                    paddingRight: "2rem",
-                    fontSize: "12px",
                     background: "#c8a830",
                     borderRadius: "var(--radius-xl)",
                   }}
@@ -220,7 +213,7 @@ export function HeroSlider({ slides }: HeroSliderProps) {
 
           {items.length > 1 ? (
             <>
-              <div className="absolute inset-y-0 left-0 z-[3] flex items-center pl-2 md:pl-5 lg:pl-8">
+              <div className="absolute inset-y-0 left-0 z-[3] hidden items-center pl-2 md:flex md:pl-5 lg:pl-8">
                 <button
                   aria-label="Slide anterior"
                   className="touch-manipulation p-2 text-white/90 transition-[color,transform] duration-200 [filter:drop-shadow(0_2px_8px_rgba(58,48,1,0.45))] hover:-translate-x-0.5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
@@ -231,7 +224,7 @@ export function HeroSlider({ slides }: HeroSliderProps) {
                 </button>
               </div>
 
-              <div className="absolute inset-y-0 right-0 z-[3] flex items-center pr-2 md:pr-5 lg:pr-8">
+              <div className="absolute inset-y-0 right-0 z-[3] hidden items-center pr-2 md:flex md:pr-5 lg:pr-8">
                 <button
                   aria-label="Siguiente slide"
                   className="touch-manipulation p-2 text-white/90 transition-[color,transform] duration-200 [filter:drop-shadow(0_2px_8px_rgba(58,48,1,0.45))] hover:translate-x-0.5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
