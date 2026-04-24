@@ -1,7 +1,7 @@
 # Crecer Librería Cristiana — Handoff v01
-**Última actualización:** Abril 2026 — Sesión: CAT1–CAT5 (Logo, BrandLoader, landing spacing, panoramic categories, editable footer, /nosotros)  
-**Stack:** Next.js 15.2.4 · Drizzle ORM · Supabase PostgreSQL · Zustand 5 · Tailwind v4 · Getnet · lottie-react  
-**Estado del build:** ✅ `npx tsc --noEmit` limpio · ✅ `npm run lint` limpio  
+**Última actualización:** Abril 2026 — Storefront visual integrado en `main` tras `6f39d2b`  
+**Stack:** Next.js 15.2.4 · Drizzle ORM · Supabase PostgreSQL · Zustand 5 · Tailwind v4 · Getnet · lottie-react · framer-motion  
+**Estado del build:** ✅ `npm run build` pasa localmente · tipos/lint integrados en build OK · warnings no bloqueantes conocidos  
 **Líneas de código:** ~17.500 · ~200 archivos `.ts`/`.tsx`
 
 ---
@@ -26,11 +26,11 @@ Estado:     Zustand 5 con persist a localStorage
 Formularios: React Hook Form 7 + Zod 4
 Auth admin: jose (JWT) + bcryptjs — Edge Runtime compatible
 Pagos:      Getnet Web Checkout (actualmente en ambiente TEST)
-Animaciones: lottie-react (BrandLoader — public/animations/Loader_16.json)
+Animaciones: lottie-react (BrandLoader — public/animations/Loader_16.json) + framer-motion
 Emails:     Resend (pendiente — integrations/email/index.ts es placeholder vacío)
 Inventario: VESSI (pendiente — integrations/inventory/index.ts es placeholder vacío)
 Instagram:  Elfsight widget externo
-Estilos:    Tailwind CSS v4 (sin tailwind.config.ts — tokens en globals.css)
+Estilos:    Tailwind CSS v4 (sin tailwind.config.ts — tokens y clases globales en globals.css)
 Testing:    Playwright (E2E — 32 passing, 1 skipped known issue)
 Deploy:     Vercel
 ```
@@ -107,16 +107,21 @@ src/
 ├── shared/
 │   ├── ui/                   # Button, Input, Badge, Navbar, Footer, CartPanel, Toast...
 │   │   ├── Logo.tsx          # ✅ Logo real SVG + texto "Crecer" con cruz dorada
-│   │   └── BrandLoader.tsx   # ✅ Spinner Lottie con colores gold del proyecto
+│   │   ├── BrandLoader.tsx   # ✅ Spinner Lottie con colores gold del proyecto
+│   │   └── BlurFade.tsx      # ✅ Wrapper visual con framer-motion
 │   ├── hooks/                # useScrollReveal, useToast
 │   ├── utils/                # formatters.ts (formatCLP, formatDate)
-│   └── config/               # ⚠️ index.ts vacío
+│   └── config/               # brand.ts + landing.ts
+│
+├── DESIGNER.md               # ✅ Referencia visual integrada del storefront
 │
 ├── public/
 │   ├── animations/
 │   │   └── Loader_16.json    # ✅ Animación Lottie del BrandLoader (colores gold #c8a830 [0.788,0.659,0.298,1])
 │   └── images/
-│       └── logo.png          # Logo PNG de reserva
+│       ├── logo.png          # Logo PNG de reserva
+│       ├── Logo-Crecer.png   # ✅ Asset principal del logo del storefront
+│       └── Logo-Crecer1.png  # ✅ Variante adicional del logo entregada por diseño
 │
 └── integrations/
     ├── drizzle/              # Cliente + schema (15 tablas) + 5 migraciones ✅
@@ -198,7 +203,7 @@ Store en `localStorage` (`crecer-cart`). La hidratación usa `useCartHydration()
 ---
 
 ### Feature 4: Panel Admin
-**Estado:** ✅ Completa  
+**Estado:** ✅ Funcional / ⚠️ pendiente alineación visual completa  
 **Archivos clave:**
 - `src/middleware.ts` — protege `/admin/*` y `/api/admin/*`
 - `src/features/admin/services/auth-service.ts`
@@ -208,7 +213,12 @@ Store en `localStorage` (`crecer-cart`). La hidratación usa `useCartHydration()
 - `src/features/admin/services/landing-admin-service.ts`
 
 **Cómo funciona:**
-JWT en cookie HTTP-only `admin-session` (24h, firmado con `jose`). Middleware Edge Runtime verifica el token en cada request. El admin puede gestionar: productos (CRUD + imágenes), categorías, pedidos (cambio de estado + notas internas), hero slides, banners intermedios y selección curada del landing.
+JWT en cookie HTTP-only `admin-session` (24h, firmado con `jose`). Middleware Edge Runtime verifica el token en cada request. El admin puede gestionar: productos (CRUD + imágenes), categorías, pedidos (cambio de estado + notas internas), hero slides, banners intermedios y selección del mes del landing.
+
+**Estado visual actual:**
+- Login admin recibió actualización visual alineada a la nueva dirección del storefront
+- Sidebar, topbar y vistas principales siguen siendo funcionales y consistentes
+- La renovación visual completa del panel admin sigue pendiente y no debe considerarse finalizada
 
 ---
 
@@ -243,6 +253,14 @@ JWT en cookie HTTP-only `admin-session` (24h, firmado con `jose`). Middleware Ed
 
 **Footer dinámico (CAT4):**
 `Footer.tsx` llama `Promise.all([getFooterBanner(), getFooterContent()])`. `getFooterContent()` fetch a `/api/landing/footer`; si falla, cae al objeto `defaultFooterContent` hardcodeado. Links del footer se guardan como `"label::href|||label::href"` en BD. La imagen del footer usa `object-left` (no `object-left-center mix-blend-multiply`).
+
+**Estado visual posterior a `6f39d2b`:**
+- Se integró la propuesta visual del storefront del diseñador directamente sobre la base funcional existente
+- `src/app/globals.css` consolidó la nueva dirección visual aceptada para la tienda pública: fuentes, espaciados, radios, overlays y clases globales
+- Navbar, home, footer, catálogo, detalle de producto, carrito, checkout y `/nosotros` quedaron alineados con ese lenguaje visual
+- Se añadieron assets nuevos de marca en `public/images/Logo-Crecer.png` y `public/images/Logo-Crecer1.png`
+- Se añadió `src/shared/ui/BlurFade.tsx` como wrapper visual reutilizable
+- Se añadió `src/shared/config/landing.ts` para centralizar constantes del storefront y de la selección editorial
 
 ---
 
@@ -282,6 +300,25 @@ Las secciones tienen `title`, `content`, `imageUrl`, `imagePosition` ("right"|"l
 - Link "Conócenos" agregado en desktop (antes del dropdown Categorías) y en el drawer móvil
 - `navLinksAfterCategories` actualizado: `?filter=seleccion` (Selección del mes) y `?filter=nuevo` (Recién llegados)
 - La selección editorial del sitio es única: home, header, catálogo y admin apuntan a `monthly_selection`
+
+---
+
+### Feature 10: Integración visual del storefront
+**Estado:** ✅ Integrada en tienda pública / ⚠️ parcial en admin  
+**Último hito:** `6f39d2b Integra cambios visuales del storefront`
+
+**Alcance real integrado:**
+- Home: hero, selección del mes, categorías, recientemente llegados e identidad visual del landing
+- Navbar y Footer: nuevos assets de logo, presencia visual refinada y consistencia con la propuesta del diseñador
+- Catálogo y detalle de producto: tarjetas, cabeceras, overlays, espaciado y jerarquía visual revisados
+- Carrito y checkout: layouts y presentación alineados al storefront
+- `/nosotros`: continuidad visual con la tienda pública
+- Login admin: actualización visual básica alineada con la marca
+
+**Importante:**
+- Esta integración fue aplicada directamente sobre `main`
+- No reemplaza la necesidad de una mejora visual integral del panel admin
+- No debe interpretarse como cierre de SEO, Chilexpress, VESSI ni Resend
 
 ---
 
@@ -460,6 +497,8 @@ import { jwtVerify, SignJWT } from "jose";
 import jwt from "jsonwebtoken"; // incompatible con Edge Runtime
 ```
 
+> **Nota actual:** puede aparecer un warning no bloqueante relacionado con `jose` y Edge Runtime durante `npm run build`. No está rompiendo el build actual.
+
 ---
 
 ### R10 — .env.local: una variable por línea
@@ -617,8 +656,9 @@ import { BrandLoader } from "@/shared/ui/BrandLoader";
 - [x] **Filtro Selección del mes** — `?filter=seleccion` en catálogo vía subquery `featured_products` (CAT5)
 - [x] **Página /nosotros** — CMS completo: secciones alternadas, admin CRUD, imágenes (CAT5)
 - [x] **Navbar Conócenos** — link en desktop y drawer móvil; links actualizados a `?filter=seleccion` y `?filter=nuevo` (CAT5)
+- [ ] **UI/UX del panel admin** — alinear visualmente todo el admin con el lenguaje del storefront ya integrado en la tienda pública
 - [ ] **API Chilexpress** — cotización de despacho en tiempo real y búsqueda de sucursales (pendiente de credenciales del cliente)
-- [ ] **VESSI** — pendiente de respuesta de la API. Integración en `src/integrations/inventory/`
+- [ ] **VESSI** — implementar según la definición/respuesta ya recibida. Integración base en `src/integrations/inventory/`
 
 ### P2 — Lanzamiento / Fase 5
 - [ ] SEO: `generateMetadata` en producto y categoría, Open Graph, sitemap.xml
@@ -628,6 +668,8 @@ import { BrandLoader } from "@/shared/ui/BrandLoader";
 - [ ] UI de admin para cupones (actualmente solo vía BD directa)
 - [ ] UI de admin para usuarios admin adicionales (actualmente solo `seed:admin`)
 - [ ] Páginas legales: política de privacidad, términos y condiciones
+- [ ] **Resend / emails** — confirmaciones y comunicaciones transaccionales
+- [ ] **Deploy final y checklist de lanzamiento** — variables, credenciales, smoke test y revisión final antes de publicar
 
 ---
 
@@ -706,7 +748,7 @@ CRON_SECRET=
 
 ## 🟢 ESTADO ACTUAL DEL PROYECTO
 
-**Fases 1–4C completas + auditoría completa + mobile responsive + CAT1–CAT5 identidad y contenido.** El e-commerce es funcional end-to-end, totalmente responsive, con identidad visual propia (logo real, BrandLoader Lottie, splash screen) y contenido completamente editable desde el admin:
+**Fases 1–4C completas + auditoría completa + mobile responsive + CAT1–CAT5 + integración visual del storefront en `main`.** El e-commerce es funcional end-to-end, totalmente responsive, con identidad visual consolidada en la tienda pública y contenido editable desde el admin:
 
 **Flujo de compra verificado:**
 - Cliente navega home (con splash screen 3.5s) → catálogo (filtros, búsqueda, paginación, selección del mes) → detalle de producto → carrito → checkout → Getnet Web Checkout
@@ -716,18 +758,56 @@ CRON_SECRET=
 - Cron job cancela órdenes `pending` de más de 24h, hora a hora
 
 **Contenido editable desde el admin:**
-- Hero slides, banners intermedios, selección curada del mes
+- Hero slides, banners intermedios, selección del mes
 - Imagen panorámica de la sección categorías del landing
 - Texto completo del footer (descripción, links, dirección, copyright)
 - Página /nosotros con secciones alternadas (título, contenido, imagen, posición)
 
 **Identidad visual:**
-- Logo real (`Logo.tsx`) en Navbar y Footer
+- Storefront del diseñador integrado en la tienda pública
+- `globals.css` aceptó cambios globales de fuentes, espaciados, radios y utilidades visuales
+- Assets nuevos de marca en `public/images/Logo-Crecer.png` y `public/images/Logo-Crecer1.png`
+- `BlurFade.tsx` disponible como wrapper visual reutilizable
 - BrandLoader Lottie con colores gold del sistema de diseño
 - Splash screen 3.5s en el home; BrandLoader en confirmación de pago
 
+**Calidad técnica actual:**
+- `npm run build` pasa correctamente en local
+- Tipos y lint pasan dentro del build
+- Persisten warnings no bloqueantes conocidos (ver sección específica más abajo)
+
 **Tests E2E:** 32 passing en Chromium y Pixel 5 (mobile). `checkout.spec.ts` escrito pero pendiente de corregir.
 
-**Pendiente para producción:** Resend (emails), credenciales Getnet de producción, variables en Vercel, ejecutar seed en producción.
+**Pendiente para producción:** UI/UX del admin, SEO, Chilexpress, VESSI, Resend/emails, credenciales Getnet de producción, variables en Vercel, ejecutar seed en producción y checklist final de lanzamiento.
 
-*Handoff v01 — Abril 2026 · Sesión CAT1–CAT5*
+---
+
+## 🧷 ÚLTIMO COMMIT RELEVANTE
+
+- `6f39d2b` — `Integra cambios visuales del storefront`
+
+---
+
+## ⚠️ WARNINGS CONOCIDOS NO BLOQUEANTES
+
+Estado actual tras la integración visual y el build local:
+
+- Uso de `<img>` en algunas vistas/componentes. Recomendación pendiente: migrar progresivamente a `next/image` donde aplique.
+- Warning de cleanup/ref en `src/shared/hooks/useScrollReveal.ts` por referencias que pueden cambiar antes del cleanup del efecto.
+- Warning asociado a `jose` en Edge Runtime durante `npm run build`.
+
+Estos warnings **no están bloqueando** el build local actual ni deben confundirse con errores funcionales.
+
+---
+
+## ✅ CHECKLIST ACTUALIZADO DE PRÓXIMOS PASOS
+
+- [ ] Alinear visualmente todo el panel admin al lenguaje del storefront
+- [ ] Implementar SEO (`generateMetadata`, Open Graph, sitemap)
+- [ ] Implementar Chilexpress
+- [ ] Implementar VESSI según la definición/respuesta ya recibida
+- [ ] Implementar Resend / emails transaccionales si sigue pendiente
+- [ ] Preparar deploy final y checklist de lanzamiento
+- [ ] Corregir `checkout.spec.ts` y completar smoke tests previos a producción
+
+*Handoff v01 — Abril 2026 · Storefront visual integrado + base funcional vigente*
