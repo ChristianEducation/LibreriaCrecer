@@ -7,15 +7,17 @@ import { usePathname } from "next/navigation";
 import { AdminLogoutButton } from "./admin-logout-button";
 
 const sectionTitles = [
-  { match: "/admin/productos", title: "Catalogo de libros" },
-  { match: "/admin/categorias", title: "Categorias" },
-  { match: "/admin/pedidos", title: "Gestion de pedidos" },
+  { match: "/admin/productos", title: "Catálogo de libros" },
+  { match: "/admin/categorias", title: "Categorías" },
+  { match: "/admin/pedidos", title: "Gestión de pedidos" },
   { match: "/admin/landing/hero", title: "Editor del hero" },
   { match: "/admin/landing/banners", title: "Banners del landing" },
-  { match: "/admin/landing/seleccion", title: "Seleccion del mes" },
+  { match: "/admin/landing/seleccion", title: "Selección del mes" },
+  { match: "/admin/landing/categorias", title: "Categorías del landing" },
   { match: "/admin/landing/footer", title: "Footer del sitio" },
+  { match: "/admin/nosotros", title: "Página Conócenos" },
   { match: "/admin/cupones", title: "Cupones" },
-  { match: "/admin/landing", title: "Pagina principal" },
+  { match: "/admin/landing", title: "Página principal" },
   { match: "/admin", title: "Dashboard" },
 ] as const;
 
@@ -57,35 +59,41 @@ export function AdminTopbar({ initialAdminName }: AdminTopbarProps) {
   }, [pathname]);
 
   return (
-    <div className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-[color-mix(in_srgb,var(--beige)_95%,transparent)] px-7 backdrop-blur-[12px]">
-      <div>
-        <p className="text-[0.9rem] font-semibold text-text">{title}</p>
-        {adminName ? <p className="mt-1 text-[0.68rem] text-text-light">Sesion activa: {adminName}</p> : null}
-      </div>
+    <div className="h-[60px] shrink-0 border-b border-[#ede9e2] bg-white">
+      <div className="mx-auto flex h-full w-[min(100%,1440px)] items-center justify-between" style={{ paddingInline: "clamp(16px, 2vw, 28px)" }}>
+        <div className="min-w-0">
+          <p className="truncate text-[13px] font-medium leading-none text-text">{title}</p>
+          {adminName ? (
+            <p className="mt-1 text-[10.5px] uppercase tracking-[0.09em] text-text-light">
+              Sesión activa · {adminName}
+            </p>
+          ) : null}
+        </div>
 
-      <div className="flex items-center gap-3">
-        <div className="hidden md:block">
-          <input
-            className="h-10 min-w-60 rounded-[8px] border border-border bg-white px-4 text-sm text-text placeholder:text-text-light focus:border-gold focus:outline-none"
-            placeholder="Buscar en admin..."
-            type="search"
+        <div className="flex shrink-0 items-center gap-2.5">
+          <div className="hidden md:block">
+            <input
+              className="h-9 w-60 rounded-[10px] border border-border bg-[#faf9f7] px-3.5 text-[13px] text-text placeholder:text-text-light transition-colors focus:border-gold focus:bg-white focus:outline-none"
+              placeholder="Buscar en admin..."
+              type="search"
+            />
+          </div>
+          <div className="hidden items-center gap-2 lg:flex">
+            <span className="relative flex size-9 items-center justify-center rounded-[10px] border border-border bg-white text-[13px] text-text-mid">
+              🔔
+              <span className="absolute right-2 top-2 size-1.5 rounded-full bg-gold ring-2 ring-white" />
+            </span>
+            <Link
+              className="inline-flex h-9 items-center justify-center rounded-[10px] border border-transparent bg-moss px-4 text-[13px] font-semibold text-white transition-colors hover:bg-moss-mid"
+              href="/admin/productos/nuevo"
+            >
+              + Nuevo producto
+            </Link>
+          </div>
+          <AdminLogoutButton
+            className="rounded-[10px] border border-border bg-white px-3 py-2 text-[13px] text-text-mid transition-colors hover:border-moss/40 hover:bg-white hover:text-moss"
           />
         </div>
-        <div className="hidden items-center gap-2 lg:flex">
-          <span className="relative flex size-10 items-center justify-center rounded-[8px] border border-border bg-white text-text-mid">
-            🔔
-            <span className="absolute right-2 top-2 size-2 rounded-full bg-error" />
-          </span>
-          <Link
-            className="inline-flex h-10 items-center justify-center rounded-[8px] bg-moss px-4 text-[0.78rem] font-semibold text-white transition-colors hover:bg-moss-mid"
-            href="/admin/productos/nuevo"
-          >
-            + Nuevo producto
-          </Link>
-        </div>
-        <AdminLogoutButton
-          className="rounded-[8px] border border-border px-3 py-2 text-sm text-text-mid transition-colors hover:border-moss hover:text-moss"
-        />
       </div>
     </div>
   );

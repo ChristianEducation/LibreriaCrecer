@@ -112,6 +112,76 @@ body {
   margin-inline: auto;
 }
 
+/* Sistema de layout interno del panel admin */
+.admin-main-canvas {
+  padding: clamp(16px, 2vw, 28px);
+}
+
+.admin-page-shell {
+  width: 100%;
+  min-height: 100%;
+}
+
+.admin-page-container {
+  width: min(100%, 1440px);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.admin-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-card {
+  border: 1px solid #ede9e2;
+  border-radius: 16px;
+  background: #fffdf8;
+  box-shadow: 0 2px 12px rgba(58, 48, 1, 0.045);
+}
+
+.admin-grid-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-grid-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: 18px;
+}
+
+@media (max-width: 1180px) {
+  .admin-grid-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-grid-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-page-container {
+    gap: 18px;
+  }
+
+  .admin-page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-grid-kpis {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Botón de navegación prev/next para carruseles */
 .carousel-nav-btn {
   display: flex;

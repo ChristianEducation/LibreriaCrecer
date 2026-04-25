@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Crecer — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { height: 100%; }
+  body { font-family: 'DM Sans', sans-serif; background: #f5f4f1; color: #1a1814; }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d0ccc4; border-radius: 99px; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes countUp { from { opacity:0; transform:scale(.92); } to { opacity:1; transform:scale(1); } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ─── ICONS ─── */
+function Ico({d,size=16,stroke="rgba(255,255,255,.6)",sw=1.6,fill="none"}) {
+  return <svg width={size} height={size} viewBox="0 0 20 20" fill={fill} stroke={stroke} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round"><path d={d}/></svg>;
+}
+const I = {
+  grid:    d=>"M3 3h6v6H3zM11 3h6v6h-6zM3 11h6v6H3zM11 11h6v6h-6z",
+  home:    d=>"M2 9.5L10 3l8 6.5V18H13v-5H7v5H2z",
+  book:    d=>"M4 2h12a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zM9 2v16",
+  tag:     d=>"M3 3h6l8 8-6 6-8-8V3zM7 7h.01",
+  box:     d=>"M10 2l8 4.5v7L10 18l-8-4.5v-7L10 2zM10 2v16M2 6.5l8 4.5 8-4.5",
+  layout:  d=>"M2 3h16v5H2zM2 11h7v7H2zM12 11h6v7h-6z",
+  image:   d=>"M2 4h16v12H2zM2 13l5-5 4 4 3-3 4 4",
+  banner:  d=>"M2 6h16v8H2zM6 6v8M14 6v8",
+  star:    d=>"M10 2l2.4 5.2 5.6.8-4 4 .9 5.6L10 15l-4.9 2.6.9-5.6-4-4 5.6-.8z",
+  list:    d=>"M3 5h14M3 10h14M3 15h10",
+  footer:  d=>"M2 14h16M2 17h10",
+  info:    d=>"M10 9v6M10 6h.01M3 10a7 7 0 1014 0 7 7 0 00-14 0z",
+  bell:    d=>"M10 2a6 6 0 016 6c0 3.3.8 5.5 2 7H2c1.2-1.5 2-3.7 2-7a6 6 0 016-6zM8 17a2 2 0 004 0",
+  plus:    d=>"M10 4v12M4 10h12",
+  logout:  d=>"M13 5l5 5-5 5M7 10h11M7 3H3v14h4",
+  money:   d=>"M10 2a8 8 0 100 16A8 8 0 0010 2zM10 6v8M7 9c0-1.1 1.3-2 3-2s3 .9 3 2-1.3 2-3 2-3 .9-3 2 1.3 2 3 2 3-.9 3-2",
+  clock:   d=>"M10 2a8 8 0 100 16A8 8 0 0010 2zM10 6v4l3 3",
+  calendar:d=>"M3 5h14v13H3zM3 9h14M7 3v4M13 3v4",
+  check:   d=>"M4 10l4 4 8-8",
+  arrow:   d=>"M4 10h12M12 6l4 4-4 4",
+  package: d=>"M10 2l8 4.5v7L10 18l-8-4.5v-7zM2 6.5l8 4.5M18 6.5l-8 4.5M10 11v7",
+  truck:   d=>"M1 8h10v9H1zM11 11h4l3 3v3h-7zM4 17a2 2 0 100-4 2 2 0 000 4zM14 17a2 2 0 100-4 2 2 0 000 4z",
+  refresh: d=>"M4 4a8 8 0 0112 0M16 16a8 8 0 01-12 0M2 8l2-4 4 2M18 12l-2 4-4-2",
+  chev:    d=>"M7 5l5 5-5 5",
+};
+
+const NAV_SECTIONS = [
+  { section:"Principal", items:[
+    { label:"Dashboard", icon:"grid", id:"dashboard" },
+    { label:"Panel principal", icon:"home", id:"panel", active:true },
+  ]},
+  { section:"Catálogo", items:[
+    { label:"Productos", icon:"book", id:"products" },
+    { label:"Categorías", icon:"tag", id:"categories" },
+  ]},
+  { section:"Pedidos", items:[
+    { label:"Pedidos", icon:"box", id:"orders" },
+  ]},
+  { section:"Contenido", items:[
+    { label:"Landing", icon:"layout", id:"landing" },
+    { label:"Hero principal", icon:"image", id:"hero" },
+    { label:"Banners", icon:"banner", id:"banners" },
+    { label:"Selección del mes", icon:"star", id:"selection" },
+    { label:"Categorías del landing", icon:"list", id:"cat-landing" },
+    { label:"Footer", icon:"footer", id:"footer" },
+    { label:"Página Conócenos", icon:"info", id:"about" },
+  ]},
+];
+
+const ORDER_STATES = [
+  { key:"pending",   label:"Pendiente",   count:13, color:"oklch(0.68 0.16 55)",  bg:"oklch(0.97 0.04 75)",  desc:"Esperando pago o revisión" },
+  { key:"paid",      label:"Pagado",      count:5,  color:"oklch(0.52 0.18 145)", bg:"oklch(0.96 0.06 145)", desc:"Listos para procesamiento" },
+  { key:"preparing", label:"Preparando",  count:0,  color:"oklch(0.6 0.16 230)",  bg:"oklch(0.96 0.04 230)", desc:"En armado y coordinación" },
+  { key:"shipped",   label:"Enviado",     count:0,  color:"oklch(0.5 0.1 280)",   bg:"oklch(0.96 0.03 280)", desc:"En ruta al cliente" },
+];
+
+const QUICK_LINKS = [
+  { label:"Gestionar productos",    sub:"Catálogo, stock e imágenes", icon:"book",   id:"products" },
+  { label:"Gestionar categorías",   sub:"Orden, visibilidad y hero",  icon:"tag",    id:"categories" },
+  { label:"Gestionar pedidos",      sub:"Seguimiento y estados",      icon:"box",    id:"orders" },
+  { label:"Gestionar landing",      sub:"Hero, banners y footer",     icon:"layout", id:"landing" },
+  { label:"Página Conócenos",       sub:"Secciones de texto e imagen",icon:"info",   id:"about" },
+];
+
+/* animated counter */
+function Counter({ target, prefix="", suffix="" }) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (target === 0) { setVal(0); return; }
+    let start = null;
+    const dur = 800;
+    const step = ts => {
+      if (!start) start = ts;
+      const prog = Math.min((ts - start) / dur, 1);
+      const ease = 1 - Math.pow(1 - prog, 3);
+      setVal(Math.round(ease * target));
+      if (prog < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target]);
+  return <>{prefix}{typeof target === "string" ? target : val.toLocaleString("es-CL")}{suffix}</>;
+}
+
+/* ─── SIDEBAR ─── */
+function Sidebar({ activeNav, setActiveNav }) {
+  const [collapsed, setCollapsed] = useState(false);
+  return (
+    <aside style={{
+      width: collapsed ? 60 : 220, flexShrink:0, background:"#17140f",
+      display:"flex", flexDirection:"column", height:"100%",
+      transition:"width .25s cubic-bezier(.4,0,.2,1)", overflow:"hidden"
+    }}>
+      <div style={{
+        padding: collapsed ? "20px 0" : "22px 20px 16px",
+        display:"flex", alignItems:"center", gap:10,
+        borderBottom:"1px solid rgba(255,255,255,.06)",
+        justifyContent: collapsed ? "center" : "flex-start"
+      }}>
+        <div style={{
+          width:34, height:34, borderRadius:9, flexShrink:0,
+          background:"linear-gradient(135deg,oklch(0.72 0.12 75),oklch(0.54 0.16 58))",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          fontSize:13, fontWeight:800, color:"#fff", letterSpacing:-.5
+        }}>C</div>
+        {!collapsed && (
+          <div>
+            <div style={{fontSize:14,fontWeight:700,color:"#f5f0e8",letterSpacing:-.3}}>Crecer</div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,.3)",letterSpacing:.9,fontWeight:500}}>ADMIN PANEL</div>
+          </div>
+        )}
+      </div>
+
+      <nav style={{flex:1,overflowY:"auto",padding:"12px 0"}}>
+        {NAV_SECTIONS.map(sec => (
+          <div key={sec.section}>
+            {!collapsed && (
+              <div style={{fontSize:9.5,fontWeight:700,letterSpacing:1.2,color:"rgba(255,255,255,.22)",padding:"14px 20px 6px"}}>
+                {sec.section.toUpperCase()}
+              </div>
+            )}
+            {sec.items.map(item => {
+              const isActive = activeNav === item.id;
+              return (
+                <button key={item.id} onClick={() => setActiveNav(item.id)} style={{
+                  display:"flex", alignItems:"center",
+                  gap:10, width:"100%",
+                  padding: collapsed ? "10px 0" : "9px 20px",
+                  justifyContent: collapsed ? "center" : "flex-start",
+                  background: isActive ? "rgba(255,255,255,.07)" : "none",
+                  border:"none", cursor:"pointer",
+                  borderLeft: isActive ? "2px solid oklch(0.72 0.12 75)" : "2px solid transparent",
+                  transition:"all .15s"
+                }}
+                onMouseEnter={e=>{ if(!isActive) e.currentTarget.style.background="rgba(255,255,255,.04)"; }}
+                onMouseLeave={e=>{ if(!isActive) e.currentTarget.style.background="none"; }}>
+                  <Ico d={I[item.icon]} stroke={isActive?"oklch(0.72 0.12 75)":"rgba(255,255,255,.55)"} />
+                  {!collapsed && (
+                    <span style={{
+                      fontSize:13.5, fontWeight: isActive?600:400,
+                      color: isActive?"#f5f0e8":"rgba(255,255,255,.52)", whiteSpace:"nowrap"
+                    }}>{item.label}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
+      </nav>
+
+      <div style={{borderTop:"1px solid rgba(255,255,255,.06)"}}>
+        {!collapsed && (
+          <div style={{padding:"14px 20px",display:"flex",alignItems:"center",gap:10}}>
+            <div style={{
+              width:32,height:32,borderRadius:99,
+              background:"oklch(0.42 0.1 75)",
+              display:"flex",alignItems:"center",justifyContent:"center",
+              fontSize:12,fontWeight:700,color:"#f5e8c8",flexShrink:0
+            }}>N</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:12.5,fontWeight:600,color:"#f5f0e8"}}>Administrador</div>
+              <div style={{fontSize:10.5,color:"rgba(255,255,255,.32)"}}>Admin</div>
+            </div>
+            <button style={{background:"none",border:"none",cursor:"pointer",opacity:.4,padding:4}}>
+              <Ico d={I.logout} stroke="#fff" />
+            </button>
+          </div>
+        )}
+        <button onClick={()=>setCollapsed(c=>!c)} style={{
+          width:"100%",padding:"10px 0",background:"none",border:"none",
+          cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+          borderTop:"1px solid rgba(255,255,255,.04)"
+        }}>
+          <Ico d={collapsed?"M8 4l6 6-6 6":"M12 4l-6 6 6 6"} stroke="rgba(255,255,255,.28)" />
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+/* ─── HEADER ─── */
+function Header({ search, setSearch }) {
+  return (
+    <div style={{
+      height:60,background:"white",borderBottom:"1px solid #ede9e2",
+      display:"flex",alignItems:"center",padding:"0 28px",gap:16,flexShrink:0
+    }}>
+      <div style={{fontSize:13,color:"#8a8580",display:"flex",alignItems:"center",gap:6}}>
+        <span style={{color:"#1a1814",fontWeight:500}}>Panel principal</span>
+      </div>
+      <div style={{flex:1}} />
+
+      <div style={{position:"relative"}}>
+        <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)"}}>
+          <Ico d="M8.5 15a6.5 6.5 0 100-13 6.5 6.5 0 000 13zM17 17l-3.5-3.5" stroke="#9a9590" />
+        </span>
+        <input value={search} onChange={e=>setSearch(e.target.value)}
+          placeholder="Buscar en admin…"
+          style={{
+            width:240,height:36,borderRadius:10,border:"1px solid #e8e5df",
+            padding:"0 14px 0 36px",fontSize:13,background:"#faf9f7",
+            outline:"none",color:"#1a1814",fontFamily:"inherit",transition:"border .15s, box-shadow .15s"
+          }}
+          onFocus={e=>{e.target.style.border="1px solid oklch(0.72 0.12 75)";e.target.style.boxShadow="0 0 0 3px oklch(0.72 0.12 75 / 0.12)";}}
+          onBlur={e=>{e.target.style.border="1px solid #e8e5df";e.target.style.boxShadow="none";}}
+        />
+      </div>
+
+      <div style={{position:"relative",cursor:"pointer"}}>
+        <Ico d={I.bell} stroke="#8a8580" />
+        <span style={{
+          position:"absolute",top:-4,right:-4,width:16,height:16,
+          borderRadius:99,background:"oklch(0.58 0.22 25)",
+          fontSize:9,fontWeight:700,color:"white",
+          display:"flex",alignItems:"center",justifyContent:"center"
+        }}>3</span>
+      </div>
+
+      <button style={{
+        display:"flex",alignItems:"center",gap:7,
+        padding:"0 16px",height:36,borderRadius:10,
+        background:"linear-gradient(135deg,oklch(0.68 0.14 75),oklch(0.54 0.16 58))",
+        border:"none",cursor:"pointer",color:"white",fontSize:13,
+        fontWeight:600,fontFamily:"inherit",letterSpacing:.2,
+        boxShadow:"0 2px 8px oklch(0.68 0.14 75 / 0.4)",transition:"all .15s"
+      }}
+      onMouseEnter={e=>{e.currentTarget.style.filter="brightness(1.08)";e.currentTarget.style.transform="translateY(-1px)";}}
+      onMouseLeave={e=>{e.currentTarget.style.filter="none";e.currentTarget.style.transform="none";}}
+      >
+        <Ico d={I.plus} stroke="#fff" sw={2} />
+        Nuevo producto
+      </button>
+    </div>
+  );
+}
+
+/* ─── KPI CARD ─── */
+function KpiCard({ icon, label, value, prefix, sub, subColor, accent, delay=0 }) {
+  return (
+    <div style={{
+      background:"white", borderRadius:16, padding:"22px 24px",
+      border:"1px solid #ede9e2", flex:1, minWidth:150,
+      boxShadow:"0 2px 12px rgba(0,0,0,.05)",
+      animation:`fadeUp .4s ease ${delay}ms both`,
+      position:"relative", overflow:"hidden"
+    }}>
+      {/* accent strip */}
+      <div style={{
+        position:"absolute",top:0,left:0,right:0,height:3,
+        background:`linear-gradient(90deg,${accent},transparent)`
+      }} />
+      <div style={{
+        width:38,height:38,borderRadius:10,
+        background: accent.replace("oklch","oklch").replace(")","/0.12)").replace("oklch(","oklch("),
+        display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14
+      }}>
+        <Ico d={I[icon]} stroke={accent} size={18} sw={1.8} />
+      </div>
+      <div style={{fontSize:11,fontWeight:600,letterSpacing:.5,color:"#8a8580",marginBottom:8}}>
+        {label.toUpperCase()}
+      </div>
+      <div style={{fontSize:28,fontWeight:700,letterSpacing:-.8,color:"#1a1814",lineHeight:1}}>
+        <Counter target={value} prefix={prefix||""} />
+      </div>
+      {sub && (
+        <div style={{fontSize:12,color:subColor||"#8a8580",marginTop:6,fontWeight:500,display:"flex",alignItems:"center",gap:4}}>
+          <span style={{width:6,height:6,borderRadius:99,background:subColor||"#8a8580",display:"inline-block",opacity:.7}} />
+          {sub}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── ORDER STATE ROW ─── */
+function OrderRow({ state, total, delay }) {
+  const pct = total > 0 ? Math.round((state.count / total) * 100) : 0;
+  return (
+    <div style={{
+      display:"flex",alignItems:"center",gap:14,
+      padding:"14px 0",borderBottom:"1px solid #f2efe8",
+      animation:`fadeUp .3s ease ${delay}ms both`
+    }}>
+      <div style={{
+        width:34,height:34,borderRadius:9,background:state.bg,
+        display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0
+      }}>
+        <Ico d={I.package} stroke={state.color} size={15} sw={1.6} />
+      </div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{
+              display:"inline-block",width:8,height:8,borderRadius:99,
+              background:state.color,flexShrink:0
+            }} />
+            <span style={{fontSize:13.5,fontWeight:500,color:"#1a1814"}}>{state.label}</span>
+          </div>
+          <span style={{fontSize:13,fontWeight:600,color:"#1a1814"}}>{state.count}</span>
+        </div>
+        <div style={{height:5,borderRadius:99,background:"#f0ede8",overflow:"hidden"}}>
+          <div style={{
+            height:"100%",width:`${pct}%`,borderRadius:99,
+            background:state.color,transition:"width .8s cubic-bezier(.4,0,.2,1)"
+          }} />
+        </div>
+        <div style={{fontSize:11,color:"#a0998f",marginTop:5}}>{state.desc}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── QUICK LINK CARD ─── */
+function QuickLink({ item, onClick }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button onClick={onClick} style={{
+      display:"flex",alignItems:"center",gap:14,
+      padding:"14px 16px",borderRadius:12,
+      background: hov ? "#faf8f4" : "white",
+      border:"1px solid",borderColor: hov?"oklch(0.72 0.12 75 / 0.3)":"#ede9e2",
+      cursor:"pointer",textAlign:"left",width:"100%",
+      transition:"all .15s",transform: hov?"translateX(2px)":"none",
+      boxShadow: hov?"0 2px 12px rgba(0,0,0,.06)":"0 1px 3px rgba(0,0,0,.03)"
+    }}
+    onMouseEnter={()=>setHov(true)}
+    onMouseLeave={()=>setHov(false)}
+    >
+      <div style={{
+        width:36,height:36,borderRadius:9,flexShrink:0,
+        background: hov?"oklch(0.95 0.05 75)":"oklch(0.97 0.02 75)",
+        display:"flex",alignItems:"center",justifyContent:"center",
+        transition:"background .15s"
+      }}>
+        <Ico d={I[item.icon]} stroke={hov?"oklch(0.52 0.15 60)":"oklch(0.6 0.1 70)"} size={16} sw={1.7} />
+      </div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:13.5,fontWeight:500,color:"#1a1814"}}>{item.label}</div>
+        <div style={{fontSize:11.5,color:"#9a9590",marginTop:1}}>{item.sub}</div>
+      </div>
+      <Ico d={I.chev} stroke={hov?"oklch(0.62 0.12 70)":"#c0bbb4"} size={15} />
+    </button>
+  );
+}
+
+/* ─── MINI ACTIVITY ─── */
+const ACTIVITY = [
+  { label:"Nuevo pedido #1087", time:"hace 12 min", icon:"box", color:"oklch(0.52 0.18 145)" },
+  { label:"Stock bajo: Liturgia Cotidiana", time:"hace 1 h",  icon:"package", color:"oklch(0.68 0.16 55)" },
+  { label:"Pedido #1084 enviado", time:"hace 3 h",  icon:"truck", color:"oklch(0.6 0.16 230)" },
+  { label:"Producto actualizado", time:"hace 5 h",  icon:"book",  color:"oklch(0.5 0.1 280)" },
+];
+
+function ActivityRow({ item, delay }) {
+  return (
+    <div style={{
+      display:"flex",alignItems:"flex-start",gap:12,padding:"11px 0",
+      borderBottom:"1px solid #f2efe8",
+      animation:`fadeUp .3s ease ${delay}ms both`
+    }}>
+      <div style={{
+        width:30,height:30,borderRadius:8,
+        background: item.color.replace(")", "/0.12)").replace("oklch(","oklch("),
+        display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1
+      }}>
+        <Ico d={I[item.icon]} stroke={item.color} size={14} sw={1.6} />
+      </div>
+      <div style={{flex:1}}>
+        <div style={{fontSize:13,color:"#1a1814",fontWeight:400}}>{item.label}</div>
+        <div style={{fontSize:11,color:"#a0998f",marginTop:2}}>{item.time}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── APP ─── */
+function App() {
+  const [activeNav, setActiveNav] = useState("panel");
+  const [search, setSearch] = useState("");
+  const totalOrders = ORDER_STATES.reduce((s,o)=>s+o.count,0);
+
+  return (
+    <div style={{display:"flex",height:"100vh",overflow:"hidden"}}>
+      <Sidebar activeNav={activeNav} setActiveNav={setActiveNav} />
+
+      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <Header search={search} setSearch={setSearch} />
+
+        <main style={{flex:1,overflowY:"auto",padding:28}}>
+
+          {/* Welcome */}
+          <div style={{marginBottom:26,animation:"fadeUp .4s ease both"}}>
+            <div style={{fontSize:12,fontWeight:600,letterSpacing:.5,color:"oklch(0.62 0.12 70)",marginBottom:4}}>
+              {new Date().toLocaleDateString("es-CL",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).replace(/^./, c=>c.toUpperCase())}
+            </div>
+            <h1 style={{fontSize:26,fontWeight:700,letterSpacing:-.6,color:"#1a1814",lineHeight:1.1}}>
+              Bienvenido, Administrador
+              <span style={{color:"oklch(0.68 0.14 70)"}}>.</span>
+            </h1>
+            <p style={{fontSize:13.5,color:"#8a8580",marginTop:5}}>
+              Resumen rápido del estado de la tienda, pedidos activos y accesos principales.
+            </p>
+          </div>
+
+          {/* KPI Row */}
+          <div style={{display:"flex",gap:14,marginBottom:24,flexWrap:"wrap"}}>
+            <KpiCard icon="money"    label="Ventas del día"      value={0}  prefix="$" sub="0 pagos hoy"        subColor="#c0998a" accent="oklch(0.68 0.14 70)"  delay={0}  />
+            <KpiCard icon="clock"    label="Pedidos pendientes"  value={13}            sub="13 requieren atención" subColor="oklch(0.62 0.16 55)" accent="oklch(0.68 0.16 55)" delay={60} />
+            <KpiCard icon="calendar" label="Pedidos del mes"     value={19}            sub="19 acumulados"       subColor="oklch(0.52 0.15 145)" accent="oklch(0.52 0.18 145)" delay={120}/>
+            <KpiCard icon="check"    label="Pedidos cerrados"    value={0}             sub="0 entregados"        subColor="#a0998f"  accent="oklch(0.5 0.1 280)"  delay={180}/>
+          </div>
+
+          {/* Main grid */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 340px",gap:18,alignItems:"start"}}>
+
+            {/* Left col */}
+            <div style={{display:"flex",flexDirection:"column",gap:18}}>
+
+              {/* Order states */}
+              <div style={{
+                background:"white",borderRadius:16,border:"1px solid #ede9e2",
+                padding:"22px 24px",boxShadow:"0 2px 12px rgba(0,0,0,.04)",
+                animation:"fadeUp .4s ease 80ms both"
+              }}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                  <div>
+                    <h2 style={{fontSize:15,fontWeight:600,color:"#1a1814"}}>Estado de pedidos</h2>
+                    <p style={{fontSize:12,color:"#a0998f",marginTop:2}}>Vista operacional del flujo actual</p>
+                  </div>
+                  <button style={{
+                    fontSize:12,fontWeight:600,color:"oklch(0.52 0.15 60)",
+                    background:"oklch(0.96 0.04 75)",border:"1px solid oklch(0.88 0.07 75)",
+                    padding:"6px 14px",borderRadius:8,cursor:"pointer",fontFamily:"inherit",
+                    transition:"all .15s"
+                  }}
+                  onMouseEnter={e=>{e.currentTarget.style.background="oklch(0.93 0.06 75)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="oklch(0.96 0.04 75)";}}
+                  >Ver todos →</button>
+                </div>
+
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 32px"}}>
+                  {ORDER_STATES.map((s,i)=>(
+                    <OrderRow key={s.key} state={s} total={totalOrders} delay={i*60} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Activity feed */}
+              <div style={{
+                background:"white",borderRadius:16,border:"1px solid #ede9e2",
+                padding:"22px 24px",boxShadow:"0 2px 12px rgba(0,0,0,.04)",
+                animation:"fadeUp .4s ease 160ms both"
+              }}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                  <div>
+                    <h2 style={{fontSize:15,fontWeight:600,color:"#1a1814"}}>Actividad reciente</h2>
+                    <p style={{fontSize:12,color:"#a0998f",marginTop:2}}>Últimos eventos del sistema</p>
+                  </div>
+                  <button style={{
+                    fontSize:12,fontWeight:600,color:"oklch(0.52 0.15 60)",
+                    background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"
+                  }}>
+                    <Ico d={I.refresh} stroke="oklch(0.6 0.12 70)" size={15} />
+                  </button>
+                </div>
+                {ACTIVITY.map((a,i)=>(
+                  <ActivityRow key={i} item={a} delay={i*50} />
+                ))}
+              </div>
+
+            </div>
+
+            {/* Right col — quick links */}
+            <div style={{
+              background:"white",borderRadius:16,border:"1px solid #ede9e2",
+              padding:"22px 24px",boxShadow:"0 2px 12px rgba(0,0,0,.04)",
+              animation:"fadeUp .4s ease 120ms both"
+            }}>
+              <h2 style={{fontSize:15,fontWeight:600,color:"#1a1814",marginBottom:3}}>Accesos rápidos</h2>
+              <p style={{fontSize:12,color:"#a0998f",marginBottom:18}}>Atajos a las secciones principales del panel</p>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {QUICK_LINKS.map((item,i)=>(
+                  <QuickLink key={i} item={item} onClick={()=>setActiveNav(item.id)} />
+                ))}
+              </div>
+
+              {/* Divider + tip */}
+              <div style={{marginTop:22,padding:"16px",borderRadius:12,background:"oklch(0.97 0.03 75)",border:"1px solid oklch(0.9 0.06 75)"}}>
+                <div style={{fontSize:11.5,fontWeight:600,color:"oklch(0.48 0.12 60)",marginBottom:4}}>💡 Consejo</div>
+                <div style={{fontSize:12,color:"oklch(0.5 0.08 60)",lineHeight:1.6}}>
+                  Hay <strong>13 pedidos pendientes</strong> que requieren revisión. Revísalos antes de fin del día.
+                </div>
+                <button style={{
+                  marginTop:10,fontSize:12,fontWeight:600,
+                  color:"oklch(0.48 0.14 58)",background:"none",
+                  border:"none",cursor:"pointer",padding:0,fontFamily:"inherit",
+                  display:"flex",alignItems:"center",gap:4
+                }}>
+                  Ver pedidos activos <Ico d={I.arrow} stroke="oklch(0.52 0.14 58)" size={13} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

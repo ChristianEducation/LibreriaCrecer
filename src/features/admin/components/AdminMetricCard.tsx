@@ -1,7 +1,5 @@
 "use client";
 
-import { cx } from "class-variance-authority";
-
 export interface AdminMetricCardProps {
   icon: React.ReactNode;
   value: string;
@@ -11,24 +9,28 @@ export interface AdminMetricCardProps {
   variant?: "gold" | "green" | "blue" | "purple";
 }
 
-const variantMap = {
+const variantPalette: Record<NonNullable<AdminMetricCardProps["variant"]>, { accent: string; tint: string; icon: string }> = {
   gold: {
-    accent: "bg-gold/15",
-    icon: "text-gold",
+    accent: "var(--gold)",
+    tint: "rgba(200, 168, 48, 0.12)",
+    icon: "var(--gold)",
   },
   green: {
-    accent: "bg-[#27AE60]/15",
-    icon: "text-[#27AE60]",
+    accent: "var(--success)",
+    tint: "rgba(39, 174, 96, 0.12)",
+    icon: "var(--success)",
   },
   blue: {
-    accent: "bg-[#2980B9]/15",
-    icon: "text-[#2980B9]",
+    accent: "var(--info)",
+    tint: "rgba(41, 128, 185, 0.12)",
+    icon: "var(--info)",
   },
   purple: {
-    accent: "bg-[#8B5CF6]/15",
-    icon: "text-[#8B5CF6]",
+    accent: "var(--moss)",
+    tint: "rgba(115, 96, 2, 0.12)",
+    icon: "var(--moss)",
   },
-} as const;
+};
 
 export function AdminMetricCard({
   icon,
@@ -38,27 +40,98 @@ export function AdminMetricCard({
   deltaType,
   variant = "gold",
 }: AdminMetricCardProps) {
-  const palette = variantMap[variant];
+  const palette = variantPalette[variant];
+  const deltaColor = deltaType === "down" ? "var(--error)" : "var(--success)";
 
   return (
-    <article className="relative overflow-hidden rounded-[2px] border border-border bg-white p-5">
-      <div className={cx("absolute right-0 top-0 h-[60px] w-[60px] rounded-bl-[60px] opacity-100", palette.accent)} />
+    <article
+      className="admin-card"
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        padding: "22px 24px",
+        minHeight: 132,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-start",
+      }}
+    >
+      <span
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: "0 0 auto 0",
+          height: 3,
+          background: `linear-gradient(90deg, ${palette.accent}, transparent)`,
+        }}
+      />
 
-      <div className={cx("mb-[10px] text-[22px]", palette.icon)}>{icon}</div>
-      <div className="font-serif text-[2rem] font-semibold leading-none text-text">{value}</div>
-      <div className="mt-1 text-[0.72rem] text-text-mid">{label}</div>
+      <div
+        style={{
+          width: 38,
+          height: 38,
+          borderRadius: 10,
+          background: palette.tint,
+          color: palette.icon,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 14,
+        }}
+      >
+        {icon}
+      </div>
+
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: "0.05em",
+          textTransform: "uppercase",
+          color: "var(--text-light)",
+          marginBottom: 8,
+        }}
+      >
+        {label}
+      </div>
+
+      <div
+        style={{
+          fontSize: 28,
+          fontWeight: 700,
+          letterSpacing: "-0.03em",
+          lineHeight: 1,
+          color: "var(--text)",
+        }}
+      >
+        {value}
+      </div>
 
       {delta ? (
-        <span
-          className={cx(
-            "mt-2 inline-flex rounded-[10px] px-[7px] py-[2px] text-[0.68rem] font-semibold",
-            deltaType === "down"
-              ? "bg-[rgba(192,57,43,0.08)] text-[#C0392B]"
-              : "bg-[rgba(39,174,96,0.1)] text-[#27AE60]",
-          )}
+        <div
+          style={{
+            marginTop: 8,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 12,
+            fontWeight: 500,
+            color: deltaColor,
+          }}
         >
+          <span
+            aria-hidden="true"
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: 999,
+              background: deltaColor,
+              opacity: 0.7,
+              display: "inline-block",
+            }}
+          />
           {delta}
-        </span>
+        </div>
       ) : null}
     </article>
   );

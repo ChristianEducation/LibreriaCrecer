@@ -28,29 +28,73 @@ export function AdminTable<T>({
   emptyState,
   rowKey,
 }: AdminTableProps<T>) {
+  const hasHeader = Boolean(title || description || actions);
+
   return (
-    <div className="overflow-hidden rounded-[2px] border border-border bg-white">
-      {title || description || actions ? (
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-5 py-4">
+    <div className="admin-card" style={{ overflow: "hidden" }}>
+      {hasHeader ? (
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            padding: "16px 20px",
+            borderBottom: "1px solid #ede9e2",
+          }}
+        >
           <div>
-            {title ? <h3 className="text-[0.82rem] font-semibold text-text">{title}</h3> : null}
-            {description ? <p className="mt-1 text-[11px] text-text-light">{description}</p> : null}
+            {title ? (
+              <h3
+                style={{
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: "var(--text)",
+                  letterSpacing: "-0.01em",
+                  lineHeight: 1.2,
+                }}
+              >
+                {title}
+              </h3>
+            ) : null}
+            {description ? (
+              <p
+                style={{
+                  fontSize: 12,
+                  color: "var(--text-light)",
+                  marginTop: 4,
+                  fontWeight: 300,
+                }}
+              >
+                {description}
+              </p>
+            ) : null}
           </div>
           {actions}
         </div>
       ) : null}
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead className="bg-beige-warm">
-            <tr>
-              {columns.map((column) => (
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ background: "#faf8f4", borderBottom: "1px solid #ede9e2" }}>
+              {columns.map((column, index) => (
                 <th
-                  className={cx(
-                    "border-b border-border px-4 py-[11px] text-left text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-text-light",
-                    column.className,
-                  )}
+                  className={column.className}
                   key={column.key}
+                  style={{
+                    padding: "12px 16px",
+                    paddingLeft: index === 0 ? 20 : 16,
+                    paddingRight: index === columns.length - 1 ? 20 : 16,
+                    textAlign: "left",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "var(--text-light)",
+                    whiteSpace: "nowrap",
+                  }}
                 >
                   {column.header}
                 </th>
@@ -60,20 +104,40 @@ export function AdminTable<T>({
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td className="px-4 py-10 text-center text-sm text-text-light" colSpan={columns.length}>
+                <td
+                  colSpan={columns.length}
+                  style={{
+                    padding: "48px 20px",
+                    textAlign: "center",
+                    fontSize: 14,
+                    fontWeight: 300,
+                    color: "var(--text-light)",
+                  }}
+                >
                   {emptyState ?? "No hay registros para mostrar."}
                 </td>
               </tr>
             ) : (
-              data.map((item) => (
-                <tr className="transition-colors hover:bg-beige/40" key={rowKey(item)}>
-                  {columns.map((column) => (
+              data.map((item, rowIndex) => (
+                <tr
+                  className="transition-colors duration-150 hover:bg-[#faf9f6]"
+                  key={rowKey(item)}
+                  style={{
+                    borderTop: rowIndex === 0 ? "none" : "1px solid #f2efe8",
+                  }}
+                >
+                  {columns.map((column, colIndex) => (
                     <td
-                      className={cx(
-                        "border-b border-border px-4 py-[13px] align-middle text-[0.8rem] text-text-mid last:border-b-0",
-                        column.className,
-                      )}
+                      className={cx(column.className)}
                       key={column.key}
+                      style={{
+                        padding: "14px 16px",
+                        paddingLeft: colIndex === 0 ? 20 : 16,
+                        paddingRight: colIndex === columns.length - 1 ? 20 : 16,
+                        verticalAlign: "middle",
+                        fontSize: 13,
+                        color: "var(--text-mid)",
+                      }}
                     >
                       {column.render(item)}
                     </td>

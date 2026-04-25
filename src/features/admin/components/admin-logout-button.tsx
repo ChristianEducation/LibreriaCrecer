@@ -7,11 +7,17 @@ import { cx } from "class-variance-authority";
 export interface AdminLogoutButtonProps {
   className?: string;
   label?: string;
+  icon?: React.ReactNode;
+  showLabel?: boolean;
+  title?: string;
 }
 
 export function AdminLogoutButton({
   className,
   label = "Cerrar sesion",
+  icon,
+  showLabel = true,
+  title,
 }: AdminLogoutButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -27,14 +33,19 @@ export function AdminLogoutButton({
     }
   }
 
+  const visibleLabel = loading ? "Cerrando..." : label;
+
   return (
     <button
-      type="button"
-      onClick={handleLogout}
-      disabled={loading}
+      aria-label={!showLabel ? label : undefined}
       className={cx(className, "disabled:opacity-60")}
+      disabled={loading}
+      onClick={handleLogout}
+      title={title ?? (!showLabel ? label : undefined)}
+      type="button"
     >
-      {loading ? "Cerrando..." : label}
+      {icon ? <span aria-hidden="true">{icon}</span> : null}
+      {showLabel ? <span>{visibleLabel}</span> : null}
     </button>
   );
 }

@@ -3,47 +3,101 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cx } from "class-variance-authority";
 
 import { AdminLogoutButton } from "./admin-logout-button";
+
+type SidebarIconName =
+  | "grid"
+  | "book"
+  | "tag"
+  | "box"
+  | "layout"
+  | "image"
+  | "banner"
+  | "star"
+  | "list"
+  | "footer"
+  | "info"
+  | "logout"
+  | "chev-left"
+  | "chev-right";
 
 type SidebarItem = {
   href: string;
   label: string;
-  icon: string;
+  icon: SidebarIconName;
   exact?: boolean;
   badge?: number;
 };
 
 const sections: { label: string; items: SidebarItem[] }[] = [
   {
-    label: "Principal",
+    label: "Dashboard",
     items: [
-      { href: "/admin", label: "Dashboard", icon: "▦", exact: true },
-      { href: "/admin/pedidos", label: "Pedidos", icon: "◫" },
+      { href: "/admin", label: "Panel principal", icon: "grid", exact: true },
     ],
   },
   {
-    label: "Catalogo",
+    label: "Catálogo",
     items: [
-      { href: "/admin/productos", label: "Productos", icon: "▣" },
-      { href: "/admin/categorias", label: "Categorias", icon: "◈" },
+      { href: "/admin/productos", label: "Productos", icon: "book" },
+      { href: "/admin/categorias", label: "Categorías", icon: "tag" },
     ],
   },
   {
-    label: "Pagina principal",
+    label: "Pedidos",
     items: [
-      { href: "/admin/landing/hero", label: "Hero", icon: "◆" },
-      { href: "/admin/landing/banners", label: "Banners", icon: "▤" },
-      { href: "/admin/landing/seleccion", label: "Seleccion del mes", icon: "✦" },
-      { href: "/admin/landing/footer", label: "Footer", icon: "—" },
+      { href: "/admin/pedidos", label: "Pedidos", icon: "box" },
     ],
   },
   {
-    label: "Sistema",
-    items: [{ href: "/admin/cupones", label: "Cupones", icon: "%" }],
+    label: "Contenido",
+    items: [
+      { href: "/admin/landing", label: "Landing", icon: "layout", exact: true },
+      { href: "/admin/landing/hero", label: "Hero principal", icon: "image" },
+      { href: "/admin/landing/banners", label: "Banners", icon: "banner" },
+      { href: "/admin/landing/seleccion", label: "Selección del mes", icon: "star" },
+      { href: "/admin/landing/categorias", label: "Categorías del landing", icon: "list" },
+      { href: "/admin/landing/footer", label: "Footer", icon: "footer" },
+      { href: "/admin/nosotros", label: "Página Conócenos", icon: "info" },
+    ],
   },
 ];
+
+function SidebarIcon({ name, size = 16, strokeWidth = 1.6 }: { name: SidebarIconName; size?: number; strokeWidth?: number }) {
+  const paths: Record<SidebarIconName, string> = {
+    grid: "M3 3h6v6H3zM11 3h6v6h-6zM3 11h6v6H3zM11 11h6v6h-6z",
+    book: "M4 2h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM9 2v16",
+    tag: "M3 3h6l8 8-6 6-8-8V3zM7 7h.01",
+    box: "M10 2l8 4.5v7L10 18l-8-4.5v-7L10 2zM10 2v16M2 6.5l8 4.5 8-4.5",
+    layout: "M2 3h16v5H2zM2 11h7v7H2zM12 11h6v7h-6z",
+    image: "M2 4h16v12H2zM2 13l5-5 4 4 3-3 4 4",
+    banner: "M2 6h16v8H2zM6 6v8M14 6v8",
+    star: "M10 2l2.4 5.2 5.6.8-4 4 .9 5.6L10 15l-4.9 2.6.9-5.6-4-4 5.6-.8z",
+    list: "M3 5h14M3 10h14M3 15h10",
+    footer: "M2 14h16M2 17h10",
+    info: "M10 9v6M10 6h.01M3 10a7 7 0 1 0 14 0 7 7 0 0 0-14 0z",
+    logout: "M13 5l5 5-5 5M7 10h11M7 3H3v14h4",
+    "chev-left": "M12 4l-6 6 6 6",
+    "chev-right": "M8 4l6 6-6 6",
+  };
+
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={strokeWidth}
+      viewBox="0 0 20 20"
+      width={size}
+    >
+      <path d={paths[name]} />
+    </svg>
+  );
+}
 
 export interface AdminSidebarProps {
   adminName: string;
@@ -52,6 +106,7 @@ export interface AdminSidebarProps {
 export function AdminSidebar({ adminName }: AdminSidebarProps) {
   const pathname = usePathname();
   const [pendingOrders, setPendingOrders] = useState<number>(0);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,26 +147,116 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
     }));
   }, [pendingOrders]);
 
-  return (
-    <aside className="relative flex h-screen w-[248px] shrink-0 flex-col overflow-hidden border-r border-r-[rgba(217,186,30,0.15)] bg-moss">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.05),transparent_38%)]" />
+  const width = collapsed ? 60 : 220;
+  const initials = adminName.slice(0, 1).toUpperCase();
 
-      <div className="relative border-b border-b-white/10 px-5 pb-5 pt-5">
-        <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-[8px] bg-gold text-[15px] text-moss shadow-[0_8px_20px_rgba(217,186,30,0.22)]">
-            ✝
-          </div>
-          <div>
-            <p className="font-serif text-[1.35rem] text-white">Crecer</p>
-            <p className="text-[0.62rem] uppercase tracking-[0.2em] text-white/45">Admin panel</p>
-          </div>
+  return (
+    <aside
+      style={{
+        width,
+        flexShrink: 0,
+        height: "100vh",
+        background: "#17140f",
+        color: "white",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        transition: "width 250ms cubic-bezier(0.4, 0, 0.2, 1)",
+        willChange: "width",
+      }}
+    >
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          background: "radial-gradient(circle at top left, rgba(232, 208, 96, 0.10), transparent 34%)",
+        }}
+      />
+
+      <div
+        style={{
+          position: "relative",
+          padding: collapsed ? "20px 0 16px" : "22px 20px 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          justifyContent: collapsed ? "center" : "flex-start",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+        }}
+      >
+        <div
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 9,
+            background: "linear-gradient(135deg, var(--gold), var(--moss-mid))",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            fontSize: 13,
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+            flexShrink: 0,
+          }}
+        >
+          C
+        </div>
+        <div
+          style={{
+            opacity: collapsed ? 0 : 1,
+            width: collapsed ? 0 : "auto",
+            overflow: "hidden",
+            transition: "opacity 150ms ease",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <p style={{ fontSize: 14, fontWeight: 700, color: "#f5f0e8", letterSpacing: "-0.02em", lineHeight: 1 }}>
+            Crecer
+          </p>
+          <p
+            style={{
+              marginTop: 4,
+              fontSize: 10,
+              fontWeight: 500,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "rgba(255, 255, 255, 0.35)",
+            }}
+          >
+            Admin panel
+          </p>
         </div>
       </div>
 
-      <div className="relative flex-1 overflow-y-auto px-3 py-4">
-        {itemsWithBadges.map((section) => (
-          <div className="mb-4" key={section.label}>
-            <p className="px-[10px] pb-[6px] pt-[14px] text-[0.58rem] font-semibold uppercase tracking-[0.22em] text-white/35">
+      <nav
+        style={{
+          position: "relative",
+          flex: 1,
+          overflowY: "auto",
+          overflowX: "hidden",
+          padding: "12px 0",
+        }}
+      >
+        {itemsWithBadges.filter((section) => section.items.length > 0).map((section) => (
+          <div key={section.label} style={{ marginBottom: 4 }}>
+            <p
+              style={{
+                padding: "12px 20px 6px",
+                fontSize: 9.5,
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "rgba(255, 255, 255, 0.22)",
+                opacity: collapsed ? 0 : 1,
+                height: collapsed ? 0 : "auto",
+                overflow: "hidden",
+                transition: "opacity 150ms ease",
+                whiteSpace: "nowrap",
+              }}
+            >
               {section.label}
             </p>
             <div>
@@ -120,23 +265,83 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
 
                 return (
                   <Link
-                    className={cx(
-                      "mb-1 flex items-center gap-[10px] rounded-[10px] border px-3 py-[10px] transition-all duration-200 hover:bg-white/8",
-                      isActive
-                        ? "border-[rgba(217,186,30,0.25)] bg-[rgba(217,186,30,0.15)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
-                        : "border-transparent",
-                    )}
+                    className="admin-sidebar-link"
                     href={item.href}
                     key={item.href}
+                    style={{
+                      position: "relative",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      width: "100%",
+                      minHeight: 36,
+                      padding: collapsed ? "9px 0" : "9px 20px",
+                      justifyContent: collapsed ? "center" : "flex-start",
+                      background: isActive ? "rgba(255, 255, 255, 0.07)" : "transparent",
+                      borderLeft: `2px solid ${isActive ? "var(--gold)" : "transparent"}`,
+                      color: isActive ? "#f5f0e8" : "rgba(255, 255, 255, 0.55)",
+                      textDecoration: "none",
+                      transition: "background-color 150ms ease, color 150ms ease",
+                    }}
+                    title={collapsed ? item.label : undefined}
                   >
-                    <span className={cx("w-[18px] text-[15px]", isActive ? "text-gold" : "text-white/55")}>
-                      {item.icon}
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        color: isActive ? "var(--gold)" : "rgba(255, 255, 255, 0.55)",
+                        position: "relative",
+                      }}
+                    >
+                      <SidebarIcon name={item.icon} size={16} />
+                      {item.badge && collapsed ? (
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            position: "absolute",
+                            top: -3,
+                            right: -4,
+                            width: 7,
+                            height: 7,
+                            borderRadius: 999,
+                            background: "var(--gold)",
+                            border: "1.5px solid #17140f",
+                          }}
+                        />
+                      ) : null}
                     </span>
-                    <span className={cx("text-[0.81rem]", isActive ? "font-medium text-white" : "text-white/65")}>
+                    <span
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        fontSize: 13.5,
+                        fontWeight: isActive ? 600 : 400,
+                        opacity: collapsed ? 0 : 1,
+                        width: collapsed ? 0 : "auto",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                        textOverflow: "ellipsis",
+                        transition: "opacity 150ms ease",
+                      }}
+                    >
                       {item.label}
                     </span>
-                    {item.badge ? (
-                      <span className="ml-auto rounded-[10px] bg-error px-[6px] py-[2px] text-[0.6rem] font-bold text-white">
+                    {item.badge && !collapsed ? (
+                      <span
+                        style={{
+                          marginLeft: "auto",
+                          background: "var(--gold)",
+                          color: "var(--moss)",
+                          fontSize: 10.5,
+                          fontWeight: 700,
+                          lineHeight: 1,
+                          padding: "3px 8px",
+                          borderRadius: 999,
+                          flexShrink: 0,
+                        }}
+                      >
                         {item.badge}
                       </span>
                     ) : null}
@@ -146,23 +351,128 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
             </div>
           </div>
         ))}
-      </div>
+      </nav>
 
-      <div className="relative border-t border-t-white/10 px-[18px] py-[14px]">
-        <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--gold),var(--gold-light))] text-xs font-semibold text-moss shadow-[0_8px_18px_rgba(217,186,30,0.18)]">
-            {adminName.slice(0, 1).toUpperCase()}
+      <div
+        style={{
+          position: "relative",
+          borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: collapsed ? "12px 0" : "12px 20px",
+            justifyContent: collapsed ? "center" : "flex-start",
+          }}
+        >
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 999,
+              background: "rgba(200, 168, 48, 0.35)",
+              color: "#f5e8c8",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 12,
+              fontWeight: 700,
+              flexShrink: 0,
+            }}
+            title={collapsed ? adminName : undefined}
+          >
+            {initials}
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[0.78rem] font-medium text-white">{adminName}</p>
-            <p className="text-[0.65rem] text-white/40">Administrador</p>
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+              opacity: collapsed ? 0 : 1,
+              width: collapsed ? 0 : "auto",
+              overflow: "hidden",
+              transition: "opacity 150ms ease",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 12.5,
+                fontWeight: 600,
+                color: "#f5f0e8",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {adminName}
+            </p>
+            <p
+              style={{
+                marginTop: 2,
+                fontSize: 10.5,
+                color: "rgba(255, 255, 255, 0.35)",
+              }}
+            >
+              Administrador
+            </p>
           </div>
           <AdminLogoutButton
-            className="rounded-[8px] border border-white/10 px-2 py-1 text-[0.72rem] text-white/45 transition-colors hover:border-error/25 hover:text-error"
-            label="Salir"
+            className="admin-sidebar-logout"
+            icon={<SidebarIcon name="logout" size={15} />}
+            label="Cerrar sesión"
+            showLabel={false}
+            title="Cerrar sesión"
           />
         </div>
+
+        <button
+          aria-label={collapsed ? "Expandir menú" : "Colapsar menú"}
+          onClick={() => setCollapsed((value) => !value)}
+          style={{
+            width: "100%",
+            padding: "10px 0",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "rgba(255, 255, 255, 0.32)",
+            borderTop: "1px solid rgba(255, 255, 255, 0.04)",
+            transition: "color 150ms ease",
+          }}
+          title={collapsed ? "Expandir menú" : "Colapsar menú"}
+          type="button"
+        >
+          <SidebarIcon name={collapsed ? "chev-right" : "chev-left"} size={16} strokeWidth={1.8} />
+        </button>
       </div>
+
+      <style jsx>{`
+        .admin-sidebar-link:hover {
+          background-color: rgba(255, 255, 255, 0.04);
+          color: rgba(255, 255, 255, 0.85);
+        }
+        :global(.admin-sidebar-logout) {
+          background: transparent;
+          border: none;
+          padding: 6px;
+          border-radius: 8px;
+          color: rgba(255, 255, 255, 0.45);
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: color 150ms ease, background-color 150ms ease;
+          flex-shrink: 0;
+        }
+        :global(.admin-sidebar-logout:hover) {
+          color: var(--gold);
+          background-color: rgba(255, 255, 255, 0.06);
+        }
+      `}</style>
     </aside>
   );
 }

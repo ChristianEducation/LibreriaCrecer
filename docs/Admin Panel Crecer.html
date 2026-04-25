@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Crecer — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { height: 100%; }
+  body { font-family: 'DM Sans', sans-serif; background: #f5f4f1; color: #1a1814; }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d0ccc4; border-radius: 99px; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useEffect } = React;
+
+/* ── DATA ── */
+const PRODUCTS = [
+  { id:1, title:"Ejercicios Espirituales de San Ignacio", author:"San Ignacio de Loyola", price:31000, stock:8, category:"Espiritualidad Ignaciana", status:"active", cover:"EE" },
+  { id:2, title:"Experiencia de Dios en San Ignacio", author:"Varios autores", price:9500, stock:10, category:"Espiritualidad Ignaciana", status:"active", cover:"EG" },
+  { id:3, title:"Biblia Católica para Jóvenes", author:"Varios autores", price:26000, originalPrice:39000, stock:9, category:"Biblia", status:"active", cover:"BC" },
+  { id:4, title:"La Sagrada Biblia — Edición Latinoamericana", author:"Varios autores", price:25000, stock:11, category:"Biblia", status:"active", cover:"SB" },
+  { id:5, title:"Biblia Latinoamérica — Letra Grande", author:"Varios autores", price:26000, stock:8, category:"Biblia", status:"active", cover:"BL" },
+  { id:6, title:"La Liturgia Cotidiana 2026", author:"Equipo San Pablo", price:4700, stock:30, category:"Liturgia", status:"active", cover:"LC" },
+  { id:7, title:"Liturgia de las Horas del Pueblo", author:"Varios autores", price:22000, stock:7, category:"Liturgia", status:"active", cover:"LH" },
+  { id:8, title:"La Belleza de la Liturgia", author:"Varios autores", price:22500, stock:6, category:"Liturgia", status:"active", cover:"BL" },
+  { id:9, title:"El Alma de Todo Apostolado", author:"J.‑B. Chautard", price:48000, stock:5, category:"Espiritualidad", status:"active", cover:"AA" },
+  { id:10, title:"La Espiritualidad Ignaciana", author:"Varios autores", price:22000, stock:8, category:"Espiritualidad Ignaciana", status:"inactive", cover:"EI" },
+  { id:11, title:"Amar y Servir a Cristo", author:"Varios autores", price:16000, stock:10, category:"Espiritualidad Ignaciana", status:"active", cover:"AS" },
+  { id:12, title:"Camino de Perfección", author:"Santa Teresa de Ávila", price:18500, stock:4, category:"Mística", status:"active", cover:"CP" },
+];
+
+const CATEGORIES = ["Todas las categorías","Biblia","Liturgia","Espiritualidad","Espiritualidad Ignaciana","Mística"];
+const STATUSES   = ["Todos","Activo","Inactivo"];
+
+const NAV = [
+  { section: "Principal", items: [
+    { label:"Dashboard", icon: <IconGrid />, id:"dashboard" },
+    { label:"Panel principal", icon: <IconHome />, id:"panel" },
+  ]},
+  { section: "Catálogo", items: [
+    { label:"Productos", icon: <IconBook />, id:"products", active:true },
+    { label:"Categorías", icon: <IconTag />, id:"categories" },
+  ]},
+  { section: "Pedidos", items: [
+    { label:"Pedidos", icon: <IconBox />, id:"orders" },
+  ]},
+  { section: "Contenido", items: [
+    { label:"Landing", icon: <IconLayout />, id:"landing" },
+    { label:"Hero principal", icon: <IconImage />, id:"hero" },
+    { label:"Banners", icon: <IconBanner />, id:"banners" },
+    { label:"Selección del mes", icon: <IconStar />, id:"selection" },
+    { label:"Categorías del landing", icon: <IconList />, id:"cat-landing" },
+    { label:"Footer", icon: <IconFooter />, id:"footer" },
+    { label:"Página Conócenos", icon: <IconInfo />, id:"about" },
+  ]},
+];
+
+/* ── ICONS (inline SVG) ── */
+function Ico({d, size=16, stroke="#fff", fill="none", sw=1.6}) {
+  return <svg width={size} height={size} viewBox="0 0 20 20" fill={fill} stroke={stroke} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round"><path d={d}/></svg>;
+}
+function IconGrid()   { return <Ico d="M3 3h6v6H3zM11 3h6v6h-6zM3 11h6v6H3zM11 11h6v6h-6z" sw={1.4} />; }
+function IconHome()   { return <Ico d="M2 9.5L10 3l8 6.5V18H13v-5H7v5H2z" />; }
+function IconBook()   { return <Ico d="M4 2h12a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zM9 2v16M4 7h5M4 11h5" />; }
+function IconTag()    { return <Ico d="M3 3h6l8 8-6 6-8-8V3zM7 7h.01" />; }
+function IconBox()    { return <Ico d="M10 2l8 4.5v7L10 18l-8-4.5v-7L10 2zM10 2v16M2 6.5l8 4.5 8-4.5" />; }
+function IconLayout() { return <Ico d="M2 3h16v5H2zM2 11h7v7H2zM12 11h6v7h-6z" />; }
+function IconImage()  { return <Ico d="M2 4h16v12H2zM2 13l5-5 4 4 3-3 4 4" />; }
+function IconBanner() { return <Ico d="M2 6h16v8H2zM6 6v8M14 6v8" />; }
+function IconStar()   { return <Ico d="M10 2l2.4 5.2 5.6.8-4 4 .9 5.6L10 15l-4.9 2.6.9-5.6-4-4 5.6-.8z" />; }
+function IconList()   { return <Ico d="M3 5h14M3 10h14M3 15h10" />; }
+function IconFooter() { return <Ico d="M2 14h16M2 17h10" />; }
+function IconInfo()   { return <Ico d="M10 9v6M10 6h.01M3 10a7 7 0 1014 0 7 7 0 00-14 0z" />; }
+function IconSearch() { return <Ico d="M8.5 15a6.5 6.5 0 100-13 6.5 6.5 0 000 13zM17 17l-3.5-3.5" stroke="#8a8580" />; }
+function IconBell()   { return <Ico d="M10 2a6 6 0 016 6c0 3.3.8 5.5 2 7H2c1.2-1.5 2-3.7 2-7a6 6 0 016-6zM8 17a2 2 0 004 0" stroke="#8a8580" />; }
+function IconPlus()   { return <Ico d="M10 4v12M4 10h12" stroke="#fff" sw={2} />; }
+function IconDots()   { return <Ico d="M5 10h.01M10 10h.01M15 10h.01" stroke="#8a8580" sw={2} />; }
+function IconChev()   { return <Ico d="M5 8l5 5 5-5" stroke="#8a8580" />; }
+function IconEdit()   { return <Ico d="M13 3l4 4-10 10H3v-4L13 3z" stroke="currentColor" />; }
+function IconEye()    { return <Ico d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6zM10 10a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" />; }
+function IconTrash()  { return <Ico d="M4 6h12M8 6V4h4v2M5 6l1 12h8l1-12" stroke="currentColor" />; }
+function IconToggle() { return <Ico d="M4 10a6 4 0 1012 0 6 4 0 00-12 0zM14 10h.01" stroke="currentColor" />; }
+function IconLogout() { return <Ico d="M13 5l5 5-5 5M7 10h11M7 3H3v14h4" stroke="#8a8580" />; }
+function IconFilter() { return <Ico d="M3 5h14M6 10h8M9 15h2" stroke="#8a8580" />; }
+
+/* ── COLOR MAP FOR COVERS ── */
+const coverColors = {
+  EE:["#6b5b3e","#c4a97d"], EG:["#3b5e5a","#7dc4bb"], BC:["#6b3e3e","#c47d7d"],
+  SB:["#3e4f6b","#7d9ec4"], BL:["#4a6b3e","#9dc47d"], LC:["#6b3e6b","#c47dc4"],
+  LH:["#3e6b5a","#7dc4a9"], AA:["#6b5e3e","#c4aa7d"], EI:["#5a3e6b","#a97dc4"],
+  AS:["#6b3e4a","#c47d8e"], CP:["#4a5a6b","#8ea9c4"],
+};
+
+/* ── BOOK COVER placeholder ── */
+function BookCover({ code, size=40 }) {
+  const [bg, fg] = coverColors[code] || ["#555","#aaa"];
+  return (
+    <div style={{
+      width: size, height: size*1.35, borderRadius: 4, background: bg,
+      display:"flex", alignItems:"center", justifyContent:"center",
+      flexShrink:0, fontSize:10, fontWeight:700, color:fg,
+      letterSpacing:1, boxShadow:"1px 1px 4px rgba(0,0,0,.25)",
+      position:"relative", overflow:"hidden"
+    }}>
+      <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:fg,opacity:.4}} />
+      {code}
+    </div>
+  );
+}
+
+/* ── STATUS BADGE ── */
+function StatusBadge({ status }) {
+  const active = status === "active";
+  return (
+    <span style={{
+      display:"inline-flex", alignItems:"center", gap:5,
+      padding:"3px 10px", borderRadius:99,
+      fontSize:11, fontWeight:600, letterSpacing:.4,
+      background: active ? "oklch(0.96 0.06 145)" : "oklch(0.95 0.02 30)",
+      color: active ? "oklch(0.42 0.14 145)" : "oklch(0.55 0.06 30)",
+    }}>
+      <span style={{width:5,height:5,borderRadius:99,background: active ? "oklch(0.58 0.18 145)" : "oklch(0.65 0.08 30)", display:"inline-block"}} />
+      {active ? "Activo" : "Inactivo"}
+    </span>
+  );
+}
+
+/* ── STOCK INDICATOR ── */
+function StockBadge({ n }) {
+  const color = n >= 15 ? "oklch(0.58 0.18 145)" : n >= 7 ? "oklch(0.72 0.15 75)" : "oklch(0.62 0.2 25)";
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:6}}>
+      <div style={{width:36,height:4,borderRadius:99,background:"#e8e5df",overflow:"hidden"}}>
+        <div style={{height:"100%",width:`${Math.min(100,(n/30)*100)}%`,background:color,borderRadius:99,transition:"width .3s"}} />
+      </div>
+      <span style={{fontSize:13,fontWeight:500,color:"#5a5550"}}>{n}</span>
+    </div>
+  );
+}
+
+/* ── CATEGORY PILL ── */
+function CatPill({ label }) {
+  return (
+    <span style={{
+      display:"inline-block", padding:"3px 9px", borderRadius:99,
+      background:"oklch(0.94 0.03 70)", color:"oklch(0.45 0.08 70)",
+      fontSize:11, fontWeight:500, whiteSpace:"nowrap"
+    }}>{label}</span>
+  );
+}
+
+/* ── ACTION DROPDOWN ── */
+function ActionMenu({ product, onEdit, onToggle, onDelete }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+  useEffect(() => {
+    if (!open) return;
+    const fn = e => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, [open]);
+
+  const btn = (icon, label, color, onClick) => (
+    <button onClick={() => { onClick(); setOpen(false); }} style={{
+      display:"flex", alignItems:"center", gap:8, width:"100%",
+      padding:"8px 14px", background:"none", border:"none", cursor:"pointer",
+      fontSize:13, color: color||"#2a2520", borderRadius:6,
+      transition:"background .15s"
+    }}
+    onMouseEnter={e=>e.currentTarget.style.background="#f5f3ef"}
+    onMouseLeave={e=>e.currentTarget.style.background="none"}
+    >
+      <span style={{opacity:.7,color}}>{icon}</span>{label}
+    </button>
+  );
+
+  return (
+    <div ref={ref} style={{position:"relative"}}>
+      <button onClick={() => setOpen(o=>!o)} style={{
+        width:32, height:32, borderRadius:8, border:"1px solid #e8e5df",
+        background: open?"#f0ede7":"white", cursor:"pointer", display:"flex",
+        alignItems:"center", justifyContent:"center", transition:"all .15s"
+      }}
+      onMouseEnter={e=>e.currentTarget.style.background="#f0ede7"}
+      onMouseLeave={e=>e.currentTarget.style.background=open?"#f0ede7":"white"}
+      >
+        <IconDots />
+      </button>
+      {open && (
+        <div style={{
+          position:"absolute", right:0, top:36, zIndex:100, width:180,
+          background:"white", borderRadius:10, border:"1px solid #e8e5df",
+          boxShadow:"0 8px 24px rgba(0,0,0,.1)", padding:4,
+          animation:"fadeIn .15s ease"
+        }}>
+          {btn(<IconEdit />, "Editar", null, onEdit)}
+          {btn(<IconEye />, "Vista previa", null, ()=>{})}
+          {btn(<IconToggle />, product.status==="active"?"Desactivar":"Activar", null, onToggle)}
+          <div style={{height:1,background:"#f0ede7",margin:"4px 10px"}} />
+          {btn(<IconTrash />, "Eliminar", "#c0392b", onDelete)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── STAT CARD ── */
+function StatCard({ label, value, sub, accent }) {
+  return (
+    <div style={{
+      background:"white", borderRadius:14, padding:"18px 22px",
+      border:"1px solid #ede9e2", flex:1, minWidth:140,
+      boxShadow:"0 1px 4px rgba(0,0,0,.04)"
+    }}>
+      <div style={{fontSize:12,color:"#8a8580",fontWeight:500,marginBottom:6,letterSpacing:.3}}>{label}</div>
+      <div style={{fontSize:24,fontWeight:700,color:"#1a1814",letterSpacing:-.5}}>{value}</div>
+      {sub && <div style={{fontSize:11,color: accent||"#8a8580",marginTop:4,fontWeight:500}}>{sub}</div>}
+    </div>
+  );
+}
+
+/* ── SIDEBAR ── */
+function Sidebar({ activeNav, setActiveNav }) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <aside style={{
+      width: collapsed ? 60 : 220, flexShrink:0, background:"#17140f",
+      display:"flex", flexDirection:"column", height:"100%",
+      transition:"width .25s cubic-bezier(.4,0,.2,1)", overflow:"hidden"
+    }}>
+      {/* Logo */}
+      <div style={{
+        padding: collapsed ? "20px 0" : "22px 20px 16px",
+        display:"flex", alignItems:"center", gap:10,
+        borderBottom:"1px solid rgba(255,255,255,.06)", justifyContent: collapsed?"center":"flex-start"
+      }}>
+        <div style={{
+          width:34,height:34,borderRadius:9,
+          background:"linear-gradient(135deg,oklch(0.72 0.12 75),oklch(0.58 0.15 58))",
+          display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,
+          fontSize:13,fontWeight:800,color:"#fff",letterSpacing:-.5
+        }}>C</div>
+        {!collapsed && (
+          <div>
+            <div style={{fontSize:14,fontWeight:700,color:"#f5f0e8",letterSpacing:-.3}}>Crecer</div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,.35)",letterSpacing:.8,fontWeight:500}}>ADMIN PANEL</div>
+          </div>
+        )}
+      </div>
+
+      {/* Nav */}
+      <nav style={{flex:1,overflowY:"auto",padding:"12px 0"}}>
+        {NAV.map(section => (
+          <div key={section.section}>
+            {!collapsed && (
+              <div style={{
+                fontSize:9.5, fontWeight:700, letterSpacing:1.2,
+                color:"rgba(255,255,255,.25)", padding:"14px 20px 6px"
+              }}>{section.section.toUpperCase()}</div>
+            )}
+            {section.items.map(item => {
+              const isActive = activeNav === item.id;
+              return (
+                <button key={item.id} onClick={()=>setActiveNav(item.id)} style={{
+                  display:"flex", alignItems:"center",
+                  gap:10, width:"100%", padding: collapsed?"10px 0":"9px 20px",
+                  justifyContent: collapsed?"center":"flex-start",
+                  background: isActive ? "rgba(255,255,255,.07)" : "none",
+                  border:"none", cursor:"pointer",
+                  borderLeft: isActive ? "2px solid oklch(0.72 0.12 75)" : "2px solid transparent",
+                  transition:"all .15s"
+                }}
+                onMouseEnter={e=>{ if(!isActive) e.currentTarget.style.background="rgba(255,255,255,.04)"; }}
+                onMouseLeave={e=>{ if(!isActive) e.currentTarget.style.background="none"; }}
+                >
+                  <span style={{opacity: isActive?1:.5, color: isActive?"oklch(0.72 0.12 75)":"#fff", flexShrink:0}}>
+                    {React.cloneElement(item.icon, {stroke: isActive?"oklch(0.72 0.12 75)":"rgba(255,255,255,.7)"})}
+                  </span>
+                  {!collapsed && (
+                    <span style={{
+                      fontSize:13.5, fontWeight: isActive?600:400,
+                      color: isActive?"#f5f0e8":"rgba(255,255,255,.55)",
+                      whiteSpace:"nowrap"
+                    }}>{item.label}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
+      </nav>
+
+      {/* User + collapse */}
+      <div style={{borderTop:"1px solid rgba(255,255,255,.06)"}}>
+        {!collapsed && (
+          <div style={{padding:"14px 20px",display:"flex",alignItems:"center",gap:10}}>
+            <div style={{
+              width:32,height:32,borderRadius:99,
+              background:"oklch(0.42 0.1 75)",display:"flex",
+              alignItems:"center",justifyContent:"center",
+              fontSize:12,fontWeight:700,color:"#f5e8c8",flexShrink:0
+            }}>N</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:12.5,fontWeight:600,color:"#f5f0e8",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>Administrador</div>
+              <div style={{fontSize:10.5,color:"rgba(255,255,255,.35)"}}>Admin</div>
+            </div>
+            <button style={{background:"none",border:"none",cursor:"pointer",opacity:.4,padding:4}}
+              title="Cerrar sesión">
+              <IconLogout />
+            </button>
+          </div>
+        )}
+        <button onClick={()=>setCollapsed(c=>!c)} style={{
+          width:"100%", padding:"10px 0", background:"none", border:"none",
+          cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
+          borderTop:"1px solid rgba(255,255,255,.04)"
+        }}>
+          <svg width={16} height={16} viewBox="0 0 20 20" fill="none" stroke="rgba(255,255,255,.3)" strokeWidth={1.8} strokeLinecap="round">
+            <path d={collapsed ? "M8 4l6 6-6 6" : "M12 4l-6 6 6 6"} />
+          </svg>
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+/* ── HEADER ── */
+function Header({ search, setSearch, onNew }) {
+  const [notify] = useState(3);
+  return (
+    <div style={{
+      height:60, background:"white", borderBottom:"1px solid #ede9e2",
+      display:"flex", alignItems:"center", padding:"0 28px", gap:16,
+      flexShrink:0
+    }}>
+      {/* Breadcrumb */}
+      <div style={{fontSize:13,color:"#8a8580",display:"flex",alignItems:"center",gap:6}}>
+        <span>Catálogo</span>
+        <svg width={14} height={14} viewBox="0 0 20 20" fill="none" stroke="#c0bbb4" strokeWidth={1.8}><path d="M7 5l6 5-6 5"/></svg>
+        <span style={{color:"#1a1814",fontWeight:500}}>Productos</span>
+      </div>
+
+      <div style={{flex:1}} />
+
+      {/* Search */}
+      <div style={{position:"relative"}}>
+        <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)"}}>
+          <IconSearch />
+        </span>
+        <input
+          value={search} onChange={e=>setSearch(e.target.value)}
+          placeholder="Buscar producto o autor…"
+          style={{
+            width:260, height:36, borderRadius:10, border:"1px solid #e8e5df",
+            padding:"0 14px 0 36px", fontSize:13, background:"#faf9f7",
+            outline:"none", color:"#1a1814", fontFamily:"inherit",
+            transition:"border .15s, box-shadow .15s"
+          }}
+          onFocus={e=>{e.target.style.border="1px solid oklch(0.72 0.12 75)";e.target.style.boxShadow="0 0 0 3px oklch(0.72 0.12 75 / 0.12)";}}
+          onBlur={e=>{e.target.style.border="1px solid #e8e5df";e.target.style.boxShadow="none";}}
+        />
+      </div>
+
+      {/* Bell */}
+      <div style={{position:"relative",cursor:"pointer"}}>
+        <IconBell />
+        {notify > 0 && (
+          <span style={{
+            position:"absolute",top:-4,right:-4,width:16,height:16,
+            borderRadius:99,background:"oklch(0.58 0.22 25)",
+            fontSize:9,fontWeight:700,color:"white",
+            display:"flex",alignItems:"center",justifyContent:"center"
+          }}>{notify}</span>
+        )}
+      </div>
+
+      {/* New product */}
+      <button onClick={onNew} style={{
+        display:"flex",alignItems:"center",gap:7,
+        padding:"0 16px",height:36,borderRadius:10,
+        background:"linear-gradient(135deg,oklch(0.68 0.14 75),oklch(0.54 0.16 58))",
+        border:"none",cursor:"pointer",color:"white",fontSize:13,
+        fontWeight:600,fontFamily:"inherit",letterSpacing:.2,
+        boxShadow:"0 2px 8px oklch(0.68 0.14 75 / 0.4)",
+        transition:"all .15s"
+      }}
+      onMouseEnter={e=>{e.currentTarget.style.filter="brightness(1.08)";e.currentTarget.style.transform="translateY(-1px)";}}
+      onMouseLeave={e=>{e.currentTarget.style.filter="none";e.currentTarget.style.transform="none";}}
+      >
+        <IconPlus />
+        Nuevo producto
+      </button>
+    </div>
+  );
+}
+
+/* ── TABLE ROW ── */
+function ProductRow({ product, onEdit, onToggle, onDelete }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <tr
+      onMouseEnter={()=>setHovered(true)}
+      onMouseLeave={()=>setHovered(false)}
+      style={{
+        background: hovered?"#faf9f6":"white",
+        transition:"background .12s",
+        animation:"fadeIn .2s ease"
+      }}
+    >
+      {/* Product */}
+      <td style={{padding:"14px 20px",display:"flex",alignItems:"center",gap:14}}>
+        <BookCover code={product.cover} size={36} />
+        <div>
+          <div style={{fontSize:13.5,fontWeight:500,color:"#1a1814",lineHeight:1.3}}>{product.title}</div>
+          <div style={{fontSize:11.5,color:"#8a8580",marginTop:2}}>{product.author}</div>
+        </div>
+      </td>
+      {/* Price */}
+      <td style={{padding:"14px 16px",verticalAlign:"middle"}}>
+        <div style={{fontSize:14,fontWeight:600,color:"#1a1814"}}>
+          ${product.price.toLocaleString("es-CL")}
+        </div>
+        {product.originalPrice && (
+          <div style={{fontSize:11,color:"#b0aba3",textDecoration:"line-through"}}>
+            ${product.originalPrice.toLocaleString("es-CL")}
+          </div>
+        )}
+      </td>
+      {/* Stock */}
+      <td style={{padding:"14px 16px",verticalAlign:"middle"}}>
+        <StockBadge n={product.stock} />
+      </td>
+      {/* Category */}
+      <td style={{padding:"14px 16px",verticalAlign:"middle"}}>
+        <CatPill label={product.category} />
+      </td>
+      {/* Status */}
+      <td style={{padding:"14px 16px",verticalAlign:"middle"}}>
+        <StatusBadge status={product.status} />
+      </td>
+      {/* Actions */}
+      <td style={{padding:"14px 16px",verticalAlign:"middle",textAlign:"right"}}>
+        <ActionMenu product={product} onEdit={onEdit} onToggle={onToggle} onDelete={onDelete} />
+      </td>
+    </tr>
+  );
+}
+
+/* ── MAIN APP ── */
+function App() {
+  const [activeNav, setActiveNav]     = useState("products");
+  const [search, setSearch]           = useState("");
+  const [category, setCategory]       = useState("Todas las categorías");
+  const [statusFilter, setStatusFilter] = useState("Todos");
+  const [products, setProducts]       = useState(PRODUCTS);
+  const [toast, setToast]             = useState(null);
+
+  const showToast = (msg, type="success") => {
+    setToast({msg,type});
+    setTimeout(()=>setToast(null), 2800);
+  };
+
+  const filtered = products.filter(p => {
+    const q = search.toLowerCase();
+    const matchSearch = !q || p.title.toLowerCase().includes(q) || p.author.toLowerCase().includes(q);
+    const matchCat    = category==="Todas las categorías" || p.category===category;
+    const matchStatus = statusFilter==="Todos" || (statusFilter==="Activo"?p.status==="active":p.status==="inactive");
+    return matchSearch && matchCat && matchStatus;
+  });
+
+  const toggle = id => {
+    setProducts(ps => ps.map(p => p.id===id ? {...p, status: p.status==="active"?"inactive":"active"} : p));
+    showToast("Estado actualizado");
+  };
+  const remove = id => {
+    setProducts(ps => ps.filter(p=>p.id!==id));
+    showToast("Producto eliminado","error");
+  };
+
+  const active   = products.filter(p=>p.status==="active").length;
+  const totalVal = products.reduce((s,p)=>s+p.price*p.stock,0);
+
+  const SelectFilter = ({value, onChange, options}) => (
+    <div style={{position:"relative"}}>
+      <select value={value} onChange={e=>onChange(e.target.value)} style={{
+        appearance:"none", padding:"0 32px 0 14px", height:36, borderRadius:10,
+        border:"1px solid #e8e5df", background:"white", fontSize:13,
+        color:"#1a1814", fontFamily:"inherit", cursor:"pointer",
+        outline:"none", minWidth:160,
+        transition:"border .15s"
+      }}
+      onFocus={e=>e.target.style.border="1px solid oklch(0.72 0.12 75)"}
+      onBlur={e=>e.target.style.border="1px solid #e8e5df"}
+      >
+        {options.map(o=><option key={o}>{o}</option>)}
+      </select>
+      <span style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}>
+        <IconChev />
+      </span>
+    </div>
+  );
+
+  return (
+    <div style={{display:"flex",height:"100vh",overflow:"hidden"}}>
+      <Sidebar activeNav={activeNav} setActiveNav={setActiveNav} />
+
+      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <Header search={search} setSearch={setSearch} onNew={()=>showToast("Formulario de nuevo producto — próximamente")} />
+
+        <main style={{flex:1,overflowY:"auto",padding:28}}>
+          {/* Page title + stats */}
+          <div style={{marginBottom:22}}>
+            <h1 style={{fontSize:22,fontWeight:700,color:"#1a1814",letterSpacing:-.4}}>Catálogo de libros</h1>
+            <p style={{fontSize:13,color:"#8a8580",marginTop:3}}>{filtered.length} producto{filtered.length!==1?"s":""} encontrado{filtered.length!==1?"s":""}</p>
+          </div>
+
+          {/* Stat cards */}
+          <div style={{display:"flex",gap:14,marginBottom:24,flexWrap:"wrap"}}>
+            <StatCard label="Total productos" value={products.length} sub={`${active} activos`} accent="oklch(0.52 0.15 145)" />
+            <StatCard label="Stock total" value={products.reduce((s,p)=>s+p.stock,0)} sub="unidades" />
+            <StatCard label="Valor en inventario" value={`$${Math.round(totalVal/1000)}K`} sub="CLP" />
+            <StatCard label="Categorías" value={new Set(products.map(p=>p.category)).size} sub="tipos" />
+          </div>
+
+          {/* Filters bar */}
+          <div style={{
+            background:"white", borderRadius:14, border:"1px solid #ede9e2",
+            padding:"14px 20px", display:"flex", alignItems:"center", gap:12,
+            marginBottom:18, flexWrap:"wrap",
+            boxShadow:"0 1px 4px rgba(0,0,0,.04)"
+          }}>
+            <div style={{display:"flex",alignItems:"center",gap:6,color:"#8a8580",fontSize:13}}>
+              <IconFilter /> Filtros
+            </div>
+            <div style={{height:20,width:1,background:"#ede9e2"}} />
+            <SelectFilter value={category} onChange={setCategory} options={CATEGORIES} />
+            <SelectFilter value={statusFilter} onChange={setStatusFilter} options={STATUSES} />
+            {(category!=="Todas las categorías"||statusFilter!=="Todos") && (
+              <button onClick={()=>{setCategory("Todas las categorías");setStatusFilter("Todos");}} style={{
+                fontSize:12,color:"oklch(0.5 0.15 25)",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"
+              }}>Limpiar filtros</button>
+            )}
+          </div>
+
+          {/* Table */}
+          <div style={{
+            background:"white", borderRadius:16, border:"1px solid #ede9e2",
+            overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,.05)"
+          }}>
+            <table style={{width:"100%",borderCollapse:"collapse"}}>
+              <thead>
+                <tr style={{background:"#faf8f4",borderBottom:"1px solid #ede9e2"}}>
+                  {["Producto","Precio","Stock","Categoría","Estado",""].map((h,i)=>(
+                    <th key={i} style={{
+                      padding:"11px 16px", textAlign: i===5?"right":"left",
+                      fontSize:11, fontWeight:700, letterSpacing:.8,
+                      color:"#8a8580", whiteSpace:"nowrap",
+                      ...(i===0?{paddingLeft:20}:{}),
+                      ...(i===5?{paddingRight:20}:{})
+                    }}>{h.toUpperCase()}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((p, i) => (
+                  <React.Fragment key={p.id}>
+                    {i>0 && <tr><td colSpan={6} style={{padding:0,height:1,background:"#f2efe8"}} /></tr>}
+                    <ProductRow
+                      product={p}
+                      onEdit={()=>showToast(`Editando: ${p.title}`)}
+                      onToggle={()=>toggle(p.id)}
+                      onDelete={()=>remove(p.id)}
+                    />
+                  </React.Fragment>
+                ))}
+                {filtered.length===0 && (
+                  <tr><td colSpan={6} style={{padding:"48px 20px",textAlign:"center",color:"#8a8580",fontSize:14}}>
+                    No se encontraron productos con los filtros seleccionados.
+                  </td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </main>
+      </div>
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position:"fixed",bottom:28,right:28,zIndex:999,
+          background: toast.type==="error" ? "oklch(0.38 0.15 25)" : "#1a1814",
+          color:"white",padding:"12px 20px",borderRadius:12,fontSize:13,fontWeight:500,
+          boxShadow:"0 8px 24px rgba(0,0,0,.2)",animation:"fadeIn .2s ease",
+          maxWidth:320
+        }}>
+          {toast.msg}
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
