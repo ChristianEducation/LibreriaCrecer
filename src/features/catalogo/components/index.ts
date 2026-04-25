@@ -2,6 +2,8 @@ export { AddToCartButton } from "./AddToCartButton";
 export { CategoryCard } from "./CategoryCard";
 export { CategoryCarousel } from "./CategoryCarousel";
 export { FilterBar } from "./FilterBar";
+export { HeroPreview } from "./hero/HeroPreview";
+export type { HeroPreviewProps } from "./hero/HeroPreview";
 export { HeroSlider } from "./HeroSlider";
 export { InstagramSection } from "./InstagramSection";
 export { LibrosMesSection } from "./LibrosMesSection";

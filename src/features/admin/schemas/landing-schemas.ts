@@ -1,6 +1,22 @@
 import { z } from "zod";
 
-import { MONTHLY_SELECTION_SECTION, normalizeCuratedSection } from "@/shared/config/landing";
+import {
+  BANNER_POSITIONS,
+  HERO_CONTENT_THEMES,
+  HERO_CONTENT_THEME_DEFAULT,
+  HERO_OVERLAY_OPACITY_DEFAULT,
+  HERO_OVERLAY_OPACITY_MAX,
+  HERO_OVERLAY_OPACITY_MIN,
+  HERO_OVERLAY_VARIANTS,
+  HERO_OVERLAY_VARIANT_DEFAULT,
+  HERO_TEXT_ALIGNS,
+  HERO_TEXT_ALIGN_DEFAULT,
+  HERO_TEXT_POSITIONS,
+  HERO_TEXT_POSITION_DEFAULT,
+  LANDING_SECTION_KEYS,
+  MONTHLY_SELECTION_SECTION,
+  normalizeCuratedSection,
+} from "@/shared/config/landing";
 
 const optionalString = z
   .string()
@@ -29,6 +45,18 @@ export const HeroSlideSchema = z.object({
   title: optionalString,
   subtitle: optionalString,
   link_url: optionalUrl,
+  cta_text: optionalString,
+  show_content: z.boolean().default(true),
+  text_position: z.enum(HERO_TEXT_POSITIONS).default(HERO_TEXT_POSITION_DEFAULT),
+  text_align: z.enum(HERO_TEXT_ALIGNS).default(HERO_TEXT_ALIGN_DEFAULT),
+  overlay_variant: z.enum(HERO_OVERLAY_VARIANTS).default(HERO_OVERLAY_VARIANT_DEFAULT),
+  overlay_opacity: z
+    .number()
+    .int()
+    .min(HERO_OVERLAY_OPACITY_MIN)
+    .max(HERO_OVERLAY_OPACITY_MAX)
+    .default(HERO_OVERLAY_OPACITY_DEFAULT),
+  content_theme: z.enum(HERO_CONTENT_THEMES).default(HERO_CONTENT_THEME_DEFAULT),
   display_order: z.number().int().default(0),
   is_active: z.boolean().default(true),
 });
@@ -38,13 +66,27 @@ export const UpdateHeroSlideSchema = HeroSlideSchema.partial();
 export const BannerSchema = z.object({
   title: optionalString,
   description: optionalString,
+  eyebrow: optionalString,
+  cta_label: optionalString,
   link_url: optionalUrl,
-  position: z.string().trim().min(1),
+  position: z.enum(BANNER_POSITIONS),
   metadata: FooterBannerMetadataSchema.optional(),
   is_active: z.boolean().default(true),
 });
 
 export const UpdateBannerSchema = BannerSchema.partial();
+
+export const LandingSectionCopySchema = z.object({
+  section_key: z.enum(LANDING_SECTION_KEYS),
+  eyebrow: optionalString,
+  title: optionalString,
+  body: optionalString,
+  cta_label: optionalString,
+  cta_href: optionalUrl,
+  is_active: z.boolean().default(true),
+});
+
+export const UpdateLandingSectionCopySchema = LandingSectionCopySchema.partial();
 
 export const CuratedProductSchema = z.object({
   product_id: z.string().uuid(),
@@ -63,3 +105,5 @@ export type UpdateBannerInput = z.infer<typeof UpdateBannerSchema>;
 export type CuratedProductInput = z.infer<typeof CuratedProductSchema>;
 export type UpdateCuratedProductInput = z.infer<typeof UpdateCuratedProductSchema>;
 export type FooterBannerMetadataInput = z.infer<typeof FooterBannerMetadataSchema>;
+export type LandingSectionCopyInput = z.infer<typeof LandingSectionCopySchema>;
+export type UpdateLandingSectionCopyInput = z.infer<typeof UpdateLandingSectionCopySchema>;

@@ -1,8 +1,10 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
-import { banners, featuredProducts, products, heroSlides } from "@/integrations/drizzle/schema";
+import { banners, featuredProducts, heroSlides, landingSectionCopy, products } from "@/integrations/drizzle/schema";
 import {
+  type BannerPosition,
+  type LandingSectionKey,
   MONTHLY_SELECTION_SECTION,
   MONTHLY_SELECTION_SECTION_ALIASES,
   normalizeCuratedSection,
@@ -18,6 +20,13 @@ export async function getHeroSlides() {
       subtitle: heroSlides.subtitle,
       imageUrl: heroSlides.imageUrl,
       linkUrl: heroSlides.linkUrl,
+      ctaText: heroSlides.ctaText,
+      showContent: heroSlides.showContent,
+      textPosition: heroSlides.textPosition,
+      textAlign: heroSlides.textAlign,
+      overlayVariant: heroSlides.overlayVariant,
+      overlayOpacity: heroSlides.overlayOpacity,
+      contentTheme: heroSlides.contentTheme,
       displayOrder: heroSlides.displayOrder,
     })
     .from(heroSlides)
@@ -25,7 +34,7 @@ export async function getHeroSlides() {
     .orderBy(asc(heroSlides.displayOrder));
 }
 
-export async function getBanners(position?: string) {
+export async function getBanners(position?: BannerPosition) {
   const whereClause = position
     ? and(eq(banners.isActive, true), eq(banners.position, position))
     : eq(banners.isActive, true);
@@ -35,6 +44,8 @@ export async function getBanners(position?: string) {
       id: banners.id,
       title: banners.title,
       description: banners.description,
+      eyebrow: banners.eyebrow,
+      ctaLabel: banners.ctaLabel,
       imageUrl: banners.imageUrl,
       linkUrl: banners.linkUrl,
       position: banners.position,
@@ -59,6 +70,24 @@ export async function getCatalogoHeaderBanner() {
 export async function getCategoriesPanorama() {
   const result = await getBanners("categories_panorama");
   return result[0] ?? null;
+}
+
+export async function getSectionCopy(key: LandingSectionKey) {
+  const [row] = await db
+    .select({
+      id: landingSectionCopy.id,
+      sectionKey: landingSectionCopy.sectionKey,
+      eyebrow: landingSectionCopy.eyebrow,
+      title: landingSectionCopy.title,
+      body: landingSectionCopy.body,
+      ctaLabel: landingSectionCopy.ctaLabel,
+      ctaHref: landingSectionCopy.ctaHref,
+    })
+    .from(landingSectionCopy)
+    .where(and(eq(landingSectionCopy.sectionKey, key), eq(landingSectionCopy.isActive, true)))
+    .limit(1);
+
+  return row ?? null;
 }
 
 export async function getCuratedProducts(section?: string): Promise<CuratedProduct[]> {

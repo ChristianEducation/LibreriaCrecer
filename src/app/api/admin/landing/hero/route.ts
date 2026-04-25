@@ -13,6 +13,19 @@ function getStringFromFormData(formData: FormData, key: string): string | undefi
   return value;
 }
 
+function getBooleanFromFormData(formData: FormData, key: string): boolean | undefined {
+  const raw = getStringFromFormData(formData, key);
+  if (raw === undefined) return undefined;
+  return raw === "true";
+}
+
+function getNumberFromFormData(formData: FormData, key: string): number | undefined {
+  const raw = getStringFromFormData(formData, key);
+  if (raw === undefined || raw.trim() === "") return undefined;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 export async function GET() {
   try {
     const slides = await getHeroSlidesAdmin();
@@ -37,6 +50,13 @@ export async function POST(request: Request) {
           title: getStringFromFormData(body, "title"),
           subtitle: getStringFromFormData(body, "subtitle"),
           link_url: getStringFromFormData(body, "link_url"),
+          cta_text: getStringFromFormData(body, "cta_text"),
+          show_content: getBooleanFromFormData(body, "show_content"),
+          text_position: getStringFromFormData(body, "text_position"),
+          text_align: getStringFromFormData(body, "text_align"),
+          overlay_variant: getStringFromFormData(body, "overlay_variant"),
+          overlay_opacity: getNumberFromFormData(body, "overlay_opacity"),
+          content_theme: getStringFromFormData(body, "content_theme"),
           display_order: Number(getStringFromFormData(body, "display_order") ?? 0),
           is_active: (getStringFromFormData(body, "is_active") ?? "true") === "true",
         }

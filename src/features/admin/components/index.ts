@@ -5,3 +5,5 @@ export { AdminTable } from "./AdminTable";
 export { AdminToggle } from "./AdminToggle";
 export { AdminTopbar } from "./AdminTopbar";
 export { AdminUploadZone } from "./AdminUploadZone";
+export { LandingEditorShell } from "./LandingEditorShell";
+export type { LandingEditorShellProps } from "./LandingEditorShell";

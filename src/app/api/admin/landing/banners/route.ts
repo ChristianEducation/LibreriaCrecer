@@ -47,6 +47,8 @@ export async function POST(request: Request) {
       ? {
           title: getStringFromFormData(body, "title"),
           description: getStringFromFormData(body, "description"),
+          eyebrow: getStringFromFormData(body, "eyebrow"),
+          cta_label: getStringFromFormData(body, "cta_label"),
           link_url: getStringFromFormData(body, "link_url"),
           position: getStringFromFormData(body, "position"),
           metadata: getMetadataFromFormData(body),
