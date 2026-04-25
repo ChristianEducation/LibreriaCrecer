@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { AdminToggle, AdminUploadZone } from "@/features/admin/components";
+import { HeroPreview } from "@/features/catalogo/components";
+import type {
+  HeroOverlayVariantViewModel,
+  HeroSlideViewModel,
+  HeroViewModel,
+} from "@/features/catalogo/view-models/hero-view-model";
 import { useToast } from "@/shared/hooks";
 import {
   HERO_CONTENT_THEME_DEFAULT,
@@ -141,10 +147,14 @@ function Segmented<T extends string>({
 }
 
 type HeroAdminEditorProps = {
-  preview?: ReactNode;
+  initialData?: HeroViewModel;
 };
 
-export function HeroAdminEditor({ preview }: HeroAdminEditorProps = {}) {
+function mapOverlayVariant(v: HeroOverlayVariant): HeroOverlayVariantViewModel {
+  return v === "solid" ? "dark" : v;
+}
+
+export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
   const router = useRouter();
   const { toast } = useToast();
   const [slides, setSlides] = useState<HeroSlide[]>([]);
@@ -154,6 +164,33 @@ export function HeroAdminEditor({ preview }: HeroAdminEditorProps = {}) {
   const [form, setForm] = useState<HeroFormState>(initialForm);
 
   const previewUrl = useMemo(() => (form.imageFile ? URL.createObjectURL(form.imageFile) : null), [form.imageFile]);
+
+  const liveViewModel = useMemo((): HeroViewModel => {
+    const imageUrl = previewUrl ?? form.existingImageUrl ?? "";
+    if (imageUrl) {
+      const liveSlide: HeroSlideViewModel = {
+        id: form.id ?? "preview",
+        imageUrl,
+        title: form.title || null,
+        subtitle: form.subtitle || null,
+        ctaText: form.cta_text || null,
+        linkUrl: form.link_url || null,
+        showContent: form.show_content,
+        textPosition: form.text_position,
+        textAlign: form.text_align,
+        overlayVariant: mapOverlayVariant(form.overlay_variant),
+        overlayOpacity: form.overlay_opacity,
+        contentTheme: form.content_theme,
+      };
+      return {
+        eyebrow: initialData?.eyebrow ?? null,
+        title: initialData?.title ?? null,
+        body: initialData?.body ?? null,
+        slides: [liveSlide],
+      };
+    }
+    return initialData ?? { eyebrow: null, title: null, body: null, slides: [] };
+  }, [form, previewUrl, initialData]);
 
   useEffect(() => {
     return () => {
@@ -363,9 +400,11 @@ export function HeroAdminEditor({ preview }: HeroAdminEditorProps = {}) {
       </div>
 
       <div className="hero-editor-grid">
-        {preview ? (
+        {liveViewModel.slides.length > 0 ? (
           <div className="hero-editor-grid-preview">
-            <div className="hero-editor-preview-sticky">{preview}</div>
+            <div className="hero-editor-preview-sticky">
+              <HeroPreview data={liveViewModel} />
+            </div>
           </div>
         ) : null}
 
