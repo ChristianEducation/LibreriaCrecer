@@ -23,6 +23,7 @@ export interface FooterBannerMetadata {
   fadeEnd: number;
   imgWidth: number;
   artSpaceWidth: number;
+  textTone?: "current" | "dark";
 }
 
 export const heroSlides = pgTable("hero_slides", {

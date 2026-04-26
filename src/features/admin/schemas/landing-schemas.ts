@@ -39,6 +39,7 @@ const FooterBannerMetadataSchema = z.object({
   fadeEnd: z.number().int().min(0).max(100),
   imgWidth: z.number().int().min(0).max(100),
   artSpaceWidth: z.number().int().min(0).max(100),
+  textTone: z.enum(["current", "dark"]).optional(),
 });
 
 export const HeroSlideSchema = z.object({

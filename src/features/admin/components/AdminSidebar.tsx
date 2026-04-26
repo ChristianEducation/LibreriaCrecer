@@ -53,7 +53,6 @@ const sections: { label: string; items: SidebarItem[] }[] = [
   {
     label: "Contenido",
     items: [
-      { href: "/admin/landing", label: "Landing", icon: "layout", exact: true },
       { href: "/admin/landing/top-banner", label: "Top Banner", icon: "banner" },
       { href: "/admin/landing/hero", label: "Hero principal", icon: "image" },
       { href: "/admin/landing/seleccion", label: "Selección del mes", icon: "star" },

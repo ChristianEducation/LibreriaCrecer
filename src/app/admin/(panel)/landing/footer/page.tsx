@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { AdminToggle, AdminUploadZone } from "@/features/admin/components";
 import { useToast } from "@/shared/hooks";
@@ -12,7 +12,10 @@ type FooterMetadata = {
   fadeEnd: number;
   imgWidth: number;
   artSpaceWidth: number;
+  textTone: "current" | "dark";
 };
+
+type FooterNumericMetadataKey = Exclude<keyof FooterMetadata, "textTone">;
 
 type FooterBanner = {
   id: string;
@@ -42,6 +45,7 @@ const defaultMetadata: FooterMetadata = {
   fadeEnd: 70,
   imgWidth: 72,
   artSpaceWidth: 36,
+  textTone: "current",
 };
 
 function toUiFormat(raw: string) {
@@ -58,6 +62,315 @@ function toDbFormat(raw: string) {
     .filter(Boolean)
     .map((l) => l.trim().replace(" :: ", "::"))
     .join("|||");
+}
+
+function parsePreviewLinks(raw: string): { label: string; href: string }[] {
+  return raw
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [label, href] = line.split("::").map((part) => part.trim());
+      return {
+        label: label || "Link",
+        href: href || "#",
+      };
+    });
+}
+
+function SpinnerIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="animate-spin"
+      fill="none"
+      height="14"
+      viewBox="0 0 20 20"
+      width="14"
+    >
+      <circle
+        cx="10"
+        cy="10"
+        r="7"
+        stroke="currentColor"
+        strokeOpacity="0.25"
+        strokeWidth="2.4"
+      />
+      <path
+        d="M17 10a7 7 0 00-7-7"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="2.4"
+      />
+    </svg>
+  );
+}
+
+function MetadataSlider({
+  label,
+  value,
+  min,
+  max,
+  step,
+  suffix,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  suffix: string;
+  onChange: (value: number) => void;
+}) {
+  const percentage = ((value - min) / (max - min)) * 100;
+
+  return (
+    <label className="block rounded-[10px] border border-border bg-[#faf9f6] p-4">
+      <span className="flex items-center justify-between gap-3">
+        <span className="text-[12px] font-medium text-text-mid">{label}</span>
+        <span className="admin-slider-value">
+          {value}
+          {suffix}
+        </span>
+      </span>
+      <input
+        className="admin-slider mt-4"
+        max={max}
+        min={min}
+        onChange={(event) => onChange(Number(event.target.value))}
+        step={step}
+        style={{ "--value": `${percentage}%` } as CSSProperties}
+        type="range"
+        value={value}
+      />
+    </label>
+  );
+}
+
+function FooterPreview({
+  brandDescription,
+  catalogLinksUi,
+  infoLinksUi,
+  address,
+  mapsUrl,
+  copyrightText,
+  designCredit,
+  imageUrl,
+  isActive,
+  metadata,
+}: {
+  brandDescription: string;
+  catalogLinksUi: string;
+  infoLinksUi: string;
+  address: string;
+  mapsUrl: string;
+  copyrightText: string;
+  designCredit: string;
+  imageUrl: string | null;
+  isActive: boolean;
+  metadata: FooterMetadata;
+}) {
+  const mid = Math.round((metadata.fadeStart + metadata.fadeEnd) / 2);
+  const hasIllustration = Boolean(imageUrl && isActive);
+  const catalogLinks = parsePreviewLinks(catalogLinksUi);
+  const infoLinks = parsePreviewLinks(infoLinksUi);
+  const isDarkTone = metadata.textTone === "dark";
+  const primaryTextColor = isDarkTone ? "var(--text)" : "var(--text-mid)";
+  const bodyTextColor = isDarkTone ? "var(--text)" : "var(--text-light)";
+
+  return (
+    <div className="overflow-hidden rounded-[12px] border border-border bg-[#f7f4e7] shadow-[0_18px_60px_rgba(58,48,1,0.10)]">
+      <div className="flex items-center justify-between border-b border-border bg-white px-4 py-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gold">
+            Preview público
+          </p>
+          <p className="mt-1 text-[12px] text-text-light">
+            Refleja el formulario actual antes de guardar.
+          </p>
+        </div>
+        <span className={`admin-badge ${isActive ? "admin-badge--active" : "admin-badge--inactive"}`}>
+          <span className="admin-badge-dot" />
+          {isActive ? "Ilustración activa" : "Ilustración inactiva"}
+        </span>
+      </div>
+
+      <footer className="relative overflow-hidden" style={{ background: "var(--beige-warm)" }}>
+        <div
+          className="absolute inset-x-0 top-0 h-px"
+          style={{
+            background:
+              "linear-gradient(to right, transparent, color-mix(in srgb, var(--gold) 35%, transparent), transparent)",
+            zIndex: 4,
+          }}
+        />
+
+        {hasIllustration ? (
+          <>
+            <div className="absolute inset-0 z-[1] overflow-hidden">
+              <div
+                aria-hidden="true"
+                className="h-full bg-cover bg-left"
+                style={{
+                  backgroundImage: `url(${imageUrl})`,
+                  width: `${metadata.imgWidth}%`,
+                  opacity: metadata.opacity,
+                }}
+              />
+            </div>
+            <div
+              className="absolute inset-0 z-[2]"
+              style={{
+                background: `linear-gradient(to right,
+                  rgba(237,233,212,0) 0%,
+                  rgba(237,233,212,0) ${metadata.fadeStart}%,
+                  rgba(237,233,212,0.78) ${mid}%,
+                  rgba(237,233,212,0.97) ${metadata.fadeEnd}%,
+                  rgba(237,233,212,1) 100%
+                )`,
+              }}
+            />
+          </>
+        ) : null}
+
+        {!isActive && imageUrl ? (
+          <div className="absolute left-4 top-4 z-[5] rounded border border-warning/25 bg-white/85 px-3 py-2 text-[12px] text-warning shadow-sm">
+            La ilustración existe, pero está inactiva y no se verá en el sitio.
+          </div>
+        ) : null}
+
+        <div className="relative z-[3] flex min-h-[280px] items-stretch">
+          {hasIllustration ? <div style={{ width: `${metadata.artSpaceWidth}%` }} /> : null}
+
+          <div className="flex-1 page-px" style={{ paddingTop: "5rem", paddingBottom: "3rem" }}>
+            <div className="grid grid-cols-1 gap-7 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
+              <div>
+                <div
+                  aria-hidden="true"
+                  className="mb-3 h-11 w-11 bg-contain bg-center bg-no-repeat"
+                  style={{ backgroundImage: "url(/images/Logo-Crecer.png)" }}
+                />
+                <p
+                  style={{
+                    fontFamily: "var(--font-castoro)",
+                    fontSize: "18px",
+                    color: "var(--text)",
+                    fontWeight: 400,
+                  }}
+                >
+                  Crecer Librería
+                </p>
+                <p
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 500,
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    color: "var(--gold)",
+                    marginBottom: "12px",
+                    marginTop: "2px",
+                  }}
+                >
+                  Fe, lectura y formación
+                </p>
+                <p
+                  style={{
+                    fontFamily: "var(--font-inter)",
+                    fontSize: "13px",
+                    lineHeight: 1.7,
+                    color: bodyTextColor,
+                    maxWidth: "240px",
+                  }}
+                >
+                  {brandDescription}
+                </p>
+              </div>
+
+              <div>
+                <h4 style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "16px" }}>
+                  Catálogo
+                </h4>
+                <div className="flex flex-col gap-2">
+                  {catalogLinks.map((link) => (
+                    <a
+                      href={link.href}
+                      key={`${link.label}-${link.href}`}
+                      style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: primaryTextColor, lineHeight: 2, textDecoration: "none" }}
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "16px" }}>
+                  Información
+                </h4>
+                <div className="flex flex-col gap-2">
+                  {infoLinks.map((link) => (
+                    <a
+                      href={link.href}
+                      key={`${link.label}-${link.href}`}
+                      style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: primaryTextColor, lineHeight: 2, textDecoration: "none" }}
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "16px" }}>
+                  Ubicación
+                </h4>
+                <div className="flex items-start gap-[7px] text-text-mid">
+                  <svg aria-hidden="true" className="mt-0.5 size-[14px] shrink-0 text-gold" fill="none" viewBox="0 0 24 24">
+                    <path
+                      d="M12 20s6-5.74 6-11a6 6 0 1 0-12 0c0 5.26 6 11 6 11Z"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+                    <circle cx="12" cy="9" fill="currentColor" r="1.75" />
+                  </svg>
+                  <p style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: primaryTextColor }}>
+                    {address}
+                  </p>
+                </div>
+                <a
+                  className="mt-3 inline-block border-b border-b-gold/30 text-[9px] font-medium uppercase tracking-[0.1em] text-gold transition-colors hover:border-b-gold"
+                  href={mapsUrl || "#"}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  Ver en el mapa →
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="relative z-[3] page-px flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
+          style={{
+            borderTop: "1px solid var(--border)",
+            paddingTop: "1.5rem",
+            paddingBottom: "1.5rem",
+            fontFamily: "var(--font-inter)",
+            fontSize: "11px",
+            color: bodyTextColor,
+          }}
+        >
+          <p>{copyrightText}</p>
+          <div className="flex items-center gap-3">
+            <p>{designCredit}</p>
+            <span style={{ fontSize: "11px", color: bodyTextColor, opacity: 0.5 }}>·</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }
 
 export default function AdminLandingFooterPage() {
@@ -217,7 +530,18 @@ export default function AdminLandingFooterPage() {
         if (imageFile) {
           const uploadData = new FormData();
           uploadData.append("file", imageFile);
-          await fetch(`/api/admin/landing/banners/${bannerId}/imagen`, { method: "POST", body: uploadData });
+          const uploadResponse = await fetch(`/api/admin/landing/banners/${bannerId}/imagen`, {
+            method: "POST",
+            body: uploadData,
+          });
+
+          if (!uploadResponse.ok) {
+            const payload = (await uploadResponse.json().catch(() => null)) as { message?: string } | null;
+            const message = payload?.message ?? "No se pudo actualizar la imagen del footer.";
+            setError(message);
+            toast({ message, variant: "error" });
+            return;
+          }
         }
       } else {
         const formData = new FormData();
@@ -281,6 +605,7 @@ export default function AdminLandingFooterPage() {
       }
 
       toast({ message: "Contenido del footer guardado correctamente." });
+      await loadFooterContent();
     } catch {
       setContentError("Error de red. Intenta nuevamente.");
     } finally {
@@ -288,225 +613,361 @@ export default function AdminLandingFooterPage() {
     }
   }
 
-  function updateMetadata<K extends keyof FooterMetadata>(key: K, value: number) {
+  function updateMetadata<K extends FooterNumericMetadataKey>(key: K, value: number) {
     setMetadata((prev) => ({ ...prev, [key]: value }));
   }
 
+  function updateTextTone(value: FooterMetadata["textTone"]) {
+    setMetadata((prev) => ({ ...prev, textTone: value }));
+  }
+
   return (
-    <section className="space-y-10">
+    <section className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-serif text-[2rem] leading-none text-text">Footer</h1>
           <p className="mt-2 text-sm font-light text-text-light">
-            Ajusta la ilustracion editorial del footer, su comportamiento visual y el contenido de texto.
+            Ajusta el contenido público, la ilustración editorial y revisa una preview en vivo antes de guardar.
           </p>
         </div>
         <Link
+          className="text-sm text-text-mid transition-colors hover:text-text"
           href="/admin/landing"
-          className="rounded-[8px] border border-border px-4 py-2 text-sm text-text-mid"
         >
-          Volver a landing
+          ← Índice landing
         </Link>
       </div>
 
-      {/* Sección imagen */}
-      <div className="space-y-6">
-        <h2 className="font-serif text-[1.35rem] text-text">Imagen ilustrativa</h2>
-        {loading ? <p className="text-sm text-text-light">Cargando configuracion del footer...</p> : null}
-        {error ? <p className="text-sm text-error">{error}</p> : null}
-
-        {!loading ? (
-          <form className="space-y-6" onSubmit={(e) => { void handleSubmit(e); }}>
-            <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-              <section className="rounded-[2px] border border-border bg-white p-6">
-                <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Contenido</h3>
-                <div className="space-y-4">
-                  <label className="block space-y-1">
-                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Titulo</span>
-                    <input
-                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                      onChange={(event) => setTitle(event.target.value)}
-                      value={title}
-                    />
-                  </label>
-                  <label className="block space-y-1">
-                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Descripcion</span>
-                    <textarea
-                      className="min-h-28 w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                      onChange={(event) => setDescription(event.target.value)}
-                      value={description}
-                    />
-                  </label>
-                  <label className="block space-y-1">
-                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Link opcional</span>
-                    <input
-                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                      onChange={(event) => setLinkUrl(event.target.value)}
-                      placeholder="https://..."
-                      value={linkUrl}
-                    />
-                  </label>
-                  <AdminToggle checked={isActive} label="Footer activo" onChange={setIsActive} />
-                </div>
-              </section>
-
-              <section className="rounded-[2px] border border-border bg-white p-6">
-                <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Ilustracion</h3>
-                <AdminUploadZone
-                  hint="Recomendado: arte horizontal con buena mezcla sobre beige."
-                  onFileSelect={setImageFile}
-                  previewUrl={previewUrl}
-                />
-              </section>
-            </div>
-
-            <section className="rounded-[2px] border border-border bg-white p-6">
-              <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Parametros visuales</h3>
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-                {[
-                  { key: "opacity", label: "Opacidad", step: 0.05, min: 0, max: 1 },
-                  { key: "fadeStart", label: "Inicio fade", step: 1, min: 0, max: 100 },
-                  { key: "fadeEnd", label: "Fin fade", step: 1, min: 0, max: 100 },
-                  { key: "imgWidth", label: "Ancho imagen", step: 1, min: 0, max: 100 },
-                  { key: "artSpaceWidth", label: "Espacio arte", step: 1, min: 0, max: 100 },
-                ].map((field) => (
-                  <label className="space-y-1" key={field.key}>
-                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">{field.label}</span>
-                    <input
-                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                      max={field.max}
-                      min={field.min}
-                      onChange={(event) =>
-                        updateMetadata(field.key as keyof FooterMetadata, Number(event.target.value))
-                      }
-                      step={field.step}
-                      type="number"
-                      value={metadata[field.key as keyof FooterMetadata]}
-                    />
-                  </label>
-                ))}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.16fr)_minmax(340px,0.84fr)]">
+        <form className="min-w-0" onSubmit={(event) => { void handleContentSubmit(event); }}>
+          <div className="editor-card h-full">
+            <div className="editor-card-header flex items-start justify-between gap-4">
+              <div>
+                <p className="admin-section-label">Contenido de texto</p>
+                <h2 className="mt-1 text-[15px] font-semibold text-text">
+                  Informacion visible del footer
+                </h2>
+                <p className="mt-0.5 text-[12px] text-text-light">
+                  Branding, ubicacion y enlaces secundarios del pie publico.
+                </p>
               </div>
-            </section>
+              <span className="admin-badge admin-badge--active">
+                <span className="admin-badge-dot" />
+                footer_content
+              </span>
+            </div>
 
-            <div className="flex gap-3">
-              <button
-                className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-                disabled={saving}
-                type="submit"
-              >
-                {saving ? "Guardando..." : "Guardar footer"}
+            <div className="editor-card-body">
+              {contentLoading ? <p className="text-sm text-text-light">Cargando contenido...</p> : null}
+              {contentError ? <div className="admin-error-block">{contentError}</div> : null}
+
+              {!contentLoading ? (
+                <>
+                  <section className="admin-fieldset">
+                    <p className="admin-section-label">Branding</p>
+                    <label>
+                      <span className="admin-field-label">Descripcion</span>
+                      <textarea
+                        className="admin-input"
+                        onChange={(event) => setBrandDescription(event.target.value)}
+                        rows={3}
+                        style={{
+                          height: "auto",
+                          minHeight: 92,
+                          paddingBottom: 9,
+                          paddingTop: 9,
+                          resize: "vertical",
+                        }}
+                        value={brandDescription}
+                      />
+                    </label>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <label>
+                        <span className="admin-field-label">Copyright</span>
+                        <input
+                          className="admin-input"
+                          onChange={(event) => setCopyrightText(event.target.value)}
+                          value={copyrightText}
+                        />
+                      </label>
+                      <label>
+                        <span className="admin-field-label">Credito de diseno</span>
+                        <input
+                          className="admin-input"
+                          onChange={(event) => setDesignCredit(event.target.value)}
+                          value={designCredit}
+                        />
+                      </label>
+                    </div>
+                  </section>
+
+                  <section className="admin-fieldset">
+                    <p className="admin-section-label">Ubicacion</p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <label>
+                        <span className="admin-field-label">Direccion</span>
+                        <input
+                          className="admin-input"
+                          onChange={(event) => setAddress(event.target.value)}
+                          value={address}
+                        />
+                      </label>
+                      <label>
+                        <span className="admin-field-label">URL Google Maps</span>
+                        <input
+                          className="admin-input"
+                          onChange={(event) => setMapsUrl(event.target.value)}
+                          placeholder="https://maps.google.com/..."
+                          value={mapsUrl}
+                        />
+                      </label>
+                    </div>
+                  </section>
+
+                  <section className="admin-fieldset">
+                    <p className="admin-section-label">Links</p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <label>
+                        <span className="admin-field-label">Catalogo</span>
+                        <textarea
+                          className="admin-input font-mono"
+                          onChange={(event) => setCatalogLinksUi(event.target.value)}
+                          style={{
+                            height: "auto",
+                            minHeight: 132,
+                            paddingBottom: 9,
+                            paddingTop: 9,
+                            resize: "vertical",
+                          }}
+                          value={catalogLinksUi}
+                        />
+                        <p className="admin-field-help">Un link por linea: Nombre :: /ruta</p>
+                      </label>
+                      <label>
+                        <span className="admin-field-label">Informacion</span>
+                        <textarea
+                          className="admin-input font-mono"
+                          onChange={(event) => setInfoLinksUi(event.target.value)}
+                          style={{
+                            height: "auto",
+                            minHeight: 132,
+                            paddingBottom: 9,
+                            paddingTop: 9,
+                            resize: "vertical",
+                          }}
+                          value={infoLinksUi}
+                        />
+                        <p className="admin-field-help">Un link por linea: Nombre :: /ruta</p>
+                      </label>
+                    </div>
+                  </section>
+                </>
+              ) : null}
+            </div>
+
+            <div className="editor-card-footer">
+              <button className="admin-btn-primary" disabled={contentSaving || contentLoading} type="submit">
+                {contentSaving ? (
+                  <>
+                    <SpinnerIcon />
+                    Guardando...
+                  </>
+                ) : (
+                  "Guardar contenido"
+                )}
               </button>
             </div>
-          </form>
-        ) : null}
-      </div>
+          </div>
+        </form>
 
-      {/* Sección contenido de texto */}
-      <div className="space-y-6">
-        <h2 className="font-serif text-[1.35rem] text-text">Contenido de texto</h2>
-        {contentLoading ? <p className="text-sm text-text-light">Cargando contenido...</p> : null}
-        {contentError ? <p className="text-sm text-error">{contentError}</p> : null}
-
-        {!contentLoading ? (
-          <form className="space-y-6" onSubmit={(e) => { void handleContentSubmit(e); }}>
-            <div className="grid gap-6 xl:grid-cols-2">
-              <section className="rounded-[2px] border border-border bg-white p-6">
-                <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Branding</h3>
-                <div className="space-y-4">
-                  <label className="block space-y-1">
-                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Descripción</span>
-                    <textarea
-                      className="min-h-[80px] w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                      onChange={(e) => setBrandDescription(e.target.value)}
-                      rows={3}
-                      value={brandDescription}
-                    />
-                  </label>
-                  <label className="block space-y-1">
-                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Copyright</span>
-                    <input
-                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                      onChange={(e) => setCopyrightText(e.target.value)}
-                      value={copyrightText}
-                    />
-                  </label>
-                  <label className="block space-y-1">
-                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Crédito de diseño</span>
-                    <input
-                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                      onChange={(e) => setDesignCredit(e.target.value)}
-                      value={designCredit}
-                    />
-                  </label>
-                </div>
-              </section>
-
-              <section className="rounded-[2px] border border-border bg-white p-6">
-                <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Ubicación</h3>
-                <div className="space-y-4">
-                  <label className="block space-y-1">
-                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Dirección</span>
-                    <input
-                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                      onChange={(e) => setAddress(e.target.value)}
-                      value={address}
-                    />
-                  </label>
-                  <label className="block space-y-1">
-                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">URL Google Maps</span>
-                    <input
-                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                      onChange={(e) => setMapsUrl(e.target.value)}
-                      placeholder="https://maps.google.com/..."
-                      value={mapsUrl}
-                    />
-                  </label>
-                </div>
-              </section>
+        <form className="min-w-0" onSubmit={(event) => { void handleSubmit(event); }}>
+          <div className="editor-card h-full">
+            <div className="editor-card-header flex items-start justify-between gap-4">
+              <div>
+                <p className="admin-section-label">Imagen ilustrativa</p>
+                <h2 className="mt-1 text-[15px] font-semibold text-text">Arte del footer</h2>
+                <p className="mt-0.5 text-[12px] text-text-light">
+                  Sube la ilustracion y define si se muestra en el sitio.
+                </p>
+              </div>
+              <span className={`admin-badge ${isActive ? "admin-badge--active" : "admin-badge--inactive"}`}>
+                <span className="admin-badge-dot" />
+                {isActive ? "Activa" : "Inactiva"}
+              </span>
             </div>
 
-            <div className="grid gap-6 xl:grid-cols-2">
-              <section className="rounded-[2px] border border-border bg-white p-6">
-                <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Links de catálogo</h3>
-                <label className="block space-y-1">
-                  <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">
-                    Un link por línea — formato: <code>Nombre :: /ruta</code>
-                  </span>
-                  <textarea
-                    className="min-h-[120px] w-full rounded-[8px] border border-border px-3 py-2.5 font-mono text-sm focus:border-gold focus:outline-none"
-                    onChange={(e) => setCatalogLinksUi(e.target.value)}
-                    value={catalogLinksUi}
-                  />
-                </label>
-              </section>
+            <div className="editor-card-body">
+              {loading ? <p className="text-sm text-text-light">Cargando configuracion...</p> : null}
+              {error ? <div className="admin-error-block">{error}</div> : null}
 
-              <section className="rounded-[2px] border border-border bg-white p-6">
-                <h3 className="mb-4 text-[0.82rem] font-semibold text-text">Links de información</h3>
-                <label className="block space-y-1">
-                  <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">
-                    Un link por línea — formato: <code>Nombre :: /ruta</code>
-                  </span>
-                  <textarea
-                    className="min-h-[120px] w-full rounded-[8px] border border-border px-3 py-2.5 font-mono text-sm focus:border-gold focus:outline-none"
-                    onChange={(e) => setInfoLinksUi(e.target.value)}
-                    value={infoLinksUi}
+              {!loading ? (
+                <section className="admin-fieldset">
+                  <AdminUploadZone
+                    hint="Recomendado: arte horizontal con buena mezcla sobre beige."
+                    onFileSelect={setImageFile}
+                    previewUrl={previewUrl}
                   />
-                </label>
-              </section>
+                  <div className="rounded-[10px] border border-border bg-[#faf9f6] px-4">
+                    <AdminToggle
+                      checked={isActive}
+                      description="Si esta inactiva, el footer conserva los textos y oculta la ilustracion."
+                      label="Mostrar ilustracion en el sitio"
+                      onChange={setIsActive}
+                    />
+                  </div>
+                  <p className="admin-field-help">
+                    Los ajustes de composicion estan separados abajo para mantener este bloque enfocado.
+                  </p>
+                </section>
+              ) : null}
             </div>
 
-            <div className="flex gap-3">
-              <button
-                className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-                disabled={contentSaving}
-                type="submit"
-              >
-                {contentSaving ? "Guardando..." : "Guardar contenido"}
+            <div className="editor-card-footer">
+              <button className="admin-btn-primary" disabled={saving || loading} type="submit">
+                {saving ? (
+                  <>
+                    <SpinnerIcon />
+                    Guardando...
+                  </>
+                ) : (
+                  "Guardar imagen"
+                )}
               </button>
             </div>
-          </form>
-        ) : null}
+          </div>
+        </form>
       </div>
+
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="font-serif text-[1.35rem] text-text">Preview del footer público</h2>
+            <p className="mt-1 text-sm font-light text-text-light">
+              Usa los valores actuales del formulario; no requiere guardar para actualizarse.
+            </p>
+          </div>
+          <span className={`admin-badge ${isActive ? "admin-badge--active" : "admin-badge--inactive"}`}>
+            <span className="admin-badge-dot" />
+            {isActive ? "Ilustración visible" : "Ilustración oculta"}
+          </span>
+        </div>
+        <FooterPreview
+          address={address}
+          brandDescription={brandDescription}
+          catalogLinksUi={catalogLinksUi}
+          copyrightText={copyrightText}
+          designCredit={designCredit}
+          imageUrl={previewUrl}
+          infoLinksUi={infoLinksUi}
+          isActive={isActive}
+          mapsUrl={mapsUrl}
+          metadata={metadata}
+        />
+      </section>
+
+      <form onSubmit={(event) => { void handleSubmit(event); }}>
+        <div className="editor-card">
+          <div className="editor-card-header flex items-start justify-between gap-4">
+            <div>
+              <p className="admin-section-label">Parametros visuales</p>
+              <h2 className="mt-1 text-[15px] font-semibold text-text">Composicion de la ilustracion</h2>
+              <p className="mt-0.5 text-[12px] text-text-light">
+                Ajusta la presencia, el fade y el espacio reservado para el arte del footer.
+              </p>
+            </div>
+            <span className="admin-badge admin-badge--active">
+              <span className="admin-badge-dot" />
+              sliders
+            </span>
+          </div>
+
+          <div className="editor-card-body">
+            {loading ? <p className="text-sm text-text-light">Cargando configuracion...</p> : null}
+            {error ? <div className="admin-error-block">{error}</div> : null}
+
+            {!loading ? (
+              <section className="admin-fieldset">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                  <MetadataSlider
+                    label="Opacidad"
+                    max={1}
+                    min={0}
+                    onChange={(value) => updateMetadata("opacity", value)}
+                    step={0.05}
+                    suffix=""
+                    value={metadata.opacity}
+                  />
+                  <MetadataSlider
+                    label="Inicio fade"
+                    max={100}
+                    min={0}
+                    onChange={(value) => updateMetadata("fadeStart", value)}
+                    step={1}
+                    suffix="%"
+                    value={metadata.fadeStart}
+                  />
+                  <MetadataSlider
+                    label="Fin fade"
+                    max={100}
+                    min={0}
+                    onChange={(value) => updateMetadata("fadeEnd", value)}
+                    step={1}
+                    suffix="%"
+                    value={metadata.fadeEnd}
+                  />
+                  <MetadataSlider
+                    label="Ancho imagen"
+                    max={100}
+                    min={0}
+                    onChange={(value) => updateMetadata("imgWidth", value)}
+                    step={1}
+                    suffix="%"
+                    value={metadata.imgWidth}
+                  />
+                  <MetadataSlider
+                    label="Espacio arte"
+                    max={100}
+                    min={0}
+                    onChange={(value) => updateMetadata("artSpaceWidth", value)}
+                    step={1}
+                    suffix="%"
+                    value={metadata.artSpaceWidth}
+                  />
+                </div>
+                <label className="mt-4 block max-w-xs">
+                  <span className="admin-field-label">Tono del texto</span>
+                  <select
+                    className="admin-input"
+                    onChange={(event) =>
+                      updateTextTone(event.target.value === "dark" ? "dark" : "current")
+                    }
+                    value={metadata.textTone}
+                  >
+                    <option value="current">Actual</option>
+                    <option value="dark">Oscuro</option>
+                  </select>
+                  <p className="admin-field-help">
+                    Oscuro usa texto mas legible sobre el beige sin cambiar el acento dorado.
+                  </p>
+                </label>
+              </section>
+            ) : null}
+          </div>
+
+          <div className="editor-card-footer">
+            <button className="admin-btn-primary" disabled={saving || loading} type="submit">
+              {saving ? (
+                <>
+                  <SpinnerIcon />
+                  Guardando...
+                </>
+              ) : (
+                "Guardar parametros"
+              )}
+            </button>
+          </div>
+        </div>
+      </form>
     </section>
   );
 }

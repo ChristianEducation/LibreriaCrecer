@@ -5,11 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { CuratedProduct } from "@/features/catalogo/types";
+import type { LibrosMesViewModel } from "@/features/catalogo/view-models/libros-mes-view-model";
 import { useScrollReveal } from "@/shared/hooks";
 import { formatCLP } from "@/shared/utils/formatters";
 
 type LibrosMesSectionProps = {
   items: CuratedProduct[];
+  copy?: LibrosMesViewModel;
 };
 
 function SliderChevron({ direction }: { direction: "prev" | "next" }) {
@@ -102,8 +104,12 @@ function EmptySlider() {
   );
 }
 
-export function LibrosMesSection({ items }: LibrosMesSectionProps) {
+export function LibrosMesSection({ items, copy }: LibrosMesSectionProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const title = copy?.title?.trim() || "Selección\ndel mes";
+  const body =
+    copy?.body?.trim() ||
+    "Una selección de obras particularmente relevantes e inspiradoras: desde estudios bíblicos y devocionales hasta biografías de figuras católicas.";
 
   function scrollByDirection(direction: number) {
     const track = scrollRef.current;
@@ -133,13 +139,15 @@ export function LibrosMesSection({ items }: LibrosMesSectionProps) {
               SELECCIÓN ESPECIAL
             </p>
             <h2 className="heading-xl libros-mes-title font-normal" style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", fontWeight: 400, color: "var(--moss)" }}>
-              Selección
-              <br />
-              del mes
+              {title.split("\n").map((line, index, lines) => (
+                <span key={`${line}-${index}`}>
+                  {line}
+                  {index < lines.length - 1 ? <br /> : null}
+                </span>
+              ))}
             </h2>
             <p className="libros-mes-body text-text-light" style={{ fontFamily: "var(--font-inter)" }}>
-              Una selección de obras particularmente <strong className="font-semibold text-text-mid">relevantes e inspiradoras</strong>:
-              desde estudios bíblicos y devocionales hasta <em style={{ fontFamily: "var(--font-inter)", fontStyle: "normal", fontWeight: 600, color: "var(--text-mid)" }}>biografías de figuras católicas</em>.
+              {body}
             </p>
           </div>
 

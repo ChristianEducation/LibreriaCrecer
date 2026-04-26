@@ -1,6 +1,6 @@
 # Crecer Librería Cristiana — Handoff v01
-**Última actualización:** Abril 2026 — post–Hero/Landing: ViewModels, editor y storefront alineados  
-**Estado resumido:** **Hero** conectado end-to-end (admin → BD → `HeroViewModel` → `HeroSlider`); patrón listo para extender al resto del landing. **En curso:** preview en vivo al editar, pulido de layout del editor. **Pendiente:** replicar patrón a otras secciones, SEO, Chilexpress, VESSI, Resend, deploy.  
+**Última actualización:** Abril 2026 — panel Landing del admin: editores dedicados por sección (hero, top banner, hero final, categorías panorámica, selección, footer) alineados al storefront.  
+**Estado resumido:** **Hero principal** end-to-end con **preview en vivo** (`HeroAdminEditor` → `HeroPreview` → guardar → `router.refresh`). **Top banner**, **hero final** (Quote), **categorías del landing** (panorámica) y **selección del mes** con pantallas admin propias y previews donde aplica. **Footer** admin con contenido e imagen/metadata; falta preview fiel del pie público y pulido UX. **Automáticos / externos:** recién llegados (últimos productos), Instagram (Elfsight). **Pendiente global:** SEO, Chilexpress, VESSI, Resend, deploy, micro-pulido admin restante.  
 **Stack:** Next.js 15.2.4 (App Router) · TypeScript · Drizzle ORM · Supabase PostgreSQL + Storage · Zustand 5 · Tailwind v4 · Getnet · lottie-react · framer-motion  
 **Build / calidad:** verificar en el clon con `npx tsc --noEmit`, `npm run lint` y `npm run build` antes de entregar; no asumir verde sin ejecutarlos.  
 **Tamaño del repo:** orden de magnitud — ver `git` o herramientas de conteo para cifras actuales (no fijar métricas exactas aquí)
@@ -18,29 +18,30 @@
 
 ## Estado actual real
 
-- **Hecho:** E-commerce end-to-end operativo; backend y APIs; Getnet (TEST); storefront responsive; catálogo, checkout, admin CRUD; landing en gran parte CMS; `/nosotros` con CMS; reglas técnicas del repo (R1–R14, bugs históricos, migraciones vía R13). **Hero del landing:** flujo completo **admin → BD → servicios Drizzle → `HeroViewModel` → `HeroSlider` público**; tipografía de hero alineada al diseño (**Castoro** + cuerpo **Inter** / sistema editorial en `globals.css`). **Modelo de datos** ampliado: `hero_slides` (CTA, overlay, tema, alineación, `showContent`, etc.), `banners` con `eyebrow` y `cta_label`, tabla **`landing_section_copy`**. **ViewModels** en `src/features/catalogo/view-models/`: `HeroViewModel`, `BannersViewModel`, `SectionCopyViewModel` (y derivados `LibrosMesViewModel`, `CategoriasViewModel`, `NosotrosViewModel`). **Admin:** `LandingEditorShell`, `HeroAdminEditor`, `HeroPreview` (preview reutilizable como parte del sistema de edición; no es un “mock” desconectado del modelo).
-- **En progreso:** **Preview en vivo** mientras se edita (reflejo instantáneo de cambios **antes** de guardar, si se implementa end-to-end). **Optimización de layout** del `HeroAdminEditor` (vista compacta / densidad) si aún no está cerrada al leer esto. Micro-pulido del **resto** de pantallas admin al mismo lenguaje visual que las vistas piloto.
-- **Pendiente (producto / infra):** **Replicar** el patrón ViewModel + editor + API al **resto de secciones** del landing que aún sigan en CRUD “clásico”. **SEO** (metadata, OG, sitemap). **Chilexpress** (cuando haya credenciales). **VESSI** (según definición del negocio). **Resend / emails** transaccionales. **Credenciales Getnet** producción, variables y seed en Vercel, **deploy y QA** (ver checklist final).
+- **Hecho:** E-commerce end-to-end operativo; backend y APIs; Getnet (TEST); storefront responsive; catálogo, checkout, admin CRUD; landing mayormente gobernado desde admin por sección; `/nosotros` con CMS; reglas técnicas del repo (R1–R14, bugs históricos, migraciones vía R13). **Hero del landing:** **admin → BD → `HeroViewModel` → `HeroSlider`**, con **`HeroAdminEditor`** que mantiene estado local del formulario, deriva un **view model en vivo** (`liveViewModel`) para **`HeroPreview`**, y tras guardar usa **`router.refresh`**. Tipografía de hero alineada al diseño (**Castoro** + **Inter** vía `globals.css`). **Top banner:** fila sobre el header en `StoreLayout` (`TopBanner` server + `TopBannerClient`); admin en `/admin/landing/top-banner` con preview en vivo; **`Navbar`** en **`sticky top-0`** (`z-[100]`) para evitar solapamiento; cierre con X en cliente. **Hero final (UI):** admin `/admin/landing/hero-final`; en BD es banner con **`position = "hero_intermedio"`**; preview con **`QuoteSection`** real. **Categorías del landing:** admin `/admin/landing/categorias`; panorámica en **`banners.position = "categories_panorama"`**; preview con **`CategoryCard`** y categorías reales desde **`GET /api/categorias`** si hay datos, si no fallback visual mock. **Selección del mes:** admin `/admin/landing/seleccion` — búsqueda de productos, alta/edición, activar/desactivar, quitar, reordenar (API reorder). **Modelo de datos:** `hero_slides` enriquecido, `banners` por `position`, `featured_products` para curaduría, `landing_section_copy` en schema, etc. ViewModels y servicios de catálogo sin cambio de regla arquitectónica.
+- **En progreso:** Pulido UX de **footer** en admin (preview fiel al `Footer` público, refinamiento visual). Micro-pulido del **resto** de pantallas admin al mismo lenguaje visual que las vistas piloto.
+- **Pendiente (producto / infra):** **SEO** (metadata, OG, sitemap). **Chilexpress** (credenciales). **VESSI** / **Resend** / **Getnet** producción / **deploy y QA**. Mejoras opcionales de **Top banner** (variante normal/marquee, colores vía **metadata** jsonb). Simplificar UI de **selección del mes** (menos campos por producto; orden menos ruidoso si se decide). **Copy editable** del título/eyebrow/cuerpo del **bloque** “Selección del mes” en storefront: hoy van **hardcodeados** en `LibrosMesSection.tsx` — no confundir con `featured_products.description` (eso es **por producto** en admin).
 
 ## Cambios recientes importantes
 
 - **Admin:** el **layout del panel** se apoya en **sidebar** (eje visual y navegación: secciones, oscuro, colapsable, cierre de sesión). Existe **Topbar** como componente, pero **no es estructural** ni obligatorio en todas las vistas: **no** asumir que el panel “depende” del topbar.
 - **Dashboard** y listado de **Productos** siguen siendo la referencia de layout; **AdminMetricCard** y **AdminTable** como base reutilizable.
-- **Hero / landing:** fase de **BD y modelos** alineada con Drizzle; **banners** extendidos; **`landing_section_copy`**; **view models** y **`HeroPreview`**; **`HeroAdminEditor`** y shell de edición; **`HeroSlider` público** alimentado por **`HeroViewModel`** (sin depender de copy/overlay fijos relevantes en código).
+- **Hero / landing:** BD y modelos alineados; editores dedicados por sección (hero, top banner, hero final, categorías panorámica, selección, footer); **`HeroPreview`** en hero con estado local → VM en vivo; **`HeroSlider` público** desde **`HeroViewModel`**; top banner e imagen panorámica de categorías como **`banners`** por `position`.
 
 ## Decisiones vigentes
 
 - **Landing / CMS:** arquitectura **ViewModel-first**: datos de BD → funciones de mapeo → tipos de presentación; el **storefront y la preview** comparten criterio visual (misma familia de componentes/estilos, no un HTML paralelo). La **preview** (`HeroPreview`, y análogos futuros) es **parte del sistema de edición**, no un adorno aislado.
 - **HTML / diseños externos** (p. ej. *Hero Principal Crecer*): solo **blueprint** de jerarquía, ritmo y look — **nunca** se pega como código de producción; la implementación vive en componentes, `globals.css` y tokens.
-- **Hero** es el **patrón de referencia** a **replicar** en otras secciones del landing (misma separación: schema + servicio + ViewModel + editor + superficie pública).
+- **Hero** sigue siendo el **patrón de referencia** para **preview fiel + ViewModel** donde aplique; el resto del landing ya usa **pantallas admin dedicadas** (top banner, hero final, panorámica categorías, selección, footer) con criterios propios pero misma regla: datos en BD → componente público real o espejo en preview.
 - **Migraciones SQL:** flujo **R13** — SQL versionado en repo, **aplicación manual** en Supabase SQL Editor; mantener **alineado** el SQL aplicado con `src/integrations/drizzle/schema/` (y archivos bajo `drizzle/` en la raíz si se usan como complemento). **No** asumir que `drizzle-kit push` / migrate funciona con Session Pooler. **No** afirmar desde el handoff qué migraciones están ya aplicadas en un entorno remoto.
 - **Código:** mismas reglas inmutables del repo (Drizzle en servicios, no queries desde el cliente, etc. — R1–R14).
 
 ## Próxima tarea (orden sugerido)
 
-1. Cerrar o validar: **preview en vivo** en admin y **layout compacto** del `HeroAdminEditor` (según deuda al momento de leer el repo).  
-2. **Replicar** el patrón Hero (ViewModel + editor + API + superficie pública) al **resto** de secciones de landing acordadas.  
-3. Después, según negocio: **SEO** → **Chilexpress** → **VESSI** → **Resend** → **deploy/QA** (más P0 de variables y credenciales al acercar producción).
+1. **Footer (admin):** preview real del pie público y mejora de experiencia visual (contenido + ilustración/metadata ya persistidos).  
+2. **Selección del mes (admin):** opcional — simplificar formulario; valorar **copy CMS** para título/descripción del bloque (hoy fijo en `LibrosMesSection`).  
+3. **Top banner (opcional):** variantes normal/marquee y colores configurables (**metadata** jsonb).  
+4. Después, según negocio: **SEO** → **Chilexpress** → **VESSI** → **Resend** → **deploy/QA** (más P0 de variables y credenciales al acercar producción).
 
 **Migraciones en repo (referencia; aplicación en Supabase: manual y verificada en cada entorno):** además de las históricas `0000`–`0004`, suelen aparecer en el proyecto `0005_extend_banners.sql` y `0006_create_landing_section_copy.sql` bajo `src/integrations/drizzle/migrations/`, y SQL de extensión de `hero_slides` (p. ej. en `drizzle/0005_extend_hero_slides.sql` en la raíz). **Cruzar siempre** con el schema y el journal de Drizzle; no listar un número fijo de migración “aplicada” sin comprobarlo en la instancia.
 
@@ -121,7 +122,7 @@ src/
 │   │       ├── categorias/   # CRUD completo ✅
 │   │       ├── pedidos/      # Listado + detalle + cambio de estado ✅
 │   │       ├── nosotros/     # CRUD secciones de /nosotros ✅
-│   │       └── landing/      # hero/, banners/, seleccion/, footer/, categorias/ ✅
+│   │       └── landing/      # Índice + hero, top-banner, hero-final, categorias, seleccion, footer; `banners/page.tsx` sigue existiendo (compat / legado) — no es flujo principal en sidebar ✅
 │   └── api/
 │       ├── productos/        # GET público ✅
 │       ├── categorias/       # GET público ✅
@@ -253,18 +254,19 @@ Store en `localStorage` (`crecer-cart`). La hidratación usa `useCartHydration()
 - `src/features/admin/services/landing-admin-service.ts`
 
 **Cómo funciona:**
-JWT en cookie HTTP-only `admin-session` (24h, firmado con `jose`). Middleware Edge Runtime verifica el token en cada request. El admin puede gestionar: productos (CRUD + imágenes), categorías, pedidos (cambio de estado + notas internas), **landing** (incl. hero con campos avanzados, banners, selección, footer, etc. según rutas), `/nosotros` y resto de contenido.
+JWT en cookie HTTP-only `admin-session` (24h, firmado con `jose`). Middleware Edge Runtime verifica el token en cada request. El admin puede gestionar: productos (CRUD + imágenes), categorías, pedidos (cambio de estado + notas internas), **landing** (hero, top banner, hero final, panorámica categorías, selección del mes, footer — ver Feature 5; ruta `banners` legado si aplica), `/nosotros` y resto de contenido.
 
 **Shell y vistas piloto (estado reciente):**
 - **Sidebar** agrupada por secciones (Dashboard, Catálogo, Pedidos, Contenido, etc.); estilo **oscuro** “app”; **anchos expandido/colapsado** con transición; **logout** en la zona inferior — **eje principal** de navegación.
 - **Topbar:** componente disponible, pero **el panel no depende** de un topbar global para funcionar; no asumir topbar en todas las pantallas.
 - **Dashboard** (`/admin`) y listado de **Productos** reconstruidos visualmente y usados como referencia; **AdminMetricCard** y **AdminTable** son la base reutilizable para otras listas.
-- **Resto** de pantallas admin (categorías, pedidos, landing, nosotros, etc.): **micro-pulido progresivo** al mismo lenguaje visual — no asumir que todas tengan ya el mismo nivel de pulido que Dashboard/Productos.
+- **Resto** de pantallas admin (categorías catálogo, pedidos, micro-pulido landing, nosotros, etc.): **micro-pulido progresivo** al mismo lenguaje visual — no asumir que todas tengan ya el mismo nivel de pulido que Dashboard/Productos.
+- **Navegación “Landing” en sidebar** (`AdminSidebar`, sección Contenido): orden **Top Banner** → **Hero principal** → **Selección del mes** → **Categorías del landing** → **Hero final** → **Footer**; más el enlace al índice `/admin/landing`. La ruta **`/admin/landing/banners`** puede existir por compatibilidad; **no** forma parte del flujo principal listado en sidebar.
 
 ---
 
 ### Feature 5: Landing editable
-**Estado:** ✅ Catálogo de secciones y CMS en conjunto; **Hero** = **hecho** a nivel **end-to-end** (admin → BD → `HeroViewModel` → `HeroSlider`) con tipografía de hero alineada al diseño (**Castoro** + cuerpo **Inter** vía clases en `globals.css`). **En progreso / revisión:** preview en vivo mientras se edita (sin depender de “Guardar”), pulido de layout del editor. **Pendiente:** replicar el patrón ViewModel + preview + admin al **resto** de piezas de landing que aún no lo tengan.  
+**Estado:** ✅ **Hero principal**, **Top banner**, **Hero final** (Quote), **Categorías del landing** (panorámica) y **Selección del mes** con flujos admin dedicados; previews en vivo donde está implementado (hero, top banner, hero final, panorámica categorías). **Recién llegados** automático (`getNewProducts` en home). **Instagram** externo (Elfsight), sin pantalla admin. **Footer** admin funcional para contenido + imagen/metadata; **pendiente** preview real del pie y refinamiento UX del editor. Tipografía hero: **Castoro** + **Inter** (`globals.css`).  
 **Archivos clave (Hero / landing reciente):**
 - `src/features/catalogo/view-models/hero-view-model.ts` — `getHeroViewModel()` → `HeroViewModel` / `HeroSlideViewModel`
 - `src/features/catalogo/view-models/banners-view-model.ts`, `section-copy-view-model.ts` — `BannersViewModel`, `SectionCopyViewModel` (+ `libros-mes-`, `categorias-`, `nosotros-view-model.ts`)
@@ -272,20 +274,24 @@ JWT en cookie HTTP-only `admin-session` (24h, firmado con `jose`). Middleware Ed
 - `src/features/catalogo/components/hero/HeroPreview.tsx` — **preview reutilizable** (admin; mismo criterio visual que el home)
 - `src/features/admin/components/LandingEditorShell.tsx` — contenedor de edición de landing
 - `src/features/admin/components/landing/HeroAdminEditor.tsx` — formulario y layout de edición del hero
-- `src/app/(store)/page.tsx` — compone el home; hero desde view model
-- `src/shared/config/landing.ts` — constantes y tipos (defaults de overlay, tema, alineación, etc.)
+- `src/app/(store)/layout.tsx` — **`TopBanner`** antes de **`Navbar`** (fila superior pública)
+- `src/app/(store)/page.tsx` — compone el home; hero desde view model; novedades, selección, categorías + panorámica, quote, Instagram
+- `src/shared/config/landing.ts` — constantes y tipos (defaults de overlay, tema, alineación, `MONTHLY_SELECTION_SECTION`, etc.)
 
 **También:** `LibrosMesSection`, `CategoryCarousel`, `RecentProductsCarousel`, `QuoteSection`, `CategoryCard`, `InstagramSection`, `TopBanner` + `TopBannerClient`, `LandingWithSplash`.
 
+**Patrón Hero (admin):** estado local del formulario → derivación de **`HeroViewModel` en vivo** (`liveViewModel`) → **`HeroPreview`** → persistencia (API/servicios) → **`router.refresh`** (`HeroAdminEditor.tsx`).
+
 **Secciones y su fuente de datos:**
-- **Hero** → `hero_slides` (campos enriquecidos: CTA, `showContent`, posición/alineación de texto, variante y opacidad de overlay, `contentTheme`, etc. — ver `schema/landing.ts`). **Admin** `/admin/landing/hero` con **`HeroAdminEditor`** + **`HeroPreview`**. **Storefront:** `getHeroViewModel()` → `HeroSlider`. Referencias HTML externas (*Hero Principal Crecer*, etc.): **solo blueprint** visual/comportamental; la implementación vive en componentes y CSS del repo.
-- **Copy por sección (landing)** → tabla **`landing_section_copy`** (`section_key`, eyebrow, título, cuerpo, CTA) — alimenta ViewModels de secciones (p. ej. libros del mes, categorías, textos reutilizables) según evolución del admin
-- Selección del mes → `featured_products` / `monthly_selection` + `?filter=seleccion`
-- Categorías → `categories` + admin `/admin/landing/categorias` (panorama opcional)
-- Recién llegados → productos recientes (automático)
-- Hero intermedio → `banners` con `position="hero_intermedio"`; banners con **eyebrow** y **cta_label** donde aplique
-- Footer texto → `footer_content` · Footer ilustración → `banners` `footer_illustration`
-- Instagram → Elfsight (`NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID`)
+- **Hero** → `hero_slides`. **Admin** `/admin/landing/hero` — `LandingEditorShell` + **`HeroAdminEditor`** + **`HeroPreview`**. **Storefront:** `getHeroViewModel()` → `HeroSlider`.
+- **Top banner** → `banners` con **`position="top_banner"`** (título obligatorio en servidor para renderizar). **Admin** `/admin/landing/top-banner` — formulario propio + preview en vivo (espejo visual de la franja). API dedicada **`/api/admin/landing/top-banner`**. Público: `TopBanner` → `TopBannerClient`; **Navbar** `sticky top-0` + `z-[100]`. Cierre local con X. **Opcional futuro:** variantes normal/marquee y colores vía **metadata** jsonb.
+- **Hero final (etiqueta UI)** → mismo concepto que antes “hero intermedio”: **`banners`** con **`position="hero_intermedio"`** (frase → `title`, autor/subtexto → `description`, imagen, enlace opcional). **Admin** `/admin/landing/hero-final` — preview con **`QuoteSection`** real. Storefront: `getHeroIntermedio()` en `page.tsx` alimenta `QuoteSection`.
+- **Categorías del landing (panorámica)** → **`banners.position="categories_panorama"`** + listado real de categorías. **Admin** `/admin/landing/categorias` — preview con **`CategoryCard`** y `GET /api/categorias` si hay datos; si no, placeholders mock en preview.
+- **Selección del mes** → **`featured_products`** sección canónica `monthly_selection` + `?filter=seleccion`. **Admin** `/admin/landing/seleccion` — búsqueda, agregar, editar, activar/desactivar, quitar, reordenar. **`featured_products.description`** es texto **por producto** en admin; **no** sirve como título ni copy general del bloque. El **eyebrow / título / párrafo intro** del bloque en **`LibrosMesSection`** están **hardcodeados** en JSX hoy — **no** hay editor dedicado para ese copy general (la tabla **`landing_section_copy`** existe en schema pero **no** está cableada a esta sección en el home). **Pendiente de producto:** simplificar formulario (menos descripción editorial por producto / orden manual visible según decisión).
+- **Recién llegados** → `getNewProducts` en home — **sin** admin.
+- **Instagram** → widget Elfsight — **sin** admin por ahora.
+- **Copy por sección (landing)** → **`landing_section_copy`** disponible en schema para evolución; **no** asumir que todo el landing ya la consume.
+- **Footer** → texto `footer_content` + ilustración `banners` **`footer_illustration`** + metadata visual. **Admin** `/admin/landing/footer`. **Pendiente:** preview fiel al `Footer` público y pulido de la pantalla.
 
 **Imagen panorámica en categorías (CAT3):**
 `CategoryCarousel` acepta `panoramaUrl?: string | null`. Cuando está presente, cada `CategoryCard` usa CSS `background-image` con `background-position` calculado: `(index / (total-1)) * 100% 50%`. Efecto: la imagen panorámica se distribuye horizontalmente entre todas las tarjetas. Sin panorama, las tarjetas usan su `imageUrl` individual o el gradiente de fallback. Configurable desde `/admin/landing/categorias`.
@@ -345,15 +351,15 @@ Las secciones tienen `title`, `content`, `imageUrl`, `imagePosition` ("right"|"l
 ---
 
 ### Feature 10: Integración visual del storefront
-**Estado:** ✅ Tienda pública alineada al diseño / 🔄 **Admin:** sidebar como eje, vistas piloto alineadas, **resto** en micro-pulido; **Hero** con patrón ViewModel + preview en curso de extender al resto del landing.  
+**Estado:** ✅ Tienda pública alineada al diseño / 🔄 **Admin:** sidebar como eje, vistas piloto (Dashboard, Productos), **landing** con editores por sección (ver Feature 5); micro-pulido del resto y **footer** admin (preview).  
 **Referencia de hito histórico** (no sustituye el log de git): `6f39d2b` — integración de cambios visuales del storefront en tienda pública
 
 **Alcance integrado (tienda pública):**
-- Home (hero con datos y tipografía de diseño), selección del mes, categorías, recién llegados, Navbar y Footer; catálogo, detalle, carrito, checkout; `/nosotros` con CMS; responsive.
+- Home (hero, top banner sobre navbar sticky, selección del mes, categorías con panorámica opcional, recién llegados, quote/hero final, Instagram, Footer); catálogo, detalle, carrito, checkout; `/nosotros` con CMS; responsive.
 
 **Alcance admin (situación actual):**
-- **Listo:** shell (**sidebar** colapsable, logout), clases de layout en `globals.css`, **Dashboard** y **Productos** como referencia; **AdminMetricCard** y **AdminTable**; **Topbar** opcional por vista, no dependencia estructural.
-- **En progreso / siguiente capa:** preview en vivo en edición, pulido de **Hero** admin; **replicar** el patrón a otras secciones de landing; micro-pulido del resto de pantallas.
+- **Listo:** shell (**sidebar** colapsable, logout), clases de layout en `globals.css`, **Dashboard** y **Productos** como referencia; **AdminMetricCard** y **AdminTable**; **Topbar** opcional por vista, no dependencia estructural; **flujo Landing** en sidebar (orden en Feature 4 / Feature 5).
+- **En progreso / siguiente capa:** preview y UX del **footer** admin; micro-pulido de otras pantallas; mejoras opcionales (top banner metadata, copy CMS para bloque selección del mes).
 
 **Importante:**
 - **No** interpretar esto como cierre de SEO, Chilexpress, VESSI ni Resend; ver backlog y checklist final.
@@ -701,9 +707,10 @@ import { BrandLoader } from "@/shared/ui/BrandLoader";
   - [x] Shell: **sidebar** como eje, oscuro, colapsable; logout; canvas admin; **Topbar** existe pero no es estructural global  
   - [x] Vistas piloto: Dashboard + Productos (listado); **AdminMetricCard** + **AdminTable** como base  
   - [ ] **Micro-pulido** del resto de pantallas admin al mismo lenguaje visual  
-- [x] **Hero / landing (núcleo)** — `hero_slides` extendido, `HeroViewModel` + `HeroSlider` en storefront, `HeroPreview` + `HeroAdminEditor` + `LandingEditorShell`, `landing_section_copy` y `banners` (eyebrow/cta) en schema; tipografía Castoro/Inter en hero  
-- [🔄] **Hero / landing (refinamiento)** — preview en vivo mientras se edita (antes de guardar); optimización de layout del editor (compacto) según cierre al leer el repo  
-- [ ] **Replicar patrón** ViewModel + preview + admin al **resto** de secciones de landing aún en CRUD “clásico”  
+- [x] **Hero / landing (núcleo)** — `hero_slides` extendido, `HeroViewModel` + `HeroSlider`, `HeroPreview` + `HeroAdminEditor` + `LandingEditorShell`; tipografía Castoro/Inter en hero  
+- [x] **Landing — editores dedicados** — top banner (`top_banner`), hero final (`hero_intermedio`), panorámica categorías (`categories_panorama`), selección del mes, footer admin (contenido + ilustración); previews en hero, top banner, hero final y categorías  
+- [🔄] **Footer (admin)** — falta preview real del pie público y pulido visual del editor  
+- [ ] **Landing — mejoras opcionales** — top banner variantes/colores vía metadata; simplificar UI selección del mes; copy editable del bloque “Selección del mes” en storefront (hoy fijo en `LibrosMesSection`)  
 - [ ] **API Chilexpress** — cotización de despacho en tiempo real y búsqueda de sucursales (pendiente de credenciales del cliente)
 - [ ] **VESSI** — implementar según la definición/respuesta ya recibida. Integración base en `src/integrations/inventory/`
 
@@ -736,7 +743,7 @@ El número exacto de tablas y el detalle al día **no** se fijan en este handoff
 | `order_addresses` | Dirección de despacho (solo si delivery_method = "shipping") |
 | `coupons` | Cupones de descuento (percentage o fixed), vigencia, usos |
 | `hero_slides` | Slides del hero: imagen, copy, CTA, overlay (variante/opacidad), alineación, tema, `showContent`, órden y activo — **ver columnas en schema** |
-| `banners` | Banners por `position` + **eyebrow**, **cta_label** donde aplique, metadata JSON en footer, etc. |
+| `banners` | Banners por `position` (p. ej. `top_banner`, `hero_intermedio`, `categories_panorama`, `footer_illustration`, …) + **eyebrow**, **cta_label**, **metadata** jsonb (footer, extensiones futuras) |
 | `featured_products` | Selección editorial (`monthly_selection` → home + `?filter=seleccion`) |
 | `admin_users` | Usuarios del panel admin con password_hash |
 | `footer_content` | Texto editable del footer: descripción, links, dirección, copyright, etc. |
@@ -802,9 +809,9 @@ CRON_SECRET=
 
 **Comercio y pagos (sin cambio de reglas de negocio):** flujo de compra Getnet (TEST) verificado; stock al pasar a `paid`; idempotencia en retorno/webhook; cron de pendientes. Detalle en Feature 3.
 
-**Contenido CMS — Hero:** conexión **end-to-end** **admin → BD → `HeroViewModel` → `HeroSlider`**, sin depender de copy/overlay fijos relevantes en código; `landing_section_copy` y `banners` enriquecidos en schema. **En curso o por cerrar:** preview en vivo al editar, layout compacto del editor. **Siguiente capa lógica:** replicar el patrón al **resto** del landing. Resto de secciones (selección del mes, categorías, footer, `/nosotros`, etc.): según Feature 5 y schema.
+**Contenido CMS — Landing:** **Hero** end-to-end con **preview en vivo** (`HeroAdminEditor` → `HeroPreview`). **Top banner**, **hero final** (Quote), **panorámica categorías** y **selección del mes** con pantallas admin dedicadas (ver Feature 5). **Recién llegados** e **Instagram** sin admin de contenido. **Footer:** texto + ilustración/metadata editables; **pendiente** preview fiel y UX. **`/nosotros`:** CMS aparte.
 
-**Pendiente de producto/infra:** replicar patrón de landing → SEO → Chilexpress → VESSI → Resend → deploy/QA, más P0 (variables, credenciales, seed) al acercarse a producción — ver checklist.
+**Pendiente de producto/infra:** pulido footer admin y mejoras opcionales de landing → **SEO** → **Chilexpress** → **VESSI** → **Resend** → **deploy/QA**, más P0 (variables, credenciales, seed) al acercarse a producción — ver checklist.
 
 **Calidad y tests:** **verificar** con `npx tsc --noEmit`, `npm run lint` y, cuando toque, `npm run build`; Playwright y `checkout.spec.ts` — **correr** en el entorno para estado al día; ver sección de warnings.
 
@@ -831,8 +838,8 @@ No asumir que sigan idénticos ni que bloqueen el build — **comprobar** en el 
 
 ## ✅ CHECKLIST DE PRÓXIMOS PASOS (orden de trabajo sugerido)
 
-1. [ ] **Hero (refinamiento)** — preview en vivo mientras se edita (si aún no está); cerrar **layout compacto** del `HeroAdminEditor` si queda deuda.
-2. [ ] **Replicar patrón** — ViewModel + preview + edición (como Hero) a **otras** secciones de landing acordadas.
+1. [ ] **Footer (admin)** — preview real alineada al `Footer` público; mejorar experiencia visual del editor.
+2. [ ] **Selección del mes (opcional)** — simplificar formulario; valorar copy CMS para título/descripción del bloque (hoy fijo en `LibrosMesSection`).
 3. [ ] **Micro-pulido admin** — resto de pantallas al estándar de Dashboard / Productos.
 4. [ ] **SEO** — `generateMetadata`, Open Graph, sitemap, etc.
 5. [ ] **Chilexpress** — integración (credenciales cliente).
@@ -840,4 +847,4 @@ No asumir que sigan idénticos ni que bloqueen el build — **comprobar** en el 
 7. [ ] **Resend / emails** — confirmar estado de `integrations/email/`.
 8. [ ] **Deploy + QA** — variables Vercel, Getnet producción, seed en prod, smoke tests, `checkout.spec.ts` si aplica. **Verificar** build con `npx tsc --noEmit`, `npm run lint`, `npm run build`.
 
-*Handoff v01 — Abril 2026 · E-commerce + admin; Hero/landing con ViewModels; pendiente: refinar edición, replicar patrón, SEO, integraciones e infra (ver `git` y schema para detalle fino)*
+*Handoff v01 — Abril 2026 · E-commerce + admin; panel Landing con editores por sección y previews; pendiente: footer admin, mejoras opcionales de landing, SEO, integraciones e infra (ver `git` y schema para detalle fino)*

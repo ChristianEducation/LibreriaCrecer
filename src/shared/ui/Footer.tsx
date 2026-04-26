@@ -1,18 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { headers } from "next/headers";
+import { unstable_noStore as noStore } from "next/cache";
 
+import {
+  getFooterContent as getFooterContentFromDb,
+  getFooterIllustration,
+} from "@/features/catalogo/services/landing-service";
 import type { FooterBannerMetadata } from "@/integrations/drizzle/schema";
-
-type FooterBannerResponse = {
-  id: string;
-  title: string | null;
-  description: string | null;
-  imageUrl: string;
-  linkUrl: string | null;
-  position: string;
-  metadata?: FooterBannerMetadata | null;
-};
 
 type FooterContentResponse = {
   brandDescription: string | null;
@@ -31,6 +25,7 @@ const defaultFooterBanner: FooterBannerMetadata & { imageUrl: string | null } = 
   fadeEnd: 70,
   imgWidth: 72,
   artSpaceWidth: 36,
+  textTone: "current",
 };
 
 const defaultFooterContent = {
@@ -54,33 +49,9 @@ function parseLinks(raw: string): { label: string; href: string }[] {
     });
 }
 
-async function getBaseUrl() {
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL;
-  }
-
-  const headerStore = await headers();
-  const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host");
-  const protocol =
-    headerStore.get("x-forwarded-proto") ?? (process.env.NODE_ENV === "development" ? "http" : "https");
-
-  return host ? `${protocol}://${host}` : "http://localhost:3000";
-}
-
 async function getFooterBanner() {
   try {
-    const baseUrl = await getBaseUrl();
-    const response = await fetch(`${baseUrl}/api/landing/banners?position=footer_illustration`, {
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      return defaultFooterBanner;
-    }
-
-    const payload = (await response.json()) as { data?: FooterBannerResponse[] };
-    const banner = payload.data?.[0];
-
+    const banner = await getFooterIllustration();
     if (!banner) {
       return defaultFooterBanner;
     }
@@ -92,21 +63,17 @@ async function getFooterBanner() {
       fadeEnd: banner.metadata?.fadeEnd ?? defaultFooterBanner.fadeEnd,
       imgWidth: banner.metadata?.imgWidth ?? defaultFooterBanner.imgWidth,
       artSpaceWidth: banner.metadata?.artSpaceWidth ?? defaultFooterBanner.artSpaceWidth,
+      textTone: banner.metadata?.textTone ?? defaultFooterBanner.textTone,
     };
-  } catch {
+  } catch (error) {
+    console.error("Footer: failed to load footer illustration", error);
     return defaultFooterBanner;
   }
 }
 
 async function getFooterContent() {
   try {
-    const baseUrl = await getBaseUrl();
-    const response = await fetch(`${baseUrl}/api/landing/footer`, { cache: "no-store" });
-
-    if (!response.ok) return defaultFooterContent;
-
-    const payload = (await response.json()) as { data?: FooterContentResponse | null };
-    const data = payload.data;
+    const data: FooterContentResponse | null = await getFooterContentFromDb();
 
     if (!data) return defaultFooterContent;
 
@@ -119,17 +86,22 @@ async function getFooterContent() {
       copyrightText: data.copyrightText ?? defaultFooterContent.copyrightText,
       designCredit: data.designCredit ?? defaultFooterContent.designCredit,
     };
-  } catch {
+  } catch (error) {
+    console.error("Footer: failed to load footer content", error);
     return defaultFooterContent;
   }
 }
 
 export async function Footer() {
+  noStore();
   const [banner, content] = await Promise.all([getFooterBanner(), getFooterContent()]);
   const mid = Math.round((banner.fadeStart + banner.fadeEnd) / 2);
   const hasIllustration = Boolean(banner.imageUrl);
   const catalogLinks = parseLinks(content.catalogLinks);
   const infoLinks = parseLinks(content.infoLinks);
+  const isDarkTone = banner.textTone === "dark";
+  const primaryTextColor = isDarkTone ? "var(--text)" : "var(--text-mid)";
+  const bodyTextColor = isDarkTone ? "var(--text)" : "var(--text-light)";
 
   return (
     <footer className="relative overflow-hidden" style={{ background: "var(--beige-warm)" }}>
@@ -179,7 +151,7 @@ export async function Footer() {
               <Image src="/images/Logo-Crecer.png" alt="Crecer Librería" width={44} height={44} style={{ objectFit: "contain", marginBottom: "12px" }} />
               <p style={{ fontFamily: "var(--font-castoro)", fontSize: "18px", color: "var(--text)", fontWeight: 400 }}>Crecer Libreria</p>
               <p style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "12px", marginTop: "2px" }}>Fe, lectura y formación</p>
-              <p style={{ fontFamily: "var(--font-inter)", fontSize: "13px", lineHeight: 1.7, color: "var(--text-light)", maxWidth: "240px" }}>
+              <p style={{ fontFamily: "var(--font-inter)", fontSize: "13px", lineHeight: 1.7, color: bodyTextColor, maxWidth: "240px" }}>
                 {content.brandDescription}
               </p>
             </div>
@@ -189,7 +161,7 @@ export async function Footer() {
               <div className="flex flex-col gap-2">
                 {catalogLinks.map((link) => (
                   <Link
-                    style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: "var(--text-mid)", lineHeight: 2, textDecoration: "none" }}
+                    style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: primaryTextColor, lineHeight: 2, textDecoration: "none" }}
                     href={link.href}
                     key={link.href}
                   >
@@ -204,7 +176,7 @@ export async function Footer() {
               <div className="flex flex-col gap-2">
                 {infoLinks.map((link) => (
                   <Link
-                    style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: "var(--text-mid)", lineHeight: 2, textDecoration: "none" }}
+                    style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: primaryTextColor, lineHeight: 2, textDecoration: "none" }}
                     href={link.href}
                     key={link.href}
                   >
@@ -225,7 +197,7 @@ export async function Footer() {
                   />
                   <circle cx="12" cy="9" fill="currentColor" r="1.75" />
                 </svg>
-                <p style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: "var(--text-mid)" }}>{content.address}</p>
+                <p style={{ fontFamily: "var(--font-inter)", fontSize: "13px", color: primaryTextColor }}>{content.address}</p>
               </div>
               <a
                 className="mt-3 inline-block border-b border-b-gold/30 text-[9px] font-medium uppercase tracking-[0.1em] text-gold transition-colors hover:border-b-gold"
@@ -242,12 +214,12 @@ export async function Footer() {
 
       <div
         className="relative z-[3] page-px flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
-        style={{ borderTop: "1px solid var(--border)", paddingTop: "1.5rem", paddingBottom: "1.5rem", fontFamily: "var(--font-inter)", fontSize: "11px", color: "var(--text-light)" }}
+        style={{ borderTop: "1px solid var(--border)", paddingTop: "1.5rem", paddingBottom: "1.5rem", fontFamily: "var(--font-inter)", fontSize: "11px", color: bodyTextColor }}
       >
         <p>{content.copyrightText}</p>
         <div className="flex items-center gap-3">
           <p>{content.designCredit}</p>
-          <Link href="/admin/login" style={{ fontSize: "11px", color: "var(--text-light)", textDecoration: "none", opacity: 0.5 }}>·</Link>
+          <Link href="/admin/login" style={{ fontSize: "11px", color: bodyTextColor, textDecoration: "none", opacity: 0.5 }}>·</Link>
         </div>
       </div>
     </footer>

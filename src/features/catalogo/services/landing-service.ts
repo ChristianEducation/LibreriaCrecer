@@ -1,7 +1,14 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
-import { banners, featuredProducts, heroSlides, landingSectionCopy, products } from "@/integrations/drizzle/schema";
+import {
+  banners,
+  featuredProducts,
+  footerContent,
+  heroSlides,
+  landingSectionCopy,
+  products,
+} from "@/integrations/drizzle/schema";
 import {
   type BannerPosition,
   type LandingSectionKey,
@@ -70,6 +77,28 @@ export async function getCatalogoHeaderBanner() {
 export async function getCategoriesPanorama() {
   const result = await getBanners("categories_panorama");
   return result[0] ?? null;
+}
+
+export async function getFooterIllustration() {
+  const result = await getBanners("footer_illustration");
+  return result[0] ?? null;
+}
+
+export async function getFooterContent() {
+  const [row] = await db
+    .select({
+      brandDescription: footerContent.brandDescription,
+      catalogLinks: footerContent.catalogLinks,
+      infoLinks: footerContent.infoLinks,
+      address: footerContent.address,
+      mapsUrl: footerContent.mapsUrl,
+      copyrightText: footerContent.copyrightText,
+      designCredit: footerContent.designCredit,
+    })
+    .from(footerContent)
+    .limit(1);
+
+  return row ?? null;
 }
 
 export async function getSectionCopy(key: LandingSectionKey) {
