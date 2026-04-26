@@ -220,6 +220,10 @@ body {
   min-height: 540px;
   overflow: hidden;
   background: var(--text);
+  /* El navbar es sticky (en el flujo): este margen negativo compensa su altura
+     para que el hero se deslice visualmente por debajo de él, igual que antes
+     con position:fixed. El navbar z-[100] sigue apareciendo encima del hero. */
+  margin-top: -4rem;
 }
 
 .hero-content-shell {

@@ -175,8 +175,7 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
     <>
       <header
         className={cx(
-          "z-[100] transition-[background-color,box-shadow,border-color] duration-300",
-          isHome ? "fixed inset-x-0 top-0" : "sticky top-0",
+          "z-[100] sticky top-0 transition-[background-color,box-shadow,border-color] duration-300",
           isTransparent
             ? "border-b border-transparent bg-transparent"
             : "border-b border-border bg-[color-mix(in_srgb,var(--beige)_95%,transparent)] backdrop-blur-xl",

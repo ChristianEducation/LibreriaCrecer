@@ -54,10 +54,11 @@ const sections: { label: string; items: SidebarItem[] }[] = [
     label: "Contenido",
     items: [
       { href: "/admin/landing", label: "Landing", icon: "layout", exact: true },
+      { href: "/admin/landing/top-banner", label: "Top Banner", icon: "banner" },
       { href: "/admin/landing/hero", label: "Hero principal", icon: "image" },
-      { href: "/admin/landing/banners", label: "Banners", icon: "banner" },
       { href: "/admin/landing/seleccion", label: "Selección del mes", icon: "star" },
       { href: "/admin/landing/categorias", label: "Categorías del landing", icon: "list" },
+      { href: "/admin/landing/hero-final", label: "Hero final", icon: "image" },
       { href: "/admin/landing/footer", label: "Footer", icon: "footer" },
       { href: "/admin/nosotros", label: "Página Conócenos", icon: "info" },
     ],
