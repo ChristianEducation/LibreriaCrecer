@@ -19,6 +19,12 @@ type OrderDetail = {
   deliveryMethod: "pickup" | "shipping";
   paymentMethod: string | null;
   paymentReference: string | null;
+  chilexpressServiceTypeCode: string | null;
+  chilexpressServiceDescription: string | null;
+  chilexpressOriginCoverageCode: string | null;
+  chilexpressDestinationCoverageCode: string | null;
+  chilexpressTransportOrderNumber: string | null;
+  chilexpressLabelUrl: string | null;
   adminNotes: string | null;
   createdAt: string;
   customer: {
@@ -59,6 +65,8 @@ export default function AdminPedidoDetallePage() {
   const [targetStatus, setTargetStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [savingStatus, setSavingStatus] = useState(false);
+  const [generatingOt, setGeneratingOt] = useState(false);
+  const [shippingError, setShippingError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -118,6 +126,69 @@ export default function AdminPedidoDetallePage() {
     setSavingStatus(false);
     toast({ message: "Estado del pedido actualizado." });
     router.refresh();
+  }
+
+  async function handleGenerateOt() {
+    if (!order) return;
+
+    setGeneratingOt(true);
+    setShippingError(null);
+
+    try {
+      const response = await fetch(`/api/admin/pedidos/${order.id}/generar-ot`, {
+        method: "POST",
+      });
+      const payload = (await response.json().catch(() => null)) as
+        | {
+            data?: {
+              chilexpressTransportOrderNumber: string | null;
+              chilexpressLabelUrl: string | null;
+              shippingCost: number;
+            };
+            message?: string;
+          }
+        | null;
+
+      if (!response.ok || !payload?.data) {
+        const message = payload?.message ?? "No se pudo generar la etiqueta Chilexpress.";
+        setShippingError(message);
+        toast({ message, variant: "error" });
+        return;
+      }
+
+      setOrder((current) =>
+        current
+          ? {
+              ...current,
+              chilexpressTransportOrderNumber: payload.data?.chilexpressTransportOrderNumber ?? null,
+              chilexpressLabelUrl: payload.data?.chilexpressLabelUrl ?? null,
+              shippingCost: payload.data?.shippingCost ?? current.shippingCost,
+            }
+          : current,
+      );
+      toast({ message: "Etiqueta Chilexpress generada." });
+    } catch {
+      const message = "Chilexpress no respondió correctamente.";
+      setShippingError(message);
+      toast({ message, variant: "error" });
+    } finally {
+      setGeneratingOt(false);
+    }
+  }
+
+  function openChilexpressLabel() {
+    if (!order?.chilexpressLabelUrl) return;
+
+    if (order.chilexpressLabelUrl.startsWith("data:application/pdf;base64,")) {
+      const base64 = order.chilexpressLabelUrl.replace("data:application/pdf;base64,", "");
+      const binary = window.atob(base64);
+      const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      window.open(URL.createObjectURL(blob), "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    window.open(order.chilexpressLabelUrl, "_blank", "noopener,noreferrer");
   }
 
   if (loading) {
@@ -248,6 +319,47 @@ export default function AdminPedidoDetallePage() {
             )}
           </div>
         </div>
+
+        {order.deliveryMethod === "shipping" ? (
+          <div className="rounded-[2px] border border-border bg-white p-5 space-y-3">
+            <h2 className="text-[0.82rem] font-semibold text-text">Despacho Chilexpress</h2>
+            {order.chilexpressTransportOrderNumber ? (
+              <div className="space-y-2 text-sm text-text-mid">
+                <p>
+                  OT / Tracking:{" "}
+                  <span className="font-medium text-text">{order.chilexpressTransportOrderNumber}</span>
+                </p>
+                <p>Servicio: {order.chilexpressServiceDescription ?? order.chilexpressServiceTypeCode ?? "-"}</p>
+                <p>Origen: {order.chilexpressOriginCoverageCode ?? "-"}</p>
+                <p>Destino: {order.chilexpressDestinationCoverageCode ?? "-"}</p>
+                <button
+                  className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                  disabled={!order.chilexpressLabelUrl}
+                  onClick={openChilexpressLabel}
+                  type="button"
+                >
+                  Imprimir etiqueta PDF
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3 text-sm text-text-mid">
+                <p>Este pedido todavia no tiene etiqueta Chilexpress.</p>
+                <button
+                  className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                  disabled={generatingOt || (order.status !== "paid" && order.status !== "preparing")}
+                  onClick={handleGenerateOt}
+                  type="button"
+                >
+                  {generatingOt ? "Generando..." : "Generar etiqueta Chilexpress"}
+                </button>
+                {order.status !== "paid" && order.status !== "preparing" ? (
+                  <p className="text-[12px] text-text-light">Disponible solo para pedidos pagados o en preparacion.</p>
+                ) : null}
+              </div>
+            )}
+            {shippingError ? <p className="text-sm text-error">{shippingError}</p> : null}
+          </div>
+        ) : null}
 
         <div className="rounded-[2px] border border-border bg-white p-5 space-y-3">
           <h2 className="text-[0.82rem] font-semibold text-text">Gestion del pedido</h2>

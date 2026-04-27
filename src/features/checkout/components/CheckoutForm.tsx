@@ -13,6 +13,12 @@ import { Input, Textarea } from "@/shared/ui";
 import { formatCLP } from "@/shared/utils/formatters";
 
 type DeliveryOptionId = "pickup" | "chilexpress";
+type ShippingQuoteStatus = "idle" | "loading" | "available" | "unavailable";
+
+type ShippingQuote = {
+  cost: number;
+  status: ShippingQuoteStatus;
+};
 
 export interface CheckoutFormProps {
   onSubmit: (data: CreateOrderSchemaInput) => Promise<string | void>;
@@ -132,11 +138,24 @@ function SectionTitle({ number, children }: { number: number; children: React.Re
   );
 }
 
+function buildQuotePackage(itemQuantity: number) {
+  return {
+    weightKg: Math.max(1, itemQuantity),
+    heightCm: 8,
+    widthCm: 20,
+    lengthCm: 28,
+  };
+}
+
 export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
   const { items, couponCode, couponDiscount } = useCart();
   const { subtotal, total } = useCartSummary();
   const [selectedDeliveryOption, setSelectedDeliveryOption] = useState<DeliveryOptionId>("pickup");
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [shippingQuote, setShippingQuote] = useState<ShippingQuote>({
+    cost: 0,
+    status: "idle",
+  });
 
   const form = useForm<CreateOrderSchemaInput>({
     resolver: zodResolver(CreateOrderSchema),
@@ -170,11 +189,20 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
     () => deliveryOptions.find((option) => option.id === selectedDeliveryOption) ?? deliveryOptions[0],
     [selectedDeliveryOption],
   );
-  const shippingCost = selectedDelivery.shippingCost;
+  const totalItemQuantity = useMemo(
+    () => items.reduce((sum, item) => sum + item.quantity, 0),
+    [items],
+  );
+  const shippingCost =
+    selectedDelivery.deliveryMethod === "shipping" && shippingQuote.status === "available"
+      ? shippingQuote.cost
+      : selectedDelivery.shippingCost;
   const totalWithShipping = total + shippingCost;
 
   const customer = watch("customer");
   const address = watch("address");
+  const commune = address?.commune?.trim() ?? "";
+  const region = address?.region?.trim() ?? "";
 
   const stepOneDone = Boolean(
     customer.firstName.trim() &&
@@ -236,6 +264,66 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
       setValue("address", undefined, { shouldValidate: false });
     }
   }, [form, selectedDelivery.deliveryMethod, setValue]);
+
+  useEffect(() => {
+    if (deliveryMethod !== "shipping" || !commune) {
+      setShippingQuote({ cost: 0, status: "idle" });
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function quoteShipping() {
+      setShippingQuote((current) => ({
+        cost: current.status === "available" ? current.cost : 0,
+        status: "loading",
+      }));
+
+      try {
+        const response = await fetch("/api/shipping/cotizar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            destination: {
+              commune,
+              regionCode: region || undefined,
+            },
+            package: buildQuotePackage(totalItemQuantity),
+            declaredWorth: Math.max(0, subtotal),
+          }),
+          signal: controller.signal,
+        });
+
+        const payload = (await response.json().catch(() => null)) as
+          | {
+              data?: {
+                cost?: number;
+              };
+            }
+          | null;
+
+        if (!response.ok || typeof payload?.data?.cost !== "number") {
+          setShippingQuote({ cost: 0, status: "unavailable" });
+          return;
+        }
+
+        setShippingQuote({
+          cost: payload.data.cost,
+          status: "available",
+        });
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
+        setShippingQuote({ cost: 0, status: "unavailable" });
+      }
+    }
+
+    void quoteShipping();
+
+    return () => controller.abort();
+  }, [commune, deliveryMethod, region, subtotal, totalItemQuantity]);
 
   async function handleValidSubmit(values: CreateOrderSchemaInput) {
     setSubmitError(null);
@@ -330,6 +418,24 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                 );
               })}
             </div>
+
+            {deliveryMethod === "shipping" ? (
+              <p
+                style={{
+                  marginTop: "10px",
+                  fontSize: "11px",
+                  color: shippingQuote.status === "available" ? "var(--color-gold)" : "var(--color-text-light)",
+                }}
+              >
+                {shippingQuote.status === "loading"
+                  ? "Calculando envio Chilexpress..."
+                  : shippingQuote.status === "available"
+                    ? `Envio calculado: ${formatCLP(shippingQuote.cost)}`
+                    : commune
+                      ? "Envio pendiente de confirmar. Puedes continuar con el pedido."
+                      : "Ingresa tu comuna para cotizar el envio."}
+              </p>
+            ) : null}
 
             {deliveryMethod === "shipping" ? (
               <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -488,7 +594,13 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
               <span style={{ fontSize: "12px", color: "var(--color-text-light)" }}>Envío</span>
               <span style={{ fontSize: "13px", color: "var(--color-gold)" }}>
-                {selectedDelivery.id === "pickup" ? "Gratis" : "Por pagar al recibir"}
+                {selectedDelivery.id === "pickup"
+                  ? "Gratis"
+                  : shippingQuote.status === "loading"
+                    ? "Calculando..."
+                    : shippingQuote.status === "available"
+                      ? formatCLP(shippingQuote.cost)
+                      : "Por confirmar"}
               </span>
             </div>
             <div style={{ borderTop: "1px solid var(--color-border)", marginTop: "12px", paddingTop: "12px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>

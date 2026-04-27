@@ -11,6 +11,7 @@ type SidebarIconName =
   | "book"
   | "tag"
   | "box"
+  | "truck"
   | "layout"
   | "image"
   | "banner"
@@ -48,6 +49,7 @@ const sections: { label: string; items: SidebarItem[] }[] = [
     label: "Pedidos",
     items: [
       { href: "/admin/pedidos", label: "Pedidos", icon: "box" },
+      { href: "/admin/envios", label: "Envios", icon: "truck" },
     ],
   },
   {
@@ -70,6 +72,7 @@ function SidebarIcon({ name, size = 16, strokeWidth = 1.6 }: { name: SidebarIcon
     book: "M4 2h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM9 2v16",
     tag: "M3 3h6l8 8-6 6-8-8V3zM7 7h.01",
     box: "M10 2l8 4.5v7L10 18l-8-4.5v-7L10 2zM10 2v16M2 6.5l8 4.5 8-4.5",
+    truck: "M2 5h10v8H2zM12 8h3l3 3v2h-6zM5 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM15 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
     layout: "M2 3h16v5H2zM2 11h7v7H2zM12 11h6v7h-6z",
     image: "M2 4h16v12H2zM2 13l5-5 4 4 3-3 4 4",
     banner: "M2 6h16v8H2zM6 6v8M14 6v8",

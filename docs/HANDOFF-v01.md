@@ -1,6 +1,6 @@
 # Crecer Librería Cristiana — Handoff v01
-**Última actualización:** Abril 2026 — panel Landing del admin cerrado funcional y visualmente; editores dedicados por sección con rutas directas desde sidebar; Footer editable conectado al storefront.  
-**Estado resumido:** **Hero principal**, **Top banner**, **Selección del mes**, **Categorías del landing**, **Hero final** y **Footer** completos con pantallas admin dedicadas y previews en vivo donde aplica. **Footer público** lee datos frescos desde servicios/BD con `noStore()`. **Automáticos / externos:** recién llegados (últimos productos), Instagram (Elfsight). **Pendiente global:** SEO, Chilexpress, VESSI, Resend/emails, QA final, posibles E2E/Playwright admin→storefront y mejoras opcionales de Top Banner vía `metadata`.  
+**Última actualización:** Abril 2026 — SEO completo; Chilexpress Fase 1, 2 y 3 implementadas; admin de envíos y generación de OT desde detalle de pedido.  
+**Estado resumido:** **Hero principal**, **Top banner**, **Selección del mes**, **Categorías del landing**, **Hero final** y **Footer** completos con pantallas admin dedicadas y previews en vivo donde aplica. **Footer público** lee datos frescos desde servicios/BD con `noStore()`. **SEO:** metadata, JSON-LD, sitemap y robots implementados. **Chilexpress:** infraestructura, cotización en checkout con fallback, admin de envíos y generación de OT implementados. **Automáticos / externos:** recién llegados (últimos productos), Instagram (Elfsight). **Pendiente global:** credenciales Chilexpress, migración manual Supabase, VESSI, Resend/emails, QA final, posibles E2E/Playwright admin→storefront y mejoras opcionales de Top Banner vía `metadata`.  
 **Stack:** Next.js 15.2.4 (App Router) · TypeScript · Drizzle ORM · Supabase PostgreSQL + Storage · Zustand 5 · Tailwind v4 · Getnet · lottie-react · framer-motion  
 **Build / calidad:** verificar en el clon con `npx tsc --noEmit`, `npm run lint` y `npm run build` antes de entregar; no asumir verde sin ejecutarlos.  
 **Tamaño del repo:** orden de magnitud — ver `git` o herramientas de conteo para cifras actuales (no fijar métricas exactas aquí)
@@ -18,8 +18,10 @@
 
 ## Estado actual real
 
-- **Hecho:** E-commerce end-to-end operativo; backend y APIs; Getnet (TEST); storefront responsive; catálogo, checkout, admin CRUD; `/nosotros` con CMS; reglas técnicas del repo (R1–R14, bugs históricos, migraciones vía R13). **Panel Admin Landing cerrado funcional y visualmente**: las secciones principales tienen rutas directas desde el sidebar y la entrada general **Landing** (`/admin/landing`) fue removida del sidebar para evitar navegación duplicada al hall/intermedio. `/admin/landing/page.tsx` puede seguir existiendo por compatibilidad, pero no es la navegación principal.
-- **Sidebar / Contenido:** rutas visibles actuales: **Top Banner**, **Hero principal**, **Selección del mes**, **Categorías del landing**, **Hero final**, **Footer** y **Página Conócenos**.
+- **Hecho:** E-commerce end-to-end operativo; backend y APIs; Getnet (TEST); storefront responsive; catálogo, checkout, admin CRUD; `/nosotros` con CMS; **SEO completo**; **Chilexpress Fase 1–3**; reglas técnicas del repo (R1–R14, bugs históricos, migraciones vía R13). **Panel Admin Landing cerrado funcional y visualmente**: las secciones principales tienen rutas directas desde el sidebar y la entrada general **Landing** (`/admin/landing`) fue removida del sidebar para evitar navegación duplicada al hall/intermedio. `/admin/landing/page.tsx` puede seguir existiendo por compatibilidad, pero no es la navegación principal.
+- **Sidebar / Contenido:** rutas visibles actuales: **Top Banner**, **Hero principal**, **Selección del mes**, **Categorías del landing**, **Hero final**, **Footer** y **Página Conócenos**. El admin también incluye **Envíos** (`/admin/envios`) en la zona de pedidos/operación.
+- **SEO:** metadata global y por páginas principales, metadata dinámica en productos, JSON-LD `WebSite`, `BookStore`, `Product` y breadcrumb, `sitemap.ts` y `robots.ts`. Open Graph global usa `/images/Logo-Crecer.png` como fallback; falta una imagen OG ideal 1200x630 para producción.
+- **Chilexpress:** integración base, `/api/shipping/cotizar`, cotización desde checkout cuando hay comuna, fallback sin bloquear compra si faltan credenciales, recálculo server-side al crear orden, admin de configuración/empaques y generación de OT/etiqueta desde detalle de pedido.
 - **Hero principal:** completo. Preview en vivo antes de guardar. Patrón vigente: estado local del formulario → `ViewModel` local → `HeroPreview` → guardar → `router.refresh`. Tipografía de hero alineada al diseño (**Castoro** + **Inter** vía `globals.css`).
 - **Top Banner:** completo. Ruta admin `/admin/landing/top-banner`. Usa `banners.position = "top_banner"`, formulario propio y preview en vivo. El Top Banner público se renderiza sobre el `Navbar`; `Navbar` usa `sticky top-0` para evitar solapamiento y el botón X funciona. Pendiente opcional: marquee/colores usando `metadata` jsonb si se decide más adelante.
 - **Selección del mes:** completo. Ruta admin `/admin/landing/seleccion`. Permite buscar y agregar libros, activar/desactivar, quitar y reordenar desde la lista. El formulario se simplificó: sin descripción editorial por producto visible y sin orden manual visible. El título y descripción general del bloque se editan usando `landing_section_copy` con key `"libros_mes"`. `featured_products.description` sigue siendo descripción por producto, no copy general del bloque. Storefront usa fallback si no hay copy en BD.
@@ -28,7 +30,7 @@
 - **Footer:** completo. Ruta admin `/admin/landing/footer`. Estructura visual: bloque superior en 2 columnas (**Contenido de texto** + **Imagen ilustrativa**), preview live full-width y parámetros visuales full-width debajo del preview. El contenido de texto se guarda en `footer_content` (`brandDescription`, `catalogLinks`, `infoLinks`, `address`, `mapsUrl`, `copyrightText`, `designCredit`). La imagen y composición visual se guardan en `banners.position = "footer_illustration"`. Metadata visual: `opacity`, `fadeStart`, `fadeEnd`, `imgWidth`, `artSpaceWidth`, `textTone: "current" | "dark"`. `textTone` permite mantener colores actuales o usar `var(--text)` / tono oscuro en el footer público. Preview live aplica cambios al instante. El Footer público ya no hace self-fetch HTTP con fallback silencioso; lee datos frescos desde servicios/BD y usa `noStore()`. La API pública `/api/landing/footer` se mantiene, usa el mismo servicio y `force-dynamic`. Quedó corregido el problema de cambios admin no reflejados en storefront.
 - **Servicios/footer:** `src/features/catalogo/services/landing-service.ts` centraliza `getFooterIllustration()` y `getFooterContent()`. `src/shared/ui/Footer.tsx` consume esos servicios directamente como Server Component. `src/app/api/landing/footer/route.ts` queda como endpoint público compatible usando el mismo servicio.
 - **Automáticos / externos:** **Recién llegados** no requiere admin y muestra últimos productos. **Instagram** es externo y no requiere admin por ahora.
-- **Pendiente (producto / infra):** **SEO**, **Chilexpress**, **VESSI**, **Resend/emails**, **QA final**, posible marquee/colores para Top Banner usando `metadata`, y posibles pruebas E2E/Playwright para verificar admin → storefront.
+- **Pendiente (producto / infra):** credenciales Chilexpress reales, migración manual Supabase de tablas/campos de envíos, **VESSI**, **Resend/emails**, **QA final**, posible marquee/colores para Top Banner usando `metadata`, y posibles pruebas E2E/Playwright para verificar admin → storefront.
 
 ## Cambios recientes importantes
 
@@ -37,6 +39,9 @@
 - **Hero / landing:** BD y modelos alineados; editores dedicados cerrados por sección (hero, top banner, selección, categorías panorámica, hero final, footer); **`HeroPreview`** en hero con estado local → VM en vivo; **`HeroSlider` público** desde **`HeroViewModel`**; top banner, imagen panorámica de categorías y footer illustration como **`banners`** por `position`.
 - **Landing admin cerrado:** el sidebar de Contenido expone solo rutas directas a secciones editables; `/admin/landing/page.tsx` permanece por compatibilidad, fuera de la navegación principal.
 - **Footer dinámico:** `footer_content` + `banners.position="footer_illustration"` gobiernan el pie público; `Footer.tsx` consume `getFooterContent()` / `getFooterIllustration()` directamente con `noStore()` y `/api/landing/footer` queda como endpoint compatible dinámico.
+- **SEO completo:** layout global, home, productos, categorías, nosotros y detalle de producto tienen metadata/JSON-LD según corresponda; `sitemap.ts` incluye rutas estáticas y entradas dinámicas de productos/categorías cuando los servicios responden; `robots.ts` permite `/`, bloquea `/admin` y `/api`, y apunta a `/sitemap.xml`.
+- **Chilexpress Fase 1–3:** agregada infraestructura de integración (`config`, `types`, `client`), schema de envíos, servicio de cotización, endpoint público de cotización, checkout conectado con fallback, admin de envíos y generación de OT/etiqueta desde detalle de pedido.
+- **Bug corregido:** `POST /api/shipping/cotizar` maneja body vacío o JSON inválido con 400 controlado; no cae al `catch` genérico por `Unexpected end of JSON input`.
 
 ## Decisiones vigentes
 
@@ -48,8 +53,8 @@
 
 ## Próxima tarea (orden sugerido)
 
-1. **SEO:** metadata, Open Graph, sitemap y revisión de indexación.  
-2. **Chilexpress:** cotización/despacho según credenciales y definición del cliente.  
+1. **Migración manual Supabase:** aplicar/verificar tablas `shipping_config`, `shipping_packages` y columnas Chilexpress en `orders` según schema Drizzle actual.
+2. **Chilexpress:** configurar credenciales reales y probar cotización/OT contra ambiente definido por el cliente.
 3. **VESSI:** integración según definición pendiente.  
 4. **Resend / emails:** confirmaciones y comunicaciones transaccionales.  
 5. **QA final:** smoke tests, variables/credenciales, deploy y posibles E2E/Playwright admin → storefront.  
@@ -132,10 +137,12 @@ src/
 │   │       ├── page.tsx      # Dashboard con stats reales ✅ (acceso rápido a /nosotros)
 │   │       ├── productos/    # CRUD completo ✅
 │   │       ├── categorias/   # CRUD completo ✅
-│   │       ├── pedidos/      # Listado + detalle + cambio de estado ✅
+│   │       ├── pedidos/      # Listado + detalle + cambio de estado + OT Chilexpress ✅
+│   │       ├── envios/       # Configuración Chilexpress + empaques ✅
 │   │       ├── nosotros/     # CRUD secciones de /nosotros ✅
 │   │       └── landing/      # Editores dedicados cerrados: hero, top-banner, seleccion, categorias, hero-final, footer; `page.tsx` existe por compatibilidad, fuera del sidebar ✅
 │   └── api/
+│       ├── shipping/         # POST cotizar Chilexpress ✅
 │       ├── productos/        # GET público ✅
 │       ├── categorias/       # GET público ✅
 │       ├── landing/          # GET público hero, banners, selección, footer ✅
@@ -144,12 +151,12 @@ src/
 │       ├── cupones/          # POST validar cupón ✅
 │       ├── stock/            # POST validar stock ✅
 │       ├── pagos/            # crear-sesion, retorno, notificacion ✅
-│       └── admin/            # Rutas protegidas del admin ✅ (incluye /nosotros CRUD)
+│       └── admin/            # Rutas protegidas del admin ✅ (incluye /nosotros CRUD, /shipping y generar-ot)
 │
 ├── features/
 │   ├── catalogo/             # Servicios, componentes, `view-models/`, `components/hero/`, tipos del catálogo ✅
 │   ├── carrito/              # Zustand store + hooks + tipos ✅
-│   ├── checkout/             # Servicios de orden, cupón, stock, pago ✅
+│   ├── checkout/             # Servicios de orden, cupón, stock, pago y cotización shipping ✅
 │   ├── admin/                # Auth, CRUD, schemas, `components/landing/`, `LandingEditorShell` ✅
 │   ├── landing/              # ✅ LandingWithSplash.tsx (splash screen 3.5s)
 │   └── pedidos/              # ⚠️ Solo index.ts vacío — lógica en checkout/ y admin/
@@ -177,6 +184,7 @@ src/
     ├── drizzle/              # Cliente + schema (`schema/`) + migraciones en `migrations/` (ver sección BD) ✅
     ├── supabase/             # Storage client + helpers ✅
     ├── payments/getnet/      # Auth, client, config, types ✅
+    ├── shipping/chilexpress/ # Config, types y client Chilexpress ✅
     ├── email/                # ⚠️ Placeholder vacío — Resend pendiente
     └── inventory/            # ⚠️ Placeholder vacío — VESSI pendiente
 
@@ -246,9 +254,52 @@ Store en `localStorage` (`crecer-cart`). La hidratación usa `useCartHydration()
 
 **Opciones de entrega disponibles:**
 - Retiro en tienda (Arturo Prat 470) — sin costo
-- Despacho a domicilio vía Chilexpress — costo se paga al recibir (`shippingCost: 0` en BD)
+- Despacho a domicilio vía Chilexpress — el checkout cotiza con `/api/shipping/cotizar` cuando hay comuna; si Chilexpress no está disponible o faltan credenciales, el checkout muestra despacho pendiente/por confirmar y no bloquea la compra. En creación de orden, `createOrder` recalcula cotización en servidor y guarda `shippingCost` si hay costo válido; si no, mantiene el fallback actual (`shippingCost: 0`).
 
 **IMPORTANTE:** El stock se descuenta únicamente cuando el estado pasa de `pending` a `paid`. El guard AND `status = 'pending'` evita doble procesamiento entre retorno y webhook.
+
+---
+
+### Feature 3B: SEO y Chilexpress
+**Estado:** ✅ SEO completo / ✅ Chilexpress Fase 1–3 implementada / ⚠️ pendiente credenciales y migración manual Supabase
+
+**SEO implementado:**
+- `src/app/layout.tsx` define metadata global, Open Graph/Twitter, robots, `metadataBase`, `lang="es-CL"` y JSON-LD `WebSite` + `BookStore`.
+- Páginas públicas principales tienen metadata propia: home, `/productos`, `/categorias`, `/nosotros`.
+- `src/app/(store)/productos/[slug]/page.tsx` genera metadata dinámica por producto y JSON-LD `Product` + breadcrumb.
+- `src/app/sitemap.ts` incluye rutas estáticas y, cuando los servicios responden, productos activos y URLs de categorías/filtros.
+- `src/app/robots.ts` permite `/`, bloquea `/admin` y `/api`, y apunta al sitemap.
+- Open Graph global usa `/images/Logo-Crecer.png` como fallback. Falta asset OG ideal 1200x630 para producción.
+
+**Chilexpress implementado:**
+- Integración: `src/integrations/shipping/chilexpress/config.ts`, `types.ts`, `client.ts`.
+- Servicio checkout: `src/features/checkout/services/shipping-service.ts` con `calculateShippingCost`.
+- Endpoint público: `POST /api/shipping/cotizar`; valida con Zod y responde 400 controlado si el body viene vacío o inválido.
+- Admin envíos: `src/app/admin/(panel)/envios/page.tsx` + APIs `/api/admin/shipping/config`, `/api/admin/shipping/packages`, `/api/admin/shipping/packages/[id]`.
+- OT desde admin: `POST /api/admin/pedidos/[id]/generar-ot`; visible en el detalle de pedido solo para `deliveryMethod="shipping"`.
+
+**Flujo crítico checkout → orden → OT:**
+1. Checkout: si el método es despacho y hay comuna, llama a `/api/shipping/cotizar` usando cantidad total real de libros.
+2. Si la cotización responde costo, la UI muestra envío calculado y el total lo incluye; si no hay credenciales o Chilexpress falla, muestra envío pendiente/por confirmar y permite continuar.
+3. `POST /api/ordenes` recalcula la cotización server-side. Si hay costo válido, guarda `orders.shippingCost`; si no, mantiene el comportamiento fallback actual.
+4. Admin: al abrir un pedido de despacho, el bloque Chilexpress permite generar OT solo si el pedido está `paid` o `preparing` y aún no tiene OT.
+5. Generación OT: el servicio calcula cantidad total real del pedido, selecciona empaque activo compatible, obtiene cobertura/tarifa, llama `createShipment()` y guarda OT/label/coberturas/costo en `orders`.
+6. Si ya existe `chilexpressTransportOrderNumber`, no genera una segunda OT.
+
+**Campos Chilexpress reales usados en `orders`:**
+- `chilexpress_service_type_code`
+- `chilexpress_service_description`
+- `chilexpress_origin_coverage_code`
+- `chilexpress_destination_coverage_code`
+- `chilexpress_transport_order_number`
+- `chilexpress_label_url`
+- `shipping_cost`
+
+**Notas operativas:**
+- Sin credenciales Chilexpress, cotización y OT devuelven errores controlados; el checkout no se rompe y el admin muestra mensaje claro.
+- `chilexpress_label_url` puede contener URL de etiqueta o data URI PDF base64 según respuesta del proveedor.
+- No hay generación de OT automática; se hace desde el detalle del pedido en admin.
+- No se implementó búsqueda de sucursales.
 
 ---
 
@@ -263,15 +314,17 @@ Store en `localStorage` (`crecer-cart`). La hidratación usa `useCartHydration()
 - `src/features/admin/services/product-admin-service.ts`
 - `src/features/admin/services/category-admin-service.ts`
 - `src/features/admin/services/order-admin-service.ts`
+- `src/features/admin/services/shipping-admin-service.ts`
 - `src/features/admin/services/landing-admin-service.ts`
 
 **Cómo funciona:**
-JWT en cookie HTTP-only `admin-session` (24h, firmado con `jose`). Middleware Edge Runtime verifica el token en cada request. El admin puede gestionar: productos (CRUD + imágenes), categorías, pedidos (cambio de estado + notas internas), **landing** (hero, top banner, hero final, panorámica categorías, selección del mes, footer — ver Feature 5; ruta `banners` legado si aplica), `/nosotros` y resto de contenido.
+JWT en cookie HTTP-only `admin-session` (24h, firmado con `jose`). Middleware Edge Runtime verifica el token en cada request. El admin puede gestionar: productos (CRUD + imágenes), categorías, pedidos (cambio de estado + notas internas + bloque Chilexpress para OT/etiqueta), **envíos** (`/admin/envios`: configuración Chilexpress y empaques), **landing** (hero, top banner, hero final, panorámica categorías, selección del mes, footer — ver Feature 5; ruta `banners` legado si aplica), `/nosotros` y resto de contenido.
 
 **Shell y vistas piloto (estado reciente):**
 - **Sidebar** agrupada por secciones (Dashboard, Catálogo, Pedidos, Contenido, etc.); estilo **oscuro** “app”; **anchos expandido/colapsado** con transición; **logout** en la zona inferior — **eje principal** de navegación.
 - **Topbar:** componente disponible, pero **el panel no depende** de un topbar global para funcionar; no asumir topbar en todas las pantallas.
 - **Dashboard** (`/admin`) y listado de **Productos** reconstruidos visualmente y usados como referencia; **AdminMetricCard** y **AdminTable** son la base reutilizable para otras listas.
+- **Envíos** (`/admin/envios`): configuración global Chilexpress, peso estimado por libro, código de cobertura origen y CRUD de empaques con desactivación lógica (`isActive=false`).
 - **Resto** de pantallas admin fuera del Landing (categorías catálogo, pedidos, nosotros, etc.): **micro-pulido progresivo** al mismo lenguaje visual — no asumir que todas tengan ya el mismo nivel de pulido que Dashboard/Productos.
 - **Navegación Landing en sidebar** (`AdminSidebar`, sección Contenido): orden **Top Banner** → **Hero principal** → **Selección del mes** → **Categorías del landing** → **Hero final** → **Footer** → **Página Conócenos**. La entrada general `/admin/landing` fue removida del sidebar; `/admin/landing/page.tsx` puede existir por compatibilidad. La ruta **`/admin/landing/banners`** puede existir por compatibilidad/legado; **no** forma parte del flujo principal listado en sidebar.
 
@@ -374,7 +427,7 @@ Las secciones tienen `title`, `content`, `imageUrl`, `imagePosition` ("right"|"l
 - **Siguiente capa:** micro-pulido de otras pantallas fuera del Landing; mejoras opcionales de Top Banner (metadata/marquee/colores) y posibles E2E/Playwright admin → storefront.
 
 **Importante:**
-- **No** interpretar esto como cierre de SEO, Chilexpress, VESSI ni Resend; ver backlog y checklist final.
+- **SEO y Chilexpress Fase 1–3** ya están implementados en código; no interpretar esto como credenciales Chilexpress configuradas ni migración Supabase aplicada. VESSI y Resend siguen pendientes; ver backlog y checklist final.
 
 ---
 
@@ -693,7 +746,7 @@ import { BrandLoader } from "@/shared/ui/BrandLoader";
 - [ ] **Resend** — emails de confirmación de compra y cambio de estado de pedido
 - [ ] **Seed de productos** — ejecutar `npm run seed:products` en producción
 - [ ] **Credenciales Getnet producción** — obtener post-validación con Getnet, configurar en Vercel
-- [ ] **Variables de entorno en Vercel** — `DATABASE_URL`, `ADMIN_JWT_SECRET`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID`
+- [ ] **Variables de entorno en Vercel** — `DATABASE_URL`, `ADMIN_JWT_SECRET`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID`, variables Chilexpress si se activa despacho real
 
 ### P1 — Alta prioridad
 - [x] **Página `/categorias`** — grid real con header visual implementado
@@ -723,11 +776,13 @@ import { BrandLoader } from "@/shared/ui/BrandLoader";
 - [x] **Landing — editores dedicados cerrados** — top banner (`top_banner`), hero principal, selección del mes, panorámica categorías (`categories_panorama`), hero final (`hero_intermedio`) y footer; sidebar con rutas directas a cada sección  
 - [x] **Footer (admin + storefront)** — contenido en `footer_content`, ilustración/metadata en `footer_illustration`, preview live, `textTone` y `Footer` público vía servicios/BD con `noStore()`  
 - [ ] **Landing — mejoras opcionales** — top banner variantes/colores/marquee vía `metadata`; posibles E2E/Playwright admin → storefront  
-- [ ] **API Chilexpress** — cotización de despacho en tiempo real y búsqueda de sucursales (pendiente de credenciales del cliente)
+- [x] **SEO completo** — metadata global/páginas/productos, JSON-LD, Open Graph con fallback, sitemap.xml y robots.txt
+- [x] **Chilexpress Fase 1–3** — infraestructura, cotización checkout con fallback, admin envíos, empaques y generación de OT/etiqueta desde pedido
+- [ ] **Credenciales Chilexpress + prueba real** — configurar llaves/códigos del cliente y validar cotización/OT contra ambiente definido
+- [ ] **Migración manual Supabase para Chilexpress** — aplicar/verificar `shipping_config`, `shipping_packages` y columnas Chilexpress de `orders`
 - [ ] **VESSI** — implementar según la definición/respuesta ya recibida. Integración base en `src/integrations/inventory/`
 
 ### P2 — Lanzamiento / Fase 5
-- [ ] SEO: `generateMetadata` en producto y categoría, Open Graph, sitemap.xml
 - [ ] Optimización de imágenes: `priority` en LCP (HeroSlider), lazy en galería
 - [x] **Playwright** — E2E instalado; **correr** `npm run test:e2e` en el entorno para conteos y estado al día
 - [ ] **`checkout.spec.ts` pendiente** — 6 tests del flujo completo de compra escritos pero sin corregir; requieren Getnet TEST activo y datos en BD
@@ -753,6 +808,8 @@ El número exacto de tablas y el detalle al día **no** se fijan en este handoff
 | `order_items` | Items con snapshot de título, precio y SKU al momento de compra |
 | `order_customers` | Datos del comprador invitado (nombre, email, teléfono) |
 | `order_addresses` | Dirección de despacho (solo si delivery_method = "shipping") |
+| `shipping_config` | Configuración Chilexpress: origen, cobertura, peso estimado por libro, TCC/RUT, tipo de servicio, producto/contenido, valor declarado y estado activo |
+| `shipping_packages` | Empaques Chilexpress: dimensiones, peso máximo, peso propio, máximo de items, default y desactivación lógica |
 | `coupons` | Cupones de descuento (percentage o fixed), vigencia, usos |
 | `hero_slides` | Slides del hero: imagen, copy, CTA, overlay (variante/opacidad), alineación, tema, `showContent`, órden y activo — **ver columnas en schema** |
 | `banners` | Banners por `position` (p. ej. `top_banner`, `hero_intermedio`, `categories_panorama`, `footer_illustration`, …) + **eyebrow**, **cta_label**, **metadata** jsonb (footer: `opacity`, `fadeStart`, `fadeEnd`, `imgWidth`, `artSpaceWidth`, `textTone`; extensiones futuras) |
@@ -762,7 +819,17 @@ El número exacto de tablas y el detalle al día **no** se fijan en este handoff
 | `about_sections` | Secciones de /nosotros |
 | `landing_section_copy` | Textos reutilizables por `section_key` (eyebrow, título, body, CTA) — **Abril 2026 en schema** |
 
+**Columnas Chilexpress en `orders`:** `chilexpress_service_type_code`, `chilexpress_service_description`, `chilexpress_origin_coverage_code`, `chilexpress_destination_coverage_code`, `chilexpress_transport_order_number`, `chilexpress_label_url`. Se reutilizan esos nombres reales; no crear campos duplicados para OT/label.
+
 **Migraciones en repo:** `src/integrations/drizzle/migrations/` (incl. `0005`, `0006` y anteriores) y, si aplica, SQL complementario p. ej. bajo `drizzle/` en la raíz. **Aplicación en Supabase:** siempre **manual** según R13; **no** afirmar desde el handoff qué script está aplicado en producción u otro entorno; quien despliega **verifica** y mantiene **paridad** schema ↔ SQL aplicado.
+
+**Nota Chilexpress / Supabase:** el schema Drizzle ya contiene `shipping_config`, `shipping_packages` y columnas Chilexpress en `orders`, pero la instancia remota debe verificarse/aplicarse manualmente. En particular, las columnas recientes usadas por admin son:
+
+```sql
+alter table shipping_config add column if not exists estimated_book_weight_grams integer not null default 300;
+alter table shipping_packages add column if not exists max_weight_grams integer not null default 1000;
+alter table shipping_packages add column if not exists package_weight_grams integer not null default 0;
+```
 
 ---
 
@@ -785,6 +852,19 @@ GETNET_SECRET_KEY=
 GETNET_ENDPOINT=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
+# Chilexpress (pendiente de credenciales reales del cliente)
+CHILEXPRESS_COVERAGE_API_KEY=
+CHILEXPRESS_RATING_API_KEY=
+CHILEXPRESS_SHIPMENT_API_KEY=
+CHILEXPRESS_COVERAGE_ENDPOINT=
+CHILEXPRESS_RATING_ENDPOINT=
+CHILEXPRESS_SHIPMENT_ENDPOINT=
+CHILEXPRESS_ORIGIN_REGION_CODE=02
+CHILEXPRESS_ORIGIN_COMMUNE=Antofagasta
+CHILEXPRESS_ORIGIN_COVERAGE_CODE=
+CHILEXPRESS_TCC=
+CHILEXPRESS_SENDER_RUT=
+
 # Instagram
 NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID=1e93ffdc-0e7e-4160-b103-98c5a444c896
 
@@ -793,6 +873,13 @@ CRON_SECRET=
 ```
 
 > **Crítico:** Usar Session Pooler (puerto 5432), NO Transaction Pooler (puerto 6543). El Transaction Pooler causó fallos de conexión previos.
+
+### Notas importantes Chilexpress
+
+- El código ya está preparado, pero todavía no hay credenciales Chilexpress reales configuradas. Sin esas variables, `/api/shipping/cotizar` y generar OT responden errores controlados.
+- Checkout no bloquea la compra si Chilexpress no cotiza: muestra despacho pendiente/por confirmar y `createOrder` conserva el fallback actual (`shippingCost: 0`) cuando no hay cotización válida.
+- La OT se genera manualmente desde el detalle de pedido admin, solo para pedidos `shipping` con estado `paid` o `preparing`.
+- La migración en Supabase es manual: verificar que existan `shipping_config`, `shipping_packages` y las columnas Chilexpress de `orders` antes de probar en producción.
 
 ---
 
@@ -823,7 +910,9 @@ CRON_SECRET=
 
 **Contenido CMS — Landing:** Panel Admin Landing cerrado funcional y visualmente. **Hero**, **Top banner**, **Selección del mes**, **Categorías del landing**, **Hero final** y **Footer** tienen pantallas admin dedicadas y rutas directas desde el sidebar (ver Feature 5). **Recién llegados** e **Instagram** sin admin de contenido. **Footer:** texto en `footer_content`, ilustración/metadata en `banners.footer_illustration`, preview live y storefront conectado a servicios/BD con `noStore()`. **`/nosotros`:** CMS aparte.
 
-**Pendiente de producto/infra:** **SEO** → **Chilexpress** → **VESSI** → **Resend/emails** → **QA final/deploy**, más P0 (variables, credenciales, seed) al acercarse a producción. Opcional landing: Top Banner con marquee/colores vía `metadata` y pruebas E2E/Playwright admin → storefront — ver checklist.
+**SEO y Chilexpress:** SEO completo en código. Chilexpress Fase 1–3 completa en código: cotización checkout con fallback, endpoint público, admin de envíos, empaques, OT/etiqueta desde pedido y campos reales en `orders`. Pendiente: credenciales reales Chilexpress, prueba contra ambiente cliente y migración manual Supabase.
+
+**Pendiente de producto/infra:** credenciales/migración Chilexpress → **VESSI** → **Resend/emails** → **QA final/deploy**, más P0 (variables, credenciales, seed) al acercarse a producción. Opcional landing: Top Banner con marquee/colores vía `metadata` y pruebas E2E/Playwright admin → storefront — ver checklist.
 
 **Calidad y tests:** **verificar** con `npx tsc --noEmit`, `npm run lint` y, cuando toque, `npm run build`; Playwright y `checkout.spec.ts` — **correr** en el entorno para estado al día; ver sección de warnings.
 
@@ -850,12 +939,12 @@ No asumir que sigan idénticos ni que bloqueen el build — **comprobar** en el 
 
 ## ✅ CHECKLIST DE PRÓXIMOS PASOS (orden de trabajo sugerido)
 
-1. [ ] **SEO** — `generateMetadata`, Open Graph, sitemap, etc.
-2. [ ] **Chilexpress** — integración (credenciales cliente).
+1. [ ] **Migración manual Supabase Chilexpress** — tablas `shipping_config`, `shipping_packages` y columnas Chilexpress en `orders`.
+2. [ ] **Credenciales Chilexpress** — configurar llaves/códigos reales y probar cotización + generación OT/etiqueta.
 3. [ ] **VESSI** — según definición; `src/integrations/inventory/`.
 4. [ ] **Resend / emails** — confirmar estado de `integrations/email/`.
 5. [ ] **QA final + E2E/Playwright** — smoke tests y verificación admin → storefront donde aplique.
 6. [ ] **Top Banner opcional** — marquee/colores vía `metadata`.
 7. [ ] **Deploy + QA producción** — variables Vercel, Getnet producción, seed en prod, smoke tests, `checkout.spec.ts` si aplica. **Verificar** build con `npx tsc --noEmit`, `npm run lint`, `npm run build`.
 
-*Handoff v01 — Abril 2026 · E-commerce + admin; panel Landing cerrado con editores por sección, previews y Footer editable conectado al storefront; pendiente: SEO, integraciones, QA final e infra (ver `git` y schema para detalle fino)*
+*Handoff v01 — Abril 2026 · E-commerce + admin; panel Landing cerrado con editores por sección, previews y Footer editable conectado al storefront; SEO completo; Chilexpress Fase 1–3 en código; pendiente: credenciales/migración Chilexpress, VESSI, Resend, QA final e infra (ver `git` y schema para detalle fino)*

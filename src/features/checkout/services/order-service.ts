@@ -12,6 +12,7 @@ import type {
   ServiceResult,
 } from "../types";
 import { validateCoupon } from "./coupon-service";
+import { calculateShippingCost } from "./shipping-service";
 import { validateStock } from "./stock-service";
 
 const MAX_ORDER_NUMBER_ATTEMPTS = 3;
@@ -257,7 +258,27 @@ export async function createOrder(data: CreateOrderInput): Promise<ServiceResult
           couponId = couponValidation.couponId ?? null;
         }
 
-        const shippingCost = 0;
+        let shippingCost = 0;
+
+        if (data.deliveryMethod === "shipping" && data.address) {
+          const totalItemQuantity = normalizedItems.reduce((sum, item) => sum + item.quantity, 0);
+          const shippingQuote = await calculateShippingCost({
+            destination: {
+              commune: data.address.commune,
+              regionCode: data.address.region,
+            },
+            package: {
+              weightKg: Math.max(1, totalItemQuantity),
+              heightCm: 8,
+              widthCm: 20,
+              lengthCm: 28,
+            },
+            declaredWorth: Math.max(0, subtotal),
+          });
+
+          shippingCost = shippingQuote.success ? shippingQuote.data.cost : 0;
+        }
+
         const total = Math.max(0, subtotal - discountAmount + shippingCost);
         const orderNumber = await generateNextOrderNumber(tx);
 
