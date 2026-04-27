@@ -37,8 +37,41 @@ const castoro = Castoro({
 });
 
 export const metadata: Metadata = {
-  title: "Crecer Librería Católica",
-  description: "Tienda online de Crecer Librería Católica",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://crecerlibreria.cl",
+  ),
+  title: {
+    default: "Crecer Librería Cristiana — Antofagasta",
+    template: "%s | Crecer Librería Cristiana",
+  },
+  description:
+    "Librería cristiana en Antofagasta, Chile. Libros católicos, recursos espirituales y selección curada para el camino de fe. Compra online con despacho a todo Chile.",
+  keywords: [
+    "librería cristiana",
+    "libros católicos",
+    "Antofagasta",
+    "libros religiosos Chile",
+    "librería católica",
+    "recursos espirituales",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "es_CL",
+    siteName: "Crecer Librería Cristiana",
+    images: [
+      {
+        url: "/images/Logo-Crecer.png",
+        alt: "Crecer Librería Cristiana",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
@@ -46,11 +79,49 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://crecerlibreria.cl";
+
   return (
-    <html lang="en">
+    <html lang="es-CL">
       <body
         className={`${dmSans.variable} ${ebGaramond.variable} ${geistMono.variable} ${inter.variable} ${castoro.variable} antialiased`}
       >
+        <script
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  "@id": `${baseUrl}/#website`,
+                  url: baseUrl,
+                  name: "Crecer Librería Cristiana",
+                  description:
+                    "Librería cristiana en Antofagasta, Chile. Libros católicos y recursos espirituales.",
+                  inLanguage: "es-CL",
+                },
+                {
+                  "@type": "BookStore",
+                  "@id": `${baseUrl}/#local`,
+                  name: "Crecer Librería Cristiana",
+                  url: baseUrl,
+                  address: {
+                    "@type": "PostalAddress",
+                    streetAddress: "Arturo Prat 470",
+                    addressLocality: "Antofagasta",
+                    addressRegion: "Antofagasta",
+                    addressCountry: "CL",
+                  },
+                  openingHours: "Mo-Sa 09:00-19:00",
+                  priceRange: "$$",
+                  currenciesAccepted: "CLP",
+                  paymentAccepted: "Credit Card, Debit Card",
+                },
+              ],
+            }),
+          }}
+          type="application/ld+json"
+        />
         {children}
         <ToastViewport />
       </body>

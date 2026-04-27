@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
@@ -7,6 +8,47 @@ import { getProductBySlug, getRelatedProducts } from "@/features/catalogo/servic
 type ProductoPageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({
+  params,
+}: ProductoPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug).catch(() => null);
+
+  if (!product) {
+    return {
+      title: "Producto no encontrado",
+    };
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://crecerlibreria.cl";
+
+  const description = product.description
+    ? product.description.slice(0, 155)
+    : `${product.title}${product.author ? ` de ${product.author}` : ""} — disponible en Crecer Librería Cristiana, Antofagasta.`;
+
+  return {
+    title: product.title,
+    description,
+    alternates: {
+      canonical: `/productos/${slug}`,
+    },
+    openGraph: {
+      title: product.title,
+      description,
+      url: `${baseUrl}/productos/${slug}`,
+      type: "website",
+      images: product.mainImageUrl
+        ? [
+            {
+              url: product.mainImageUrl,
+              alt: product.title,
+            },
+          ]
+        : [],
+    },
+  };
+}
 
 export default async function ProductoPage({ params }: ProductoPageProps) {
   const { slug } = await params;
@@ -18,9 +60,62 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
 
   const categoryIds = product.categories.map((c) => c.id);
   const relatedProducts = await getRelatedProducts(product.id, categoryIds, 5);
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://crecerlibreria.cl";
 
   return (
     <main>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Product",
+                name: product.title,
+                description: product.description ?? undefined,
+                image: product.mainImageUrl ? [product.mainImageUrl] : undefined,
+                sku: product.sku ? product.sku : undefined,
+                offers: {
+                  "@type": "Offer",
+                  priceCurrency: "CLP",
+                  price: product.salePrice ?? product.price,
+                  availability: product.inStock
+                    ? "https://schema.org/InStock"
+                    : "https://schema.org/OutOfStock",
+                  seller: {
+                    "@type": "Organization",
+                    name: "Crecer Librería Cristiana",
+                  },
+                },
+              },
+              {
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  {
+                    "@type": "ListItem",
+                    position: 1,
+                    name: "Inicio",
+                    item: baseUrl,
+                  },
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: "Colección",
+                    item: `${baseUrl}/productos`,
+                  },
+                  {
+                    "@type": "ListItem",
+                    position: 3,
+                    name: product.title,
+                    item: `${baseUrl}/productos/${product.slug}`,
+                  },
+                ],
+              },
+            ],
+          }),
+        }}
+        type="application/ld+json"
+      />
       {/* Sección principal */}
       <section style={{ background: "var(--white)", paddingTop: "28px", paddingBottom: "72px" }}>
         <div className="storefront-container page-px">

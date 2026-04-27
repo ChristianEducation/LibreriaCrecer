@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { FilterBar, PageHeader, Pagination, ProductGrid } from "@/features/catalogo/components";
 import { getCategories, getProducts, type ProductSortBy } from "@/features/catalogo";
 import { getCatalogoHeaderBanner } from "@/features/catalogo/services/landing-service";
@@ -10,6 +12,15 @@ type ProductosPageProps = {
     filter?: string | string[];
     search?: string | string[];
   }>;
+};
+
+export const metadata: Metadata = {
+  title: "Nuestra colección",
+  description:
+    "Explora nuestra selección de libros católicos, Biblias, recursos de espiritualidad y formación cristiana. Envío a todo Chile desde Antofagasta.",
+  alternates: {
+    canonical: "/productos",
+  },
 };
 
 function getSingleValue(value: string | string[] | undefined) {

@@ -1,7 +1,17 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { CategoryCard } from "@/features/catalogo/components";
 import { getCategories } from "@/features/catalogo/services/category-service";
+
+export const metadata: Metadata = {
+  title: "Categorías",
+  description:
+    "Navega por categorías: Biblia, espiritualidad, formación, liturgia y más. Librería cristiana en Antofagasta con despacho a todo Chile.",
+  alternates: {
+    canonical: "/categorias",
+  },
+};
 
 export default async function CategoriasPage() {
   const categories = await getCategories();

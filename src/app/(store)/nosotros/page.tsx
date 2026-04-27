@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
@@ -6,6 +7,15 @@ import { db } from "@/integrations/drizzle";
 import { aboutSections } from "@/integrations/drizzle/schema";
 
 type AboutSection = typeof aboutSections.$inferSelect;
+
+export const metadata: Metadata = {
+  title: "Conócenos",
+  description:
+    "Somos Crecer Librería Cristiana, una librería católica en Antofagasta dedicada a acompañar el camino de fe con una selección curada de libros y recursos espirituales.",
+  alternates: {
+    canonical: "/nosotros",
+  },
+};
 
 async function getAboutSections(): Promise<AboutSection[]> {
   try {

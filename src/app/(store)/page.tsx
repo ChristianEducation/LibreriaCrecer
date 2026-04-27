@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import {
   CategoryCarousel,
   HeroSlider,
@@ -17,6 +19,15 @@ import {
 } from "@/features/catalogo";
 import { LandingWithSplash } from "@/features/landing/components/LandingWithSplash";
 import { MONTHLY_SELECTION_SECTION } from "@/shared/config/landing";
+
+export const metadata: Metadata = {
+  title: "Inicio",
+  description:
+    "Bienvenido a Crecer Librería Cristiana en Antofagasta. Descubre nuestra selección de libros católicos, Biblias, recursos de espiritualidad y formación con despacho a todo Chile.",
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export default async function HomePage() {
   const [hero, novedades, categorias, seleccion, librosMesCopy, heroIntermedio, categoriasPanorama] = await Promise.all([
