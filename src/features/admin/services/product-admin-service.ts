@@ -109,6 +109,7 @@ export async function getProductsAdmin(params: ProductAdminListParams) {
       title: products.title,
       slug: products.slug,
       author: products.author,
+      publisher: products.publisher,
       price: products.price,
       salePrice: products.salePrice,
       mainImageUrl: products.mainImageUrl,
@@ -152,6 +153,7 @@ export async function getProductAdmin(id: string) {
       code: products.code,
       sku: products.sku,
       author: products.author,
+      publisher: products.publisher,
       description: products.description,
       price: products.price,
       salePrice: products.salePrice,
@@ -214,6 +216,7 @@ export async function createProduct(data: CreateProductInput) {
         code: data.code ?? null,
         sku: data.sku ?? null,
         author: data.author ?? null,
+        publisher: data.publisher ?? null,
         description: data.description ?? null,
         price: data.price,
         salePrice: data.salePrice ?? null,
@@ -258,6 +261,7 @@ export async function updateProduct(id: string, data: UpdateProductInput) {
     if (typeof data.title === "string") updateData.title = data.title;
     if (nextSlug) updateData.slug = nextSlug;
     if ("author" in data) updateData.author = data.author ?? null;
+    if ("publisher" in data) updateData.publisher = data.publisher ?? null;
     if ("description" in data) updateData.description = data.description ?? null;
     if ("price" in data && typeof data.price === "number") updateData.price = data.price;
     if ("salePrice" in data) updateData.salePrice = data.salePrice ?? null;

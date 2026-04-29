@@ -1,6 +1,6 @@
 # Crecer Librería Cristiana — Handoff v01
-**Última actualización:** Abril 2026 — SEO completo; Chilexpress Fase 1, 2 y 3 implementadas; admin de envíos y generación de OT desde detalle de pedido.  
-**Estado resumido:** **Hero principal**, **Top banner**, **Selección del mes**, **Categorías del landing**, **Hero final** y **Footer** completos con pantallas admin dedicadas y previews en vivo donde aplica. **Footer público** lee datos frescos desde servicios/BD con `noStore()`. **SEO:** metadata, JSON-LD, sitemap y robots implementados. **Chilexpress:** infraestructura, cotización en checkout con fallback, admin de envíos y generación de OT implementados. **Automáticos / externos:** recién llegados (últimos productos), Instagram (Elfsight). **Pendiente global:** credenciales Chilexpress, migración manual Supabase, VESSI, Resend/emails, QA final, posibles E2E/Playwright admin→storefront y mejoras opcionales de Top Banner vía `metadata`.  
+**Última actualización:** Abril 2026 — cierre de jornada: buscador/Navbar actualizado, `publisher` agregado a productos, admin de envíos validado con tablas Supabase manuales y diagnóstico Chilexpress checkout/fallback.
+**Estado resumido:** **Hero principal**, **Top banner**, **Selección del mes**, **Categorías del landing**, **Hero final** y **Footer** completos con pantallas admin dedicadas y previews en vivo donde aplica. **Footer público** lee datos frescos desde servicios/BD con `noStore()`. **SEO:** metadata, JSON-LD, sitemap y robots implementados. **Catálogo:** Navbar con `Conócenos` al final y autocomplete de productos; búsqueda textual en `title`, `author`, `coverType` y `publisher` (**no** `description`). **Chilexpress:** infraestructura, cotización en checkout con fallback, admin de envíos y generación de OT implementados; `shipping_config`, `shipping_packages` y columnas `chilexpress_*` fueron aplicadas/validadas manualmente en Supabase, pero faltan credenciales reales y alinear la cotización pública con config/empaques admin. **Automáticos / externos:** recién llegados (últimos productos), Instagram (Elfsight). **Pendiente global:** primer preview Vercel para clienta, credenciales Chilexpress, VESSI, Resend/emails, QA final, posibles E2E/Playwright admin→storefront y mejoras opcionales de Top Banner vía `metadata`.
 **Stack:** Next.js 15.2.4 (App Router) · TypeScript · Drizzle ORM · Supabase PostgreSQL + Storage · Zustand 5 · Tailwind v4 · Getnet · lottie-react · framer-motion  
 **Build / calidad:** verificar en el clon con `npx tsc --noEmit`, `npm run lint` y `npm run build` antes de entregar; no asumir verde sin ejecutarlos.  
 **Tamaño del repo:** orden de magnitud — ver `git` o herramientas de conteo para cifras actuales (no fijar métricas exactas aquí)
@@ -21,7 +21,9 @@
 - **Hecho:** E-commerce end-to-end operativo; backend y APIs; Getnet (TEST); storefront responsive; catálogo, checkout, admin CRUD; `/nosotros` con CMS; **SEO completo**; **Chilexpress Fase 1–3**; reglas técnicas del repo (R1–R14, bugs históricos, migraciones vía R13). **Panel Admin Landing cerrado funcional y visualmente**: las secciones principales tienen rutas directas desde el sidebar y la entrada general **Landing** (`/admin/landing`) fue removida del sidebar para evitar navegación duplicada al hall/intermedio. `/admin/landing/page.tsx` puede seguir existiendo por compatibilidad, pero no es la navegación principal.
 - **Sidebar / Contenido:** rutas visibles actuales: **Top Banner**, **Hero principal**, **Selección del mes**, **Categorías del landing**, **Hero final**, **Footer** y **Página Conócenos**. El admin también incluye **Envíos** (`/admin/envios`) en la zona de pedidos/operación.
 - **SEO:** metadata global y por páginas principales, metadata dinámica en productos, JSON-LD `WebSite`, `BookStore`, `Product` y breadcrumb, `sitemap.ts` y `robots.ts`. Open Graph global usa `/images/Logo-Crecer.png` como fallback; falta una imagen OG ideal 1200x630 para producción.
-- **Chilexpress:** integración base, `/api/shipping/cotizar`, cotización desde checkout cuando hay comuna, fallback sin bloquear compra si faltan credenciales, recálculo server-side al crear orden, admin de configuración/empaques y generación de OT/etiqueta desde detalle de pedido.
+- **Catálogo / Navbar:** `Conócenos` quedó al final del menú público en desktop y drawer mobile. El buscador del header usa `NavbarSearch` como componente separado, con autocomplete simple de productos: mínimo 2 caracteres, debounce aprox. 280 ms, máximo 8 resultados, dropdown visual coherente con Categorías, una fila con ícono de lupa + título, click a `/productos/{slug}` y Enter a `/productos?search=...`. No muestra miniatura, precio, autor, editorial, descripción ni stock.
+- **Productos / Editorial:** se agregó `publisher` como columna propia en `products`; no se reutilizó `pages`. El admin crear/editar producto ya incluye campo Editorial opcional, tipos/servicios públicos y admin fueron ajustados, y el detalle de producto muestra Editorial en especificaciones solo si existe.
+- **Chilexpress:** integración base, `/api/shipping/cotizar`, cotización desde checkout cuando hay comuna, fallback sin bloquear compra si faltan credenciales, recálculo server-side al crear orden, admin de configuración/empaques y generación de OT/etiqueta desde detalle de pedido. `shipping_config`, `shipping_packages` y columnas `chilexpress_*` ya fueron aplicadas/validadas manualmente en Supabase para el entorno actual; el admin `/admin/envios` permite guardar configuración y crear empaques.
 - **Hero principal:** completo. Preview en vivo antes de guardar. Patrón vigente: estado local del formulario → `ViewModel` local → `HeroPreview` → guardar → `router.refresh`. Tipografía de hero alineada al diseño (**Castoro** + **Inter** vía `globals.css`).
 - **Top Banner:** completo. Ruta admin `/admin/landing/top-banner`. Usa `banners.position = "top_banner"`, formulario propio y preview en vivo. El Top Banner público se renderiza sobre el `Navbar`; `Navbar` usa `sticky top-0` para evitar solapamiento y el botón X funciona. Pendiente opcional: marquee/colores usando `metadata` jsonb si se decide más adelante.
 - **Selección del mes:** completo. Ruta admin `/admin/landing/seleccion`. Permite buscar y agregar libros, activar/desactivar, quitar y reordenar desde la lista. El formulario se simplificó: sin descripción editorial por producto visible y sin orden manual visible. El título y descripción general del bloque se editan usando `landing_section_copy` con key `"libros_mes"`. `featured_products.description` sigue siendo descripción por producto, no copy general del bloque. Storefront usa fallback si no hay copy en BD.
@@ -42,23 +44,29 @@
 - **SEO completo:** layout global, home, productos, categorías, nosotros y detalle de producto tienen metadata/JSON-LD según corresponda; `sitemap.ts` incluye rutas estáticas y entradas dinámicas de productos/categorías cuando los servicios responden; `robots.ts` permite `/`, bloquea `/admin` y `/api`, y apunta a `/sitemap.xml`.
 - **Chilexpress Fase 1–3:** agregada infraestructura de integración (`config`, `types`, `client`), schema de envíos, servicio de cotización, endpoint público de cotización, checkout conectado con fallback, admin de envíos y generación de OT/etiqueta desde detalle de pedido.
 - **Bug corregido:** `POST /api/shipping/cotizar` maneja body vacío o JSON inválido con 400 controlado; no cae al `catch` genérico por `Unexpected end of JSON input`.
+- **Buscador / Navbar:** `src/shared/ui/NavbarSearch.tsx` extrae la búsqueda del header. Autocomplete: mínimo 2 caracteres, debounce aprox. 280 ms, máximo 8 productos, dropdown beige con borde/sombra suave, muestra solo lupa + título. Enter mantiene navegación general a `/productos?search=...`; click navega directo al producto. El search del catálogo/autocomplete busca en `title`, `author`, `coverType` y `publisher`; **no busca en `description`** para evitar sugerencias cuyo título no parece coincidir.
+- **Editorial / publisher:** nueva columna `products.publisher` (`text("publisher")`) en Drizzle, campo Editorial en crear/editar producto admin, tipos y servicios públicos/admin actualizados, detalle de producto muestra Editorial cuando existe. Migración generada: `src/integrations/drizzle/migrations/0007_add_product_publisher.sql`. `db:migrate` no es confiable ahora mismo: falló por migraciones históricas ya aplicadas manualmente (`footer_content already exists`). En Supabase se aplicó manualmente: `ALTER TABLE products ADD COLUMN IF NOT EXISTS publisher text;`.
+- **Chilexpress / envíos:** admin `/admin/envios` ya funciona en el entorno actual después de aplicar manualmente `shipping_config`, `shipping_packages` y columnas `chilexpress_*` en `orders`. El checkout público sí llama `POST /api/shipping/cotizar`; si no cotiza deja `shippingQuote.status === "unavailable"`, muestra "Envío pendiente de confirmar" / "Por confirmar" y permite continuar con `shippingCost = 0`. Causas probables: faltan credenciales, cobertura origen/destino, payload inválido o endpoint externo. Pendiente recomendado: hacer que la cotización pública use `shipping_config` y `shipping_packages` para evitar desalineación con admin.
 
 ## Decisiones vigentes
 
 - **Landing / CMS:** arquitectura **ViewModel-first**: datos de BD → funciones de mapeo → tipos de presentación; el **storefront y la preview** comparten criterio visual (misma familia de componentes/estilos, no un HTML paralelo). La **preview** (`HeroPreview`, y análogos futuros) es **parte del sistema de edición**, no un adorno aislado.
 - **HTML / diseños externos** (p. ej. *Hero Principal Crecer*): solo **blueprint** de jerarquía, ritmo y look — **nunca** se pega como código de producción; la implementación vive en componentes, `globals.css` y tokens.
 - **Hero** sigue siendo el **patrón de referencia** para **preview fiel + ViewModel** donde aplique; el resto del landing ya usa **pantallas admin dedicadas** (top banner, hero final, panorámica categorías, selección, footer) con criterios propios pero misma regla: datos en BD → componente público real o espejo en preview.
-- **Migraciones SQL:** flujo **R13** — SQL versionado en repo, **aplicación manual** en Supabase SQL Editor; mantener **alineado** el SQL aplicado con `src/integrations/drizzle/schema/` (y archivos bajo `drizzle/` en la raíz si se usan como complemento). **No** asumir que `drizzle-kit push` / migrate funciona con Session Pooler. **No** afirmar desde el handoff qué migraciones están ya aplicadas en un entorno remoto.
+- **Migraciones SQL:** flujo **R13** — SQL versionado en repo, **aplicación manual** en Supabase SQL Editor; mantener **alineado** el SQL aplicado con `src/integrations/drizzle/schema/` (y archivos bajo `drizzle/` en la raíz si se usan como complemento). **No** asumir que `drizzle-kit push` / migrate funciona con Session Pooler. Estado actual observado: `npm run db:migrate` intentó aplicar migraciones antiguas ya existentes en Supabase y falló con `footer_content already exists`; para cambios recientes se usó Supabase SQL Editor.
+- **Visual / marca:** no cambiar globalmente el token `moss` todavía. La clienta reaccionó mal al moss oscuro cuando se usa como fondo grande en headers/heros/fallbacks. Mantener moss como acento pequeño por ahora y revisar más adelante fondos grandes (`header` de colección, hero de Conócenos, fallbacks sin imagen, overlays sobre imágenes) hacia beige claro, crema, dorado suave u overlays cálidos menos oscuros.
 - **Código:** mismas reglas inmutables del repo (Drizzle en servicios, no queries desde el cliente, etc. — R1–R14).
 
 ## Próxima tarea (orden sugerido)
 
-1. **Migración manual Supabase:** aplicar/verificar tablas `shipping_config`, `shipping_packages` y columnas Chilexpress en `orders` según schema Drizzle actual.
-2. **Chilexpress:** configurar credenciales reales y probar cotización/OT contra ambiente definido por el cliente.
-3. **VESSI:** integración según definición pendiente.  
-4. **Resend / emails:** confirmaciones y comunicaciones transaccionales.  
-5. **QA final:** smoke tests, variables/credenciales, deploy y posibles E2E/Playwright admin → storefront.  
-6. **Top banner (opcional):** variantes normal/marquee y colores configurables vía `metadata` jsonb.
+1. **Preview Vercel para clienta:** preparar primer link, configurar variables, verificar Storage/imágenes y usuario admin del entorno.
+2. **QA previo a preview:** correr `npx.cmd tsc --noEmit`, `npm.cmd run lint`, `npm run build` y smoke manual storefront/admin.
+3. **Chilexpress:** ingresar credenciales reales, probar cotización, y evaluar fix mínimo para que `/api/shipping/cotizar` use `shipping_config` + `shipping_packages`.
+4. **Resend / emails:** configurar correo temporal/no oficial; email interno nueva compra + email cliente gracias por tu compra con HTML simple alineado a marca.
+5. **Página Conócenos:** revisar/ajustar visualmente si cabe en una pasada rápida.
+6. **Buscador:** agregar pequeña mejora pendiente a definir mañana.
+7. **VESSI:** integración según definición pendiente.
+8. **Top banner / visual (opcional):** variantes normal/marquee/colores vía `metadata` y revisión de fondos moss grandes.
 
 **Migraciones en repo (referencia; aplicación en Supabase: manual y verificada en cada entorno):** además de las históricas `0000`–`0004`, suelen aparecer en el proyecto `0005_extend_banners.sql` y `0006_create_landing_section_copy.sql` bajo `src/integrations/drizzle/migrations/`, y SQL de extensión de `hero_slides` (p. ej. en `drizzle/0005_extend_hero_slides.sql` en la raíz). **Cruzar siempre** con el schema y el journal de Drizzle; no listar un número fijo de migración “aplicada” sin comprobarlo en la instancia.
 
@@ -213,7 +221,7 @@ tests/
 - `src/app/(store)/categorias/page.tsx` — Grid de categorías con header
 
 **Cómo funciona:**
-Las páginas son Server Components que llaman directamente a los servicios de Drizzle (no vía fetch a la API pública). La API pública existe para uso externo. El listado usa `searchParams` de Next.js para filtro por categoría, ordenamiento y paginación — todo URL-based. La búsqueda textual tiene input en el `FilterBar` (desktop) y en el `Navbar` móvil, ambos conectados al parámetro `?search=` en la URL, que el backend resuelve con `ilike` en title y author.
+Las páginas son Server Components que llaman directamente a los servicios de Drizzle (no vía fetch a la API pública). La API pública existe para uso externo. El listado usa `searchParams` de Next.js para filtro por categoría, ordenamiento y paginación — todo URL-based. La búsqueda textual tiene input en el `FilterBar` y en el header vía `NavbarSearch`, conectados al parámetro `?search=` en la URL. El backend resuelve con `ilike` en `title`, `author`, `coverType` y `publisher`; **no** busca en `description`.
 
 **Detalles de UI del catálogo:**
 - `ProductGrid`: 2 columnas en móvil, 5 en desktop (`grid-cols-2 lg:grid-cols-5`)
@@ -409,9 +417,10 @@ JWT en cookie HTTP-only `admin-session` (24h, firmado con `jose`). Middleware Ed
 Las secciones tienen `title`, `content`, `imageUrl`, `imagePosition` ("right"|"left"), `displayOrder`, `isActive`. La página pública alterna fondo beige/white por índice par/impar. Cuando hay imagen, usa grid 2 columnas con orden CSS según `imagePosition`. Sin imagen, el texto ocupa `maxWidth: 720px`. El admin permite crear, editar, activar/desactivar y eliminar (soft) cada sección. Las imágenes se suben a bucket `banners` con subcarpeta `promo`.
 
 **Navbar (CAT5):**
-- Link "Conócenos" agregado en desktop (antes del dropdown Categorías) y en el drawer móvil
+- Link "Conócenos" agregado en desktop y drawer móvil; hoy va al final del menú público
 - `navLinksAfterCategories` actualizado: `?filter=seleccion` (Selección del mes) y `?filter=nuevo` (Recién llegados)
 - La selección editorial del sitio es única: home, header, catálogo y admin apuntan a `monthly_selection`
+- `NavbarSearch` separado de `Navbar`: autocomplete simple desde `/api/productos?search=...&limit=8`, solo productos, solo ícono de lupa + título; no muestra miniatura, precio, autor, editorial, descripción ni stock. Escape/click fuera cierra; Enter va al listado general; click en sugerencia va al detalle.
 
 ---
 
@@ -767,7 +776,9 @@ import { BrandLoader } from "@/shared/ui/BrandLoader";
 - [x] **Footer dinámico** — texto editable vía `footer_content`, ilustración/metadata vía `banners.footer_illustration`, consumo público desde servicios/BD con `noStore()` (CAT4)
 - [x] **Filtro Selección del mes** — `?filter=seleccion` en catálogo vía subquery `featured_products` (CAT5)
 - [x] **Página /nosotros** — CMS completo: secciones alternadas, admin CRUD, imágenes (CAT5)
-- [x] **Navbar Conócenos** — link en desktop y drawer móvil; links actualizados a `?filter=seleccion` y `?filter=nuevo` (CAT5)
+- [x] **Navbar Conócenos** — link en desktop y drawer móvil; actualmente al final del menú; links actualizados a `?filter=seleccion` y `?filter=nuevo` (CAT5)
+- [x] **NavbarSearch autocomplete** — componente separado, mínimo 2 caracteres, debounce aprox. 280 ms, máximo 8 productos, muestra solo lupa + título; búsqueda en `title`, `author`, `coverType`, `publisher`; no busca en `description`
+- [x] **Editorial / publisher** — columna `products.publisher`, campo Editorial en admin crear/editar, tipos/servicios actualizados y detalle público muestra Editorial si existe
 - [🔄] **UI/UX del panel admin (parcial)**  
   - [x] Shell: **sidebar** como eje, oscuro, colapsable; logout; canvas admin; **Topbar** existe pero no es estructural global  
   - [x] Vistas piloto: Dashboard + Productos (listado); **AdminMetricCard** + **AdminTable** como base  
@@ -779,7 +790,8 @@ import { BrandLoader } from "@/shared/ui/BrandLoader";
 - [x] **SEO completo** — metadata global/páginas/productos, JSON-LD, Open Graph con fallback, sitemap.xml y robots.txt
 - [x] **Chilexpress Fase 1–3** — infraestructura, cotización checkout con fallback, admin envíos, empaques y generación de OT/etiqueta desde pedido
 - [ ] **Credenciales Chilexpress + prueba real** — configurar llaves/códigos del cliente y validar cotización/OT contra ambiente definido
-- [ ] **Migración manual Supabase para Chilexpress** — aplicar/verificar `shipping_config`, `shipping_packages` y columnas Chilexpress de `orders`
+- [x] **Migración manual Supabase para Chilexpress en entorno actual** — aplicadas/verificadas `shipping_config`, `shipping_packages` y columnas Chilexpress de `orders`; seguir verificando por entorno
+- [ ] **Alinear cotización storefront con admin envíos** — `/api/shipping/cotizar` todavía no usa `shipping_config` ni `shipping_packages`
 - [ ] **VESSI** — implementar según la definición/respuesta ya recibida. Integración base en `src/integrations/inventory/`
 
 ### P2 — Lanzamiento / Fase 5
@@ -801,7 +813,7 @@ El número exacto de tablas y el detalle al día **no** se fijan en este handoff
 | Tabla | Descripción |
 |---|---|
 | `categories` | Categorías con jerarquía (parent_id), slug, featured, display_order |
-| `products` | Catálogo con price/sale_price (integer CLP), stock, is_featured, is_active |
+| `products` | Catálogo con price/sale_price (integer CLP), stock, is_featured, is_active, `publisher` opcional para Editorial |
 | `product_categories` | Relación muchos-a-muchos productos ↔ categorías |
 | `product_images` | Galería de imágenes por producto (display_order) |
 | `orders` | Órdenes con status (pending→paid→preparing→shipped→delivered→cancelled) |
@@ -822,6 +834,14 @@ El número exacto de tablas y el detalle al día **no** se fijan en este handoff
 **Columnas Chilexpress en `orders`:** `chilexpress_service_type_code`, `chilexpress_service_description`, `chilexpress_origin_coverage_code`, `chilexpress_destination_coverage_code`, `chilexpress_transport_order_number`, `chilexpress_label_url`. Se reutilizan esos nombres reales; no crear campos duplicados para OT/label.
 
 **Migraciones en repo:** `src/integrations/drizzle/migrations/` (incl. `0005`, `0006` y anteriores) y, si aplica, SQL complementario p. ej. bajo `drizzle/` en la raíz. **Aplicación en Supabase:** siempre **manual** según R13; **no** afirmar desde el handoff qué script está aplicado en producción u otro entorno; quien despliega **verifica** y mantiene **paridad** schema ↔ SQL aplicado.
+
+**SQL manual reciente / referencia:** por inconsistencias del journal/migraciones Drizzle con cambios ya aplicados manualmente, `npm run db:migrate` no debe asumirse confiable ahora mismo. Falló intentando crear `footer_content` ya existente. Cambios recientes aplicados o a verificar por entorno desde Supabase SQL Editor:
+
+```sql
+ALTER TABLE products ADD COLUMN IF NOT EXISTS publisher text;
+```
+
+También verificar existencia de tablas `shipping_config`, `shipping_packages` y columnas en `orders`: `chilexpress_service_type_code`, `chilexpress_service_description`, `chilexpress_origin_coverage_code`, `chilexpress_destination_coverage_code`, `chilexpress_transport_order_number`, `chilexpress_label_url`.
 
 **Nota Chilexpress / Supabase:** el schema Drizzle ya contiene `shipping_config`, `shipping_packages` y columnas Chilexpress en `orders`, pero la instancia remota debe verificarse/aplicarse manualmente. En particular, las columnas recientes usadas por admin son:
 
@@ -877,9 +897,11 @@ CRON_SECRET=
 ### Notas importantes Chilexpress
 
 - El código ya está preparado, pero todavía no hay credenciales Chilexpress reales configuradas. Sin esas variables, `/api/shipping/cotizar` y generar OT responden errores controlados.
-- Checkout no bloquea la compra si Chilexpress no cotiza: muestra despacho pendiente/por confirmar y `createOrder` conserva el fallback actual (`shippingCost: 0`) cuando no hay cotización válida.
+- Variables mínimas para cotizar: `CHILEXPRESS_COVERAGE_API_KEY` y `CHILEXPRESS_RATING_API_KEY`. Recomendadas: `CHILEXPRESS_ORIGIN_COVERAGE_CODE`, `CHILEXPRESS_ORIGIN_REGION_CODE=02`, `CHILEXPRESS_ORIGIN_COMMUNE=Antofagasta`. `CHILEXPRESS_SHIPMENT_API_KEY` se usa para generar OT/etiqueta, no para cotizar.
+- Checkout no bloquea la compra si Chilexpress no cotiza: muestra despacho pendiente/por confirmar y `createOrder` conserva el fallback actual (`shippingCost: 0`) cuando no hay cotización válida. En UI corresponde a `shippingQuote.status === "unavailable"`.
 - La OT se genera manualmente desde el detalle de pedido admin, solo para pedidos `shipping` con estado `paid` o `preparing`.
-- La migración en Supabase es manual: verificar que existan `shipping_config`, `shipping_packages` y las columnas Chilexpress de `orders` antes de probar en producción.
+- La migración en Supabase es manual: en el entorno actual ya se aplicaron/validaron `shipping_config`, `shipping_packages` y columnas Chilexpress de `orders`; volver a verificar en cada entorno, especialmente Vercel/preview.
+- Diagnóstico vigente: el storefront cotiza parcialmente, pero todavía no usa `shipping_config` ni `shipping_packages`; admin y checkout pueden quedar desalineados y el peso público actual no necesariamente usa `estimatedBookWeightGrams`.
 
 ---
 
@@ -910,11 +932,26 @@ CRON_SECRET=
 
 **Contenido CMS — Landing:** Panel Admin Landing cerrado funcional y visualmente. **Hero**, **Top banner**, **Selección del mes**, **Categorías del landing**, **Hero final** y **Footer** tienen pantallas admin dedicadas y rutas directas desde el sidebar (ver Feature 5). **Recién llegados** e **Instagram** sin admin de contenido. **Footer:** texto en `footer_content`, ilustración/metadata en `banners.footer_illustration`, preview live y storefront conectado a servicios/BD con `noStore()`. **`/nosotros`:** CMS aparte.
 
-**SEO y Chilexpress:** SEO completo en código. Chilexpress Fase 1–3 completa en código: cotización checkout con fallback, endpoint público, admin de envíos, empaques, OT/etiqueta desde pedido y campos reales en `orders`. Pendiente: credenciales reales Chilexpress, prueba contra ambiente cliente y migración manual Supabase.
+**SEO, catálogo y Chilexpress:** SEO completo en código. Navbar/buscador actualizado: `Conócenos` al final, `NavbarSearch` con autocomplete de productos y búsqueda en `title`, `author`, `coverType`, `publisher` (**no** `description`). Chilexpress Fase 1–3 completa en código: cotización checkout con fallback, endpoint público, admin de envíos, empaques, OT/etiqueta desde pedido y campos reales en `orders`. En el entorno actual se validaron tablas/columnas de envíos aplicadas manualmente; pendiente: credenciales reales Chilexpress, prueba contra ambiente cliente y alinear cotización pública con config/empaques admin.
 
-**Pendiente de producto/infra:** credenciales/migración Chilexpress → **VESSI** → **Resend/emails** → **QA final/deploy**, más P0 (variables, credenciales, seed) al acercarse a producción. Opcional landing: Top Banner con marquee/colores vía `metadata` y pruebas E2E/Playwright admin → storefront — ver checklist.
+**Pendiente de producto/infra:** primer preview Vercel para clienta → credenciales/prueba Chilexpress → **Resend/emails** → **VESSI** → **QA final/deploy**, más P0 (variables, credenciales, seed) al acercarse a producción. Opcional landing: Top Banner con marquee/colores vía `metadata`, revisión de fondos moss grandes y pruebas E2E/Playwright admin → storefront — ver checklist.
 
-**Calidad y tests:** **verificar** con `npx tsc --noEmit`, `npm run lint` y, cuando toque, `npm run build`; Playwright y `checkout.spec.ts` — **correr** en el entorno para estado al día; ver sección de warnings.
+**Calidad y tests:** tras buscador/publisher, `npx.cmd tsc --noEmit` pasó y `npm.cmd run lint` pasó con warnings preexistentes (`<img>`, `useScrollReveal`). Para preview, volver a verificar con `npx.cmd tsc --noEmit`, `npm.cmd run lint` y `npm run build`; Playwright y `checkout.spec.ts` — **correr** en el entorno para estado al día; ver sección de warnings.
+
+### Pendientes inmediatos para preview Vercel
+
+- [ ] Preparar primer preview link de Vercel para la clienta.
+- [ ] Configurar variables de entorno en Vercel: BD, Supabase, admin, Getnet/NEXT_PUBLIC_APP_URL, Elfsight y Chilexpress si se probará despacho real.
+- [ ] Verificar imágenes de Supabase Storage en preview.
+- [ ] Verificar usuario admin en el entorno conectado a Vercel.
+- [ ] Correr QA manual completo de storefront y admin.
+- [ ] Correr `npx.cmd tsc --noEmit`, `npm.cmd run lint`, `npm run build` y, si es posible, smoke/e2e.
+- [ ] Configurar Resend con correo temporal/no oficial: email interno nueva compra + email cliente gracias por tu compra, HTML simple alineado a marca.
+- [ ] Ingresar credenciales reales Chilexpress y probar cotización.
+- [ ] Evaluar fix mínimo para que `/api/shipping/cotizar` use `shipping_config` y `shipping_packages`.
+- [ ] Revisar que el checkout no comunique envío como gratis si Chilexpress no cotiza; mantener mensaje claro "Por confirmar".
+- [ ] Revisar/ajustar `/nosotros` al inicio si es rápido.
+- [ ] Agregar pequeña mejora pendiente del buscador, a definir mañana.
 
 ---
 
@@ -939,12 +976,13 @@ No asumir que sigan idénticos ni que bloqueen el build — **comprobar** en el 
 
 ## ✅ CHECKLIST DE PRÓXIMOS PASOS (orden de trabajo sugerido)
 
-1. [ ] **Migración manual Supabase Chilexpress** — tablas `shipping_config`, `shipping_packages` y columnas Chilexpress en `orders`.
-2. [ ] **Credenciales Chilexpress** — configurar llaves/códigos reales y probar cotización + generación OT/etiqueta.
-3. [ ] **VESSI** — según definición; `src/integrations/inventory/`.
-4. [ ] **Resend / emails** — confirmar estado de `integrations/email/`.
-5. [ ] **QA final + E2E/Playwright** — smoke tests y verificación admin → storefront donde aplique.
-6. [ ] **Top Banner opcional** — marquee/colores vía `metadata`.
-7. [ ] **Deploy + QA producción** — variables Vercel, Getnet producción, seed en prod, smoke tests, `checkout.spec.ts` si aplica. **Verificar** build con `npx tsc --noEmit`, `npm run lint`, `npm run build`.
+1. [ ] **Preview Vercel para clienta** — variables, Storage, usuario admin, smoke manual y link compartible.
+2. [ ] **Validación técnica previa** — `npx.cmd tsc --noEmit`, `npm.cmd run lint`, `npm run build`; smoke/e2e si el tiempo alcanza.
+3. [ ] **Credenciales Chilexpress** — configurar llaves/códigos reales y probar cotización + generación OT/etiqueta.
+4. [ ] **Alinear cotización pública** — `/api/shipping/cotizar` debe usar `shipping_config` y `shipping_packages` para peso/empaque coherente con admin.
+5. [ ] **Resend / emails** — correo interno de nueva compra + correo cliente gracias por tu compra, HTML simple de marca.
+6. [ ] **Conócenos / visual moss** — ajuste rápido si aplica; revisar fondos grandes moss hacia beige/crema/dorado suave.
+7. [ ] **VESSI** — según definición; `src/integrations/inventory/`.
+8. [ ] **Deploy + QA producción** — variables Vercel, Getnet producción, seed en prod, smoke tests, `checkout.spec.ts` si aplica. **Verificar** build con `npx tsc --noEmit`, `npm run lint`, `npm run build`.
 
-*Handoff v01 — Abril 2026 · E-commerce + admin; panel Landing cerrado con editores por sección, previews y Footer editable conectado al storefront; SEO completo; Chilexpress Fase 1–3 en código; pendiente: credenciales/migración Chilexpress, VESSI, Resend, QA final e infra (ver `git` y schema para detalle fino)*
+*Handoff v01 — Abril 2026 · E-commerce + admin; panel Landing cerrado con editores por sección, previews y Footer editable conectado al storefront; SEO completo; buscador/Navbar y publisher actualizados; Chilexpress Fase 1–3 en código con tablas/columnas validadas manualmente en el entorno actual; pendiente: preview Vercel, credenciales/prueba Chilexpress, Resend, VESSI, QA final e infra (ver `git` y schema para detalle fino)*

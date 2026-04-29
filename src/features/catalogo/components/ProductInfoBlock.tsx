@@ -196,8 +196,19 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
       )}
 
       {/* Especificaciones */}
-      {(product.coverType ?? product.pages) && (
+      {(product.publisher ?? product.coverType ?? product.pages) && (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "28px" }}>
+          {product.publisher && (
+            <div
+              className="font-editorial"
+              style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--text-mid)" }}
+            >
+              <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: "var(--gold)", flexShrink: 0 }} />
+              <span>
+                Editorial <strong style={{ fontWeight: 500, color: "var(--text)" }}>{product.publisher}</strong>
+              </span>
+            </div>
+          )}
           {product.coverType && (
             <div
               className="font-editorial"

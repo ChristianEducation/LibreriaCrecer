@@ -18,6 +18,7 @@ export const products = pgTable("products", {
   code: text("code"),
   sku: text("sku").unique(),
   author: text("author"),
+  publisher: text("publisher"),
   description: text("description"),
   price: integer("price").notNull(),
   salePrice: integer("sale_price"),

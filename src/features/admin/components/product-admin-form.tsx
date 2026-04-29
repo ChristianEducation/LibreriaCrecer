@@ -29,6 +29,7 @@ type ProductData = {
   id: string;
   title?: string | null;
   author?: string | null;
+  publisher?: string | null;
   description?: string | null;
   price?: number | null;
   salePrice?: number | null;
@@ -69,6 +70,7 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
     () => ({
       title: initialData?.title ?? "",
       author: initialData?.author ?? undefined,
+      publisher: initialData?.publisher ?? undefined,
       description: initialData?.description ?? undefined,
       price: initialData?.price ?? 1,
       salePrice: initialData?.salePrice ?? undefined,
@@ -229,6 +231,10 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
               <label className="space-y-1">
                 <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Autor</span>
                 <input className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none" {...form.register("author")} />
+              </label>
+              <label className="space-y-1">
+                <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Editorial</span>
+                <input className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none" {...form.register("publisher")} />
               </label>
             </div>
             <label className="mt-4 block space-y-1">

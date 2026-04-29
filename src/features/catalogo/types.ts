@@ -34,6 +34,7 @@ export type CatalogProduct = {
   title: string;
   slug: string;
   author: string | null;
+  publisher: string | null;
   price: number;
   salePrice: number | null;
   effectivePrice: number;

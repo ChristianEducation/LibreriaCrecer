@@ -30,6 +30,7 @@ type ProductRow = {
   title: string;
   slug: string;
   author: string | null;
+  publisher: string | null;
   price: number;
   salePrice: number | null;
   mainImageUrl: string | null;
@@ -87,6 +88,7 @@ function mapProduct(row: ProductRow, categoriesForProduct: ProductCategoryRef[])
     title: row.title,
     slug: row.slug,
     author: row.author,
+    publisher: row.publisher,
     price: row.price,
     salePrice: row.salePrice,
     effectivePrice,
@@ -174,7 +176,14 @@ function buildProductConditions({
 
   if (search?.trim()) {
     const searchTerm = `%${search.trim()}%`;
-    conditions.push(or(ilike(products.title, searchTerm), ilike(products.author, searchTerm)) as SQL);
+    conditions.push(
+      or(
+        ilike(products.title, searchTerm),
+        ilike(products.author, searchTerm),
+        ilike(products.coverType, searchTerm),
+        ilike(products.publisher, searchTerm),
+      ) as SQL,
+    );
   }
 
   if (categorySlug?.trim()) {
@@ -216,6 +225,7 @@ export async function getProducts(params: ProductQueryParams): Promise<ProductLi
       title: products.title,
       slug: products.slug,
       author: products.author,
+      publisher: products.publisher,
       price: products.price,
       salePrice: products.salePrice,
       mainImageUrl: products.mainImageUrl,
@@ -253,6 +263,7 @@ export async function getProductBySlug(slug: string): Promise<CatalogProductDeta
       code: products.code,
       sku: products.sku,
       author: products.author,
+      publisher: products.publisher,
       description: products.description,
       price: products.price,
       salePrice: products.salePrice,
@@ -307,6 +318,7 @@ async function getSimpleProductCollection(
       title: products.title,
       slug: products.slug,
       author: products.author,
+      publisher: products.publisher,
       price: products.price,
       salePrice: products.salePrice,
       mainImageUrl: products.mainImageUrl,
@@ -368,6 +380,7 @@ export async function getRelatedProducts(
       title: products.title,
       slug: products.slug,
       author: products.author,
+      publisher: products.publisher,
       price: products.price,
       salePrice: products.salePrice,
       mainImageUrl: products.mainImageUrl,

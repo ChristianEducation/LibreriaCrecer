@@ -9,6 +9,7 @@ const nullableString = z
 export const CreateProductSchema = z.object({
   title: z.string().trim().min(1),
   author: nullableString,
+  publisher: nullableString,
   description: nullableString,
   price: z.number().int().min(1),
   salePrice: z.number().int().min(1).optional(),

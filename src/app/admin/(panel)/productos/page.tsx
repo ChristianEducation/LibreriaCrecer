@@ -11,6 +11,7 @@ type ProductListItem = {
   id: string;
   title: string;
   author: string | null;
+  publisher: string | null;
   price: number;
   effectivePrice: number;
   stockQuantity: number;

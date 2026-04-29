@@ -10,15 +10,7 @@ import { useCartSummary } from "@/features/carrito/hooks";
 import { useCartHydration } from "@/features/carrito/useCartHydration";
 
 import { CartPanel } from "./CartPanel";
-
-function SearchIcon() {
-  return (
-    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="m16 16 4.25 4.25" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
-    </svg>
-  );
-}
+import { NavbarSearch } from "./NavbarSearch";
 
 function CartIcon() {
   return (
@@ -72,6 +64,7 @@ function ChevronDownIcon({ open }: { open: boolean }) {
 const navLinksAfterCategories = [
   { href: "/productos?filter=seleccion", label: "Selección del mes" },
   { href: "/productos?filter=nuevo", label: "Recién llegados" },
+  { href: "/nosotros", label: "Conócenos" },
 ] as const;
 
 export interface NavbarProps {
@@ -155,9 +148,8 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
     };
   }, [isMobileMenuOpen]);
 
-  function handleSearch(event: React.FormEvent) {
-    event.preventDefault();
-    const trimmed = searchQuery.trim();
+  function handleSearch(query: string) {
+    const trimmed = query.trim();
     if (!trimmed) return;
     setSearchQuery("");
     setIsMobileMenuOpen(false);
@@ -223,35 +215,19 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
           ) : (
             <>
               {/* Desktop search */}
-              <form
-                className="relative hidden flex-1 lg:block"
-                style={{ maxWidth: "300px", borderRadius: "var(--radius-xl)" }}
-                onSubmit={handleSearch}
-              >
-                <input
-                  className={cx(
+              <NavbarSearch
+                inputClassName={cx(
                     "h-10 w-full border text-[14px] transition-[border-color,background-color,color] duration-200 focus:outline-none",
                     isTransparent
                       ? "border-white/30 bg-white/10 text-white placeholder:text-white/60 focus:border-white/60 focus:bg-white/15"
                       : "border-border bg-beige-warm text-text placeholder:text-text-light focus:border-gold focus:bg-white",
-                  )}
-                  placeholder="Buscar libros, autores..."
-                  type="search"
-                  value={searchQuery}
-                  style={{ paddingLeft: "16px", paddingRight: "16px", borderRadius: "var(--radius-xl)" }}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button
-                  aria-label="Buscar"
-                  className={cx(
-                    "absolute right-3 top-1/2 -translate-y-1/2 transition-colors",
-                    isTransparent ? "text-white/80 hover:text-white" : "text-text-light hover:text-moss",
-                  )}
-                  type="submit"
-                >
-                  <SearchIcon />
-                </button>
-              </form>
+                )}
+                inputStyle={{ paddingLeft: "16px", paddingRight: "16px", borderRadius: "var(--radius-xl)" }}
+                isTransparent={isTransparent}
+                onSearch={handleSearch}
+                onValueChange={setSearchQuery}
+                value={searchQuery}
+              />
 
               {/* Desktop nav — hidden on mobile */}
               <nav className="hidden items-center gap-5 lg:flex">
@@ -267,20 +243,6 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                   href="/productos"
                 >
                   Colección
-                </Link>
-
-                <Link
-                  className={cx(
-                    "text-[13px] tracking-[0.04em] transition-colors",
-                    isTransparent
-                      ? "text-white/85 hover:text-white"
-                      : pathname === "/nosotros"
-                        ? "font-medium text-moss"
-                        : "text-text-mid hover:text-moss",
-                  )}
-                  href="/nosotros"
-                >
-                  Conócenos
                 </Link>
 
                 <li
@@ -462,22 +424,15 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
             <div style={{ padding: "20px 0 32px" }}>
               {/* Search */}
               <div style={{ padding: "0 20px 20px" }}>
-                <form onSubmit={handleSearch} style={{ position: "relative" }}>
-                  <input
-                    className="w-full rounded border border-border bg-beige-warm py-3 pl-4 pr-10 text-[14px] text-text transition-[border-color,background-color] duration-200 placeholder:text-text-light focus:border-gold focus:bg-white focus:outline-none"
-                    placeholder="Buscar libros, autores..."
-                    type="search"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  <button
-                    aria-label="Buscar"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-light transition-colors hover:text-moss"
-                    type="submit"
-                  >
-                    <SearchIcon />
-                  </button>
-                </form>
+                <NavbarSearch
+                  enabled={isMobileMenuOpen}
+                  inputClassName="w-full rounded border border-border bg-beige-warm py-3 pl-4 pr-10 text-[14px] text-text transition-[border-color,background-color] duration-200 placeholder:text-text-light focus:border-gold focus:bg-white focus:outline-none"
+                  onNavigate={closeMobileMenu}
+                  onSearch={handleSearch}
+                  onValueChange={setSearchQuery}
+                  value={searchQuery}
+                  variant="mobile"
+                />
               </div>
 
               {/* Divider */}
@@ -502,25 +457,6 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                   }}
                 >
                   Colección
-                </Link>
-
-                {/* Conócenos */}
-                <Link
-                  href="/nosotros"
-                  onClick={closeMobileMenu}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "14px 20px",
-                    fontSize: "15px",
-                    color: pathname === "/nosotros" ? "var(--color-moss)" : "var(--color-text-mid)",
-                    fontWeight: pathname === "/nosotros" ? 500 : 300,
-                    textDecoration: "none",
-                    borderBottom: "1px solid var(--color-border)",
-                    transition: "color 0.15s",
-                  }}
-                >
-                  Conócenos
                 </Link>
 
                 {/* Categorías — accordion */}

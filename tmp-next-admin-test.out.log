@@ -1,0 +1,17 @@
+
+> libreriacrecer@0.1.0 dev
+> next dev --turbopack -p 3001
+
+   ▲ Next.js 15.2.4 (Turbopack)
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.1.112:3001
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Compiled in 414ms
+ ✓ Ready in 2.7s
+ ○ Compiling /api/admin/productos ...
+ ✓ Compiled /api/admin/productos in 1605ms
+ GET /api/admin/productos?page=1&limit=20 200 in 3521ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4.7s
