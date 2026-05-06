@@ -26,6 +26,75 @@ function getHeaderName(): string {
   return "Ocp-Apim-Subscription-Key";
 }
 
+function normalizeRegionCode(regionCode: string | undefined): string {
+  const normalized = normalizeText(regionCode ?? "");
+  const regionMap: Record<string, string> = {
+    "arica y parinacota": "R15",
+    tarapaca: "R1",
+    antofagasta: "R2",
+    atacama: "R3",
+    coquimbo: "R4",
+    valparaiso: "R5",
+    "metropolitana de santiago": "RM",
+    metropolitana: "RM",
+    "region metropolitana": "RM",
+    "o'higgins": "R6",
+    ohiggins: "R6",
+    maule: "R7",
+    nuble: "R16",
+    biobio: "R8",
+    "la araucania": "R9",
+    "los rios": "R14",
+    "los lagos": "R10",
+    aysen: "R11",
+    "magallanes y la antartica chilena": "R12",
+    magallanes: "R12",
+    "1": "R1",
+    "01": "R1",
+    r1: "R1",
+    "2": "R2",
+    "02": "R2",
+    r2: "R2",
+    "3": "R3",
+    "03": "R3",
+    r3: "R3",
+    "4": "R4",
+    "04": "R4",
+    r4: "R4",
+    "5": "R5",
+    "05": "R5",
+    r5: "R5",
+    "6": "R6",
+    "06": "R6",
+    r6: "R6",
+    "7": "R7",
+    "07": "R7",
+    r7: "R7",
+    "8": "R8",
+    "08": "R8",
+    r8: "R8",
+    "9": "R9",
+    "09": "R9",
+    r9: "R9",
+    "10": "R10",
+    r10: "R10",
+    "11": "R11",
+    r11: "R11",
+    "12": "R12",
+    r12: "R12",
+    "13": "RM",
+    rm: "RM",
+    "14": "R14",
+    r14: "R14",
+    "15": "R15",
+    r15: "R15",
+    "16": "R16",
+    r16: "R16",
+  };
+
+  return regionMap[normalized] ?? regionCode?.trim() ?? "R2";
+}
+
 async function requestChilexpress<TResponse>({
   apiKey,
   endpoint,
@@ -43,7 +112,9 @@ async function requestChilexpress<TResponse>({
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
-    const response = await fetch(normalizeEndpoint(endpoint, path), {
+    const url = normalizeEndpoint(endpoint, path);
+
+    const response = await fetch(url, {
       method,
       headers: {
         "Content-Type": "application/json",
@@ -140,12 +211,12 @@ function getStringField(source: Record<string, unknown> | undefined, keys: strin
   return undefined;
 }
 
-export async function getCoverageCode(params: ChilexpressCoverageRequest): Promise<string | null> {
+export async function getCoverageAreas(regionCode: string | undefined): Promise<ChilexpressCoverageArea[]> {
   assertChilexpressKey(chilexpressConfig.coverageApiKey, "CHILEXPRESS_COVERAGE_API_KEY");
 
   const query = new URLSearchParams({
-    RegionCode: params.regionCode ?? "99",
-    CountyName: params.commune,
+    RegionCode: normalizeRegionCode(regionCode),
+    type: "0",
   });
 
   const payload = await requestChilexpress<unknown>({
@@ -155,9 +226,17 @@ export async function getCoverageCode(params: ChilexpressCoverageRequest): Promi
     method: "GET",
   });
 
+  return extractCoverageAreas(payload);
+}
+
+export async function getCoverageCode(params: ChilexpressCoverageRequest): Promise<string | null> {
+  const coverageAreas = await getCoverageAreas(params.regionCode);
   const requestedCommune = normalizeText(params.commune);
-  const coverage = extractCoverageAreas(payload).find((area) => {
-    return area.countyName ? normalizeText(area.countyName) === requestedCommune : false;
+  const coverage = coverageAreas.find((area) => {
+    const coverageName = (area as { coverageName?: string }).coverageName;
+    return [area.countyName, coverageName].some((name) => {
+      return name ? normalizeText(name) === requestedCommune : false;
+    });
   });
 
   return coverage?.countyCode ?? null;
@@ -169,7 +248,7 @@ export async function getRates(params: ChilexpressRateRequest): Promise<Chilexpr
   const payload = await requestChilexpress<unknown>({
     apiKey: chilexpressConfig.ratingApiKey,
     endpoint: chilexpressConfig.ratingEndpoint,
-    path: "/rates/courier",
+    path: "/rates/business",
     method: "POST",
     body: {
       originCountyCode: params.originCoverageCode,

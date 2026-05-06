@@ -7,6 +7,7 @@ const QuoteShippingSchema = z.object({
   destination: z.object({
     commune: z.string().trim().min(1),
     regionCode: z.string().trim().min(1).optional(),
+    destinationCoverageCode: z.string().trim().min(1).optional(),
   }),
   package: z
     .object({

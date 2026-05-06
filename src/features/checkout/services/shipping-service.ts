@@ -6,6 +6,7 @@ export type CalculateShippingCostInput = {
   destination: {
     commune: string;
     regionCode?: string;
+    destinationCoverageCode?: string;
   };
   package?: ChilexpressPackage;
   declaredWorth?: number;
@@ -65,10 +66,12 @@ export async function calculateShippingCost(
       };
     }
 
-    const destinationCoverageCode = await getCoverageCode({
-      regionCode: input.destination.regionCode,
-      commune: input.destination.commune,
-    });
+    const destinationCoverageCode =
+      input.destination.destinationCoverageCode ??
+      (await getCoverageCode({
+        regionCode: input.destination.regionCode,
+        commune: input.destination.commune,
+      }));
 
     if (!destinationCoverageCode) {
       return {

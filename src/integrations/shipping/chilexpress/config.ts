@@ -14,7 +14,7 @@ type ChilexpressConfig = {
 
 const DEFAULTS = {
   coverageEndpoint: "https://testservices.wschilexpress.com/georeference/api/v1.0",
-  ratingEndpoint: "https://testservices.wschilexpress.com/rating/api/v1.0",
+  ratingEndpoint: "https://qaservices.wschilexpress.com/rating/api/v1.0",
   shipmentEndpoint: "https://testservices.wschilexpress.com/transport-orders/api/v1.0",
   originRegionCode: "02",
   originCommune: "Antofagasta",

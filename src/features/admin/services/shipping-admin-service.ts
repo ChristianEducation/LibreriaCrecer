@@ -278,7 +278,10 @@ export async function generateChilexpressOtAdmin(orderId: string) {
       order.chilexpressOriginCoverageCode ??
       config.originCoverageCode ??
       chilexpressConfig.originCoverageCode ??
-      (await getCoverageCode({ commune: config.originCommune }));
+      (await getCoverageCode({
+        commune: config.originCommune,
+        regionCode: config.originRegion,
+      }));
 
     if (!originCoverageCode) {
       return { success: false as const, code: "missing_coverage", message: "No se pudo resolver la cobertura de origen." };
@@ -286,7 +289,10 @@ export async function generateChilexpressOtAdmin(orderId: string) {
 
     const destinationCoverageCode =
       order.chilexpressDestinationCoverageCode ??
-      (await getCoverageCode({ commune: address.commune }));
+      (await getCoverageCode({
+        commune: address.commune,
+        regionCode: address.region,
+      }));
 
     if (!destinationCoverageCode) {
       return { success: false as const, code: "missing_coverage", message: "No se pudo resolver la cobertura de destino." };

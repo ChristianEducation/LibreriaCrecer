@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cx } from "class-variance-authority";
@@ -18,6 +18,12 @@ type ShippingQuoteStatus = "idle" | "loading" | "available" | "unavailable";
 type ShippingQuote = {
   cost: number;
   status: ShippingQuoteStatus;
+};
+
+type CoverageAreaOption = {
+  label: string;
+  value: string;
+  coverageCode: string;
 };
 
 export interface CheckoutFormProps {
@@ -47,23 +53,23 @@ const deliveryOptions = [
   },
 ];
 
-const chileanRegions = [
-  "Arica y Parinacota",
-  "Tarapaca",
-  "Antofagasta",
-  "Atacama",
-  "Coquimbo",
-  "Valparaiso",
-  "Metropolitana de Santiago",
-  "O'Higgins",
-  "Maule",
-  "Nuble",
-  "Biobio",
-  "La Araucania",
-  "Los Rios",
-  "Los Lagos",
-  "Aysen",
-  "Magallanes y la Antartica Chilena",
+const chileanRegions: Array<{ label: string; value: string }> = [
+  { label: "Arica y Parinacota", value: "R15" },
+  { label: "Tarapaca", value: "R1" },
+  { label: "Antofagasta", value: "R2" },
+  { label: "Atacama", value: "R3" },
+  { label: "Coquimbo", value: "R4" },
+  { label: "Valparaiso", value: "R5" },
+  { label: "Metropolitana de Santiago", value: "RM" },
+  { label: "O'Higgins", value: "R6" },
+  { label: "Maule", value: "R7" },
+  { label: "Nuble", value: "R16" },
+  { label: "Biobio", value: "R8" },
+  { label: "La Araucania", value: "R9" },
+  { label: "Los Rios", value: "R14" },
+  { label: "Los Lagos", value: "R10" },
+  { label: "Aysen", value: "R11" },
+  { label: "Magallanes y la Antartica Chilena", value: "R12" },
 ] as const;
 
 function ShieldIcon() {
@@ -152,10 +158,15 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
   const { subtotal, total } = useCartSummary();
   const [selectedDeliveryOption, setSelectedDeliveryOption] = useState<DeliveryOptionId>("pickup");
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [coverageAreas, setCoverageAreas] = useState<CoverageAreaOption[]>([]);
+  const [coverageLoading, setCoverageLoading] = useState(false);
+  const [coverageError, setCoverageError] = useState<string | null>(null);
+  const [destinationCoverageCode, setDestinationCoverageCode] = useState<string | null>(null);
   const [shippingQuote, setShippingQuote] = useState<ShippingQuote>({
     cost: 0,
     status: "idle",
   });
+  const previousRegionRef = useRef<string>("");
 
   const form = useForm<CreateOrderSchemaInput>({
     resolver: zodResolver(CreateOrderSchema),
@@ -180,6 +191,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
     formState: { errors, isSubmitting },
     handleSubmit,
     register,
+    clearErrors,
     setValue,
     watch,
   } = form;
@@ -266,7 +278,85 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
   }, [form, selectedDelivery.deliveryMethod, setValue]);
 
   useEffect(() => {
-    if (deliveryMethod !== "shipping" || !commune) {
+    if (deliveryMethod !== "shipping" || !region) {
+      setCoverageAreas([]);
+      setCoverageLoading(false);
+      setCoverageError(null);
+      setDestinationCoverageCode(null);
+      previousRegionRef.current = "";
+      setValue("address.commune", "", { shouldValidate: false });
+      setShippingQuote({ cost: 0, status: "idle" });
+      return;
+    }
+
+    if (previousRegionRef.current !== region) {
+      previousRegionRef.current = region;
+      setDestinationCoverageCode(null);
+      setValue("address.commune", "", { shouldValidate: true });
+      setShippingQuote({ cost: 0, status: "idle" });
+    }
+
+    const controller = new AbortController();
+
+    async function loadCoverageAreas() {
+      setCoverageLoading(true);
+      setCoverageError(null);
+
+      try {
+        const response = await fetch(`/api/shipping/coverage-areas?regionCode=${encodeURIComponent(region)}`, {
+          signal: controller.signal,
+        });
+        const payload = (await response.json().catch(() => null)) as
+          | {
+              data?: CoverageAreaOption[];
+              message?: string;
+            }
+          | null;
+
+        if (!response.ok || !Array.isArray(payload?.data)) {
+          setCoverageAreas([]);
+          setCoverageError(payload?.message ?? "No se pudieron cargar las comunas.");
+          return;
+        }
+
+        setCoverageAreas(payload.data);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
+        setCoverageAreas([]);
+        setCoverageError("No se pudieron cargar las comunas.");
+      } finally {
+        if (!controller.signal.aborted) {
+          setCoverageLoading(false);
+        }
+      }
+    }
+
+    void loadCoverageAreas();
+
+    return () => controller.abort();
+  }, [deliveryMethod, region, setValue]);
+
+  function handleCommuneChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    const selectedCommune = event.target.value;
+    const selectedCoverageCode = event.currentTarget.selectedOptions[0]?.dataset.coverageCode;
+
+    setDestinationCoverageCode(selectedCoverageCode ?? null);
+    setValue("address.commune", selectedCommune, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+
+    if (selectedCommune) {
+      clearErrors("address.commune");
+    }
+  }
+
+  useEffect(() => {
+    if (deliveryMethod !== "shipping" || !region || !commune) {
       setShippingQuote({ cost: 0, status: "idle" });
       return;
     }
@@ -287,6 +377,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
             destination: {
               commune,
               regionCode: region || undefined,
+              destinationCoverageCode: destinationCoverageCode ?? undefined,
             },
             package: buildQuotePackage(totalItemQuantity),
             declaredWorth: Math.max(0, subtotal),
@@ -323,7 +414,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
     void quoteShipping();
 
     return () => controller.abort();
-  }, [commune, deliveryMethod, region, subtotal, totalItemQuantity]);
+  }, [commune, deliveryMethod, destinationCoverageCode, region, subtotal, totalItemQuantity]);
 
   async function handleValidSubmit(values: CreateOrderSchemaInput) {
     setSubmitError(null);
@@ -443,6 +534,62 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                   <p className="text-[11px] text-error">{errors.address.message}</p>
                 ) : null}
 
+                <div className="form-grid-2col">
+                  <div>
+                    <label style={{ marginBottom: "8px", display: "block", fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)" }}>
+                      Region
+                    </label>
+                    <select
+                      className={cx(fieldClassName, errors.address?.region?.message ? errorFieldClassName : "")}
+                      style={{ width: "100%", paddingLeft: "14px", paddingRight: "14px", paddingTop: "10px", paddingBottom: "10px", borderRadius: "var(--radius-lg)" }}
+                      {...register("address.region")}
+                      defaultValue=""
+                    >
+                      <option value="">Seleccionar region</option>
+                      {chileanRegions.map((region) => (
+                        <option key={region.value} value={region.value}>
+                          {region.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.address?.region?.message ? (
+                      <p className="mt-2 text-[11px] text-error">{errors.address.region.message}</p>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    <label style={{ marginBottom: "8px", display: "block", fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)" }}>
+                      Comuna
+                    </label>
+                    <select
+                      className={cx(fieldClassName, errors.address?.commune?.message ? errorFieldClassName : "")}
+                      disabled={!region || coverageLoading || coverageAreas.length === 0}
+                      style={{ width: "100%", paddingLeft: "14px", paddingRight: "14px", paddingTop: "10px", paddingBottom: "10px", borderRadius: "var(--radius-lg)", opacity: !region || coverageLoading ? 0.7 : 1 }}
+                      {...register("address.commune")}
+                      onChange={handleCommuneChange}
+                      defaultValue=""
+                    >
+                      <option value="">
+                        {!region
+                          ? "Selecciona una region"
+                          : coverageLoading
+                            ? "Cargando comunas..."
+                            : "Seleccionar comuna"}
+                      </option>
+                      {coverageAreas.map((area) => (
+                        <option key={area.coverageCode} value={area.label} data-coverage-code={area.coverageCode}>
+                          {area.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.address?.commune?.message ? (
+                      <p className="mt-2 text-[11px] text-error">{errors.address.commune.message}</p>
+                    ) : coverageError ? (
+                      <p className="mt-2 text-[11px] text-error">{coverageError}</p>
+                    ) : null}
+                  </div>
+                </div>
+
                 <div className="form-grid-street">
                   <Input
                     error={errors.address?.street?.message}
@@ -466,42 +613,11 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                     {...register("address.apartment")}
                   />
                   <Input
-                    error={errors.address?.commune?.message}
-                    label="Comuna"
-                    placeholder="Antofagasta"
-                    {...register("address.commune")}
-                  />
-                </div>
-
-                <div className="form-grid-2col">
-                  <Input
                     error={errors.address?.city?.message}
                     label="Ciudad"
                     placeholder="Antofagasta"
                     {...register("address.city")}
                   />
-
-                  <div>
-                    <label style={{ marginBottom: "8px", display: "block", fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)" }}>
-                      Region
-                    </label>
-                    <select
-                      className={cx(fieldClassName, errors.address?.region?.message ? errorFieldClassName : "")}
-                      style={{ width: "100%", paddingLeft: "14px", paddingRight: "14px", paddingTop: "10px", paddingBottom: "10px", borderRadius: "var(--radius-lg)" }}
-                      {...register("address.region")}
-                      defaultValue=""
-                    >
-                      <option value="">Seleccionar region</option>
-                      {chileanRegions.map((region) => (
-                        <option key={region} value={region}>
-                          {region}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.address?.region?.message ? (
-                      <p className="mt-2 text-[11px] text-error">{errors.address.region.message}</p>
-                    ) : null}
-                  </div>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
