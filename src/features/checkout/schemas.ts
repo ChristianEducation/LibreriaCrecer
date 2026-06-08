@@ -17,7 +17,7 @@ export const createOrderAddressSchema = z.object({
   number: z.string().min(1),
   apartment: z.string().optional(),
   commune: z.string().min(1),
-  city: z.string().min(1),
+  city: z.string().optional(),
   region: z.string().min(1),
   zipCode: z.string().optional(),
   deliveryInstructions: z.string().optional(),

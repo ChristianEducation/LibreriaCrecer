@@ -194,6 +194,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
     clearErrors,
     setValue,
     watch,
+    unregister,
   } = form;
 
   const deliveryMethod = watch("deliveryMethod");
@@ -231,7 +232,6 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
           address?.street?.trim() &&
             address?.number?.trim() &&
             address?.commune?.trim() &&
-            address?.city?.trim() &&
             address?.region?.trim(),
         ) && !errors.address;
 
@@ -273,9 +273,9 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
         );
       }
     } else {
-      setValue("address", undefined, { shouldValidate: false });
+      unregister("address", { keepValue: false });
     }
-  }, [form, selectedDelivery.deliveryMethod, setValue]);
+  }, [form, selectedDelivery.deliveryMethod, setValue, unregister]);
 
   useEffect(() => {
     if (deliveryMethod !== "shipping" || !region) {
@@ -349,6 +349,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
       shouldTouch: true,
       shouldValidate: true,
     });
+    setValue("address.city", selectedCommune, { shouldValidate: false });
 
     if (selectedCommune) {
       clearErrors("address.commune");
@@ -605,29 +606,12 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                   />
                 </div>
 
-                <div className="form-grid-2col">
-                  <Input
-                    error={errors.address?.apartment?.message}
-                    label="Depto / oficina"
-                    placeholder="Opcional"
-                    {...register("address.apartment")}
-                  />
-                  <Input
-                    error={errors.address?.city?.message}
-                    label="Ciudad"
-                    placeholder="Antofagasta"
-                    {...register("address.city")}
-                  />
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-                  <Input
-                    error={errors.address?.zipCode?.message}
-                    label="Codigo postal"
-                    placeholder="Opcional"
-                    {...register("address.zipCode")}
-                  />
-                </div>
+                <Input
+                  error={errors.address?.apartment?.message}
+                  label="Depto / oficina"
+                  placeholder="Opcional"
+                  {...register("address.apartment")}
+                />
 
                 <Textarea
                   error={errors.address?.deliveryInstructions?.message}

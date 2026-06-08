@@ -25,7 +25,7 @@ export type CreateOrderAddressInput = {
   number: string;
   apartment?: string;
   commune: string;
-  city: string;
+  city?: string;
   region: string;
   zipCode?: string;
   deliveryInstructions?: string;

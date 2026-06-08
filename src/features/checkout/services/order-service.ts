@@ -344,7 +344,7 @@ export async function createOrder(data: CreateOrderInput): Promise<ServiceResult
             number: data.address.number,
             apartment: data.address.apartment,
             commune: data.address.commune,
-            city: data.address.city,
+            city: data.address.city || data.address.commune,
             region: data.address.region,
             zipCode: data.address.zipCode,
             deliveryInstructions: data.address.deliveryInstructions,
