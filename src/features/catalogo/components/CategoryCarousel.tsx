@@ -10,9 +10,9 @@ type CategoryCarouselProps = {
 export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselProps) {
   return (
     <section className="page-px bg-beige-warm" id="categorias" style={{ paddingTop: "8rem", paddingBottom: "8rem" }}>
-      <div className="storefront-container category-carousel-grid">
-        {/* Celda 1 — bloque de título */}
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", aspectRatio: "3/2" }}>
+      <div className="storefront-container">
+        {/* Bloque de título (fuera de la grilla) */}
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", marginBottom: "3rem" }}>
           <p
             className="eyebrow"
             style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}
@@ -28,7 +28,8 @@ export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselPr
           </h2>
         </div>
 
-        {/* Celdas 2-10 — cards */}
+        {/* Grilla de tarjetas */}
+        <div className="category-carousel-grid">
         {categories.length === 0 ? (
           <p style={{ fontSize: "13px", color: "var(--text-light)", gridColumn: "1 / -1" }}>No hay categorías disponibles.</p>
         ) : (
@@ -45,6 +46,7 @@ export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselPr
             />
           ))
         )}
+        </div>
       </div>
     </section>
   );

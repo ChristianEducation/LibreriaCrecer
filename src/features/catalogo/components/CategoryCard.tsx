@@ -47,7 +47,7 @@ export function CategoryCard({
               position: "absolute",
               inset: 0,
               backgroundImage: `url(${panoramaUrl})`,
-              backgroundSize: "cover",
+              backgroundSize: panoramaTotal > 1 ? `${panoramaTotal * 100}% 100%` : "cover",
               backgroundPosition: bgPosition,
               transition: "transform 0.4s ease",
             }}
