@@ -41,10 +41,7 @@ export function CategoryCard({
       {hasPanorama && (
         <style dangerouslySetInnerHTML={{
           __html: `
-            @media (min-width: 0px) { .puzzle-${slug} { ${getPuzzleStyle(panoramaIndex, panoramaTotal, 2)} } }
-            @media (min-width: 768px) { .puzzle-${slug} { ${getPuzzleStyle(panoramaIndex, panoramaTotal, 3)} } }
-            @media (min-width: 1024px) { .puzzle-${slug} { ${getPuzzleStyle(panoramaIndex, panoramaTotal, 4)} } }
-            @media (min-width: 1280px) { .puzzle-${slug} { ${getPuzzleStyle(panoramaIndex, panoramaTotal, 5)} } }
+            .puzzle-${slug} { ${getPuzzleStyle(panoramaIndex, panoramaTotal, 5)} }
           `
         }} />
       )}
