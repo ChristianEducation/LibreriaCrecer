@@ -33,6 +33,14 @@ const MOCK_CATEGORIES: PreviewCategory[] = [
 ];
 
 export default function AdminLandingCategoriasPage() {
+  type GalleryImage = {
+    name: string;
+    path: string;
+    publicUrl: string;
+    createdAt: string;
+    inUse: boolean;
+  };
+
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -44,6 +52,9 @@ export default function AdminLandingCategoriasPage() {
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewCategories, setPreviewCategories] = useState<PreviewCategory[]>(MOCK_CATEGORIES);
+  
+  const [gallery, setGallery] = useState<GalleryImage[]>([]);
+  const [loadingGallery, setLoadingGallery] = useState(false);
 
   const blobPreviewUrl = useMemo(
     () => (imageFile ? URL.createObjectURL(imageFile) : null),
@@ -58,6 +69,21 @@ export default function AdminLandingCategoriasPage() {
       if (blobPreviewUrl) URL.revokeObjectURL(blobPreviewUrl);
     };
   }, [blobPreviewUrl]);
+
+  async function loadGallery() {
+    setLoadingGallery(true);
+    try {
+      const res = await fetch("/api/admin/landing/galeria", { cache: "no-store" });
+      if (res.ok) {
+        const payload = await res.json();
+        setGallery(payload.data || []);
+      }
+    } catch {
+      // Silent error for gallery
+    } finally {
+      setLoadingGallery(false);
+    }
+  }
 
   async function loadBanner() {
     setLoading(true);
@@ -106,7 +132,27 @@ export default function AdminLandingCategoriasPage() {
 
   useEffect(() => {
     void loadBanner();
+    void loadGallery();
   }, []);
+
+  async function deleteGalleryImage(path: string) {
+    if (!confirm("¿Seguro que deseas eliminar esta imagen de forma permanente?")) return;
+    
+    try {
+      const res = await fetch(`/api/admin/landing/galeria?path=${encodeURIComponent(path)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null);
+        toast({ message: payload?.message ?? "Error al eliminar la imagen.", variant: "error" });
+        return;
+      }
+      toast({ message: "Imagen eliminada de la galería." });
+      void loadGallery();
+    } catch {
+      toast({ message: "Error de red al eliminar la imagen.", variant: "error" });
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -114,8 +160,8 @@ export default function AdminLandingCategoriasPage() {
     setError(null);
 
     try {
-      if (!bannerId && !imageFile) {
-        const message = "Debes subir una imagen para crear la panorámica.";
+      if (!bannerId && !imageFile && !currentImageUrl) {
+        const message = "Debes subir o seleccionar una imagen para crear la panorámica.";
         setError(message);
         toast({ message, variant: "error" });
         return;
@@ -129,6 +175,7 @@ export default function AdminLandingCategoriasPage() {
             title: title || undefined,
             position: "categories_panorama",
             is_active: isActive,
+            image_url: imageFile ? undefined : (currentImageUrl || undefined),
           }),
         });
 
@@ -149,19 +196,29 @@ export default function AdminLandingCategoriasPage() {
           });
         }
       } else {
-        const formData = new FormData();
-        formData.append("title", title);
-        formData.append("position", "categories_panorama");
-        formData.append("is_active", String(isActive));
-        formData.append("file", imageFile as File);
+        let res;
+        if (imageFile) {
+          const formData = new FormData();
+          formData.append("title", title);
+          formData.append("position", "categories_panorama");
+          formData.append("is_active", String(isActive));
+          formData.append("file", imageFile);
+          res = await fetch("/api/admin/landing/banners", { method: "POST", body: formData });
+        } else if (currentImageUrl) {
+          res = await fetch("/api/admin/landing/banners", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title,
+              position: "categories_panorama",
+              is_active: isActive,
+              image_url: currentImageUrl,
+            }),
+          });
+        }
 
-        const res = await fetch("/api/admin/landing/banners", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!res.ok) {
-          const payload = (await res.json().catch(() => null)) as { message?: string } | null;
+        if (!res?.ok) {
+          const payload = (await res?.json().catch(() => null)) as { message?: string } | null;
           const message = payload?.message ?? "No se pudo crear la imagen.";
           setError(message);
           toast({ message, variant: "error" });
@@ -172,6 +229,7 @@ export default function AdminLandingCategoriasPage() {
       toast({ message: "Imagen panorámica guardada correctamente." });
       setImageFile(null);
       await loadBanner();
+      void loadGallery();
       router.refresh();
     } finally {
       setSaving(false);
@@ -232,6 +290,56 @@ export default function AdminLandingCategoriasPage() {
                 {bannerId && currentImageUrl && !imageFile ? (
                   <p className="admin-field-help">Imagen actual. Sube una nueva para reemplazarla.</p>
                 ) : null}
+              </section>
+
+              <section className="admin-fieldset">
+                <div className="flex items-center justify-between">
+                  <p className="admin-section-label">Galería de imágenes previas</p>
+                  {loadingGallery && <p className="text-[11px] text-text-light">Cargando galería...</p>}
+                </div>
+                {gallery.length === 0 && !loadingGallery ? (
+                  <p className="admin-field-help">No hay imágenes previas en la galería.</p>
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 mt-2">
+                    {gallery.map((img) => {
+                      const isSelected = currentImageUrl === img.publicUrl && !imageFile;
+                      return (
+                        <div 
+                          key={img.path} 
+                          className="relative group aspect-[3/2] rounded-md overflow-hidden border-2 transition-all cursor-pointer hover:border-gold" 
+                          style={{ borderColor: isSelected ? 'var(--gold)' : 'var(--border)' }} 
+                          onClick={() => { setImageFile(null); setCurrentImageUrl(img.publicUrl); }}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={img.publicUrl} alt={img.name} className="w-full h-full object-cover" />
+                          
+                          {isSelected && (
+                            <div className="absolute top-1.5 left-1.5 bg-gold text-white text-[10px] px-1.5 py-0.5 rounded-sm font-medium z-10 shadow-sm">
+                              Seleccionada
+                            </div>
+                          )}
+                          {img.inUse && !isSelected && (
+                            <div className="absolute top-1.5 left-1.5 bg-text text-white text-[10px] px-1.5 py-0.5 rounded-sm font-medium z-10 shadow-sm">
+                              En uso
+                            </div>
+                          )}
+                          
+                          {!img.inUse && (
+                            <button 
+                              type="button" 
+                              onClick={(e) => { e.stopPropagation(); void deleteGalleryImage(img.path); }} 
+                              className="absolute top-1.5 right-1.5 bg-white/95 text-red-600 hover:text-red-800 hover:bg-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-sm" 
+                              title="Eliminar permanentemente"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <p className="admin-field-help mt-2">Haz clic en una imagen para reutilizarla. Las imágenes en uso no se pueden borrar.</p>
               </section>
 
               <section className="admin-fieldset">

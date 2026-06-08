@@ -2,6 +2,7 @@ export { getSupabaseStorageClient } from "./client";
 export {
   deleteImage,
   getPublicUrl,
+  listImages,
   uploadBannerImage,
   uploadCategoryImage,
   uploadImage,

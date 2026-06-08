@@ -2,7 +2,7 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
 import { banners, featuredProducts, heroSlides, landingSectionCopy, products } from "@/integrations/drizzle/schema";
-import { deleteImage, STORAGE_BUCKETS, uploadBannerImage as uploadBannerImageToStorage } from "@/integrations/supabase";
+import { deleteImage, listImages, STORAGE_BUCKETS, uploadBannerImage as uploadBannerImageToStorage } from "@/integrations/supabase";
 import {
   type LandingSectionKey,
   MONTHLY_SELECTION_SECTION,
@@ -226,6 +226,46 @@ export async function uploadBannerImage(file: File) {
   }
 
   throw new Error(uploadResult.error.message);
+}
+
+export async function getBannerGallery() {
+  const [promoImages, slideImages, activeBanners, activeSlides] = await Promise.all([
+    listImages(STORAGE_BUCKETS.BANNERS, "promo"),
+    listImages(STORAGE_BUCKETS.BANNERS, "slide"),
+    db.select({ imageUrl: banners.imageUrl }).from(banners),
+    db.select({ imageUrl: heroSlides.imageUrl }).from(heroSlides),
+  ]);
+
+  if (!promoImages.success || !slideImages.success) {
+    throw new Error("Failed to list gallery images");
+  }
+
+  const activeUrls = new Set([
+    ...activeBanners.map(b => b.imageUrl),
+    ...activeSlides.map(s => s.imageUrl),
+  ]);
+
+  const allImages = [...(promoImages.data || []), ...(slideImages.data || [])]
+    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+
+  return allImages.map(img => ({
+    name: img.name,
+    path: img.path,
+    publicUrl: img.publicUrl,
+    createdAt: img.createdAt,
+    inUse: activeUrls.has(img.publicUrl),
+  }));
+}
+
+export async function deleteBannerFromGallery(path: string) {
+  const gallery = await getBannerGallery();
+  const image = gallery.find(img => img.path === path);
+  
+  if (!image) return false;
+  if (image.inUse) throw new Error("Cannot delete an image that is currently in use");
+
+  await deleteImage(STORAGE_BUCKETS.BANNERS, path);
+  return true;
 }
 
 function getCuratedSectionCondition(section?: string) {

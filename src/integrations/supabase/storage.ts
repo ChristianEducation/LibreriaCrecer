@@ -128,6 +128,40 @@ export async function deleteImage(bucket: StorageBucket, path: string): Promise<
   }
 }
 
+export async function listImages(bucket: StorageBucket, folderPath: string) {
+  try {
+    const supabaseStorageClient = getSupabaseStorageClient();
+    const { data, error } = await supabaseStorageClient.storage.from(bucket).list(folderPath, {
+      limit: 100,
+      sortBy: { column: "created_at", order: "desc" },
+    });
+    
+    if (error) {
+      return createStorageError(`Failed to list images in ${bucket}/${folderPath}.`, error);
+    }
+    
+    const files = (data || [])
+      .filter((file) => file.name !== ".emptyFolderPlaceholder")
+      .map((file) => {
+        const path = `${folderPath}/${file.name}`;
+        const { data: publicData } = supabaseStorageClient.storage.from(bucket).getPublicUrl(path);
+        return {
+          name: file.name,
+          path,
+          publicUrl: publicData.publicUrl,
+          createdAt: file.created_at,
+        };
+      });
+
+    return {
+      success: true,
+      data: files,
+    };
+  } catch (error) {
+    return createStorageError(`Unexpected error listing images in ${bucket}/${folderPath}.`, error);
+  }
+}
+
 export async function uploadProductImage(file: File, productId: string): Promise<StorageUploadResult> {
   const validation = ensureValidImage(file, STORAGE_BUCKETS.PRODUCTS);
   if (!validation.ok) {
