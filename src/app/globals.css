@@ -928,28 +928,30 @@ body {
   }
 }
 
-/* CategoryCarousel — grilla responsive 2 / 3 / 4 / 5 columnas */
-.category-carousel-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+/* CategoryCarousel — Carrusel deslizante en mobile, grilla en desktop */
+.category-carousel-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  padding-bottom: 8px; /* Espacio para sombras */
+}
+.category-carousel-wrapper::-webkit-scrollbar {
+  display: none; /* Safari/Chrome */
 }
 
-@media (min-width: 768px) {
-  .category-carousel-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+.category-carousel-grid {
+  display: grid;
+  /* En mobile: forzamos columnas anchas (ej. 160px) para que se desborde y active el scroll */
+  grid-template-columns: repeat(5, 160px);
+  gap: 12px;
+  width: max-content; /* Permite que la cuadrícula crezca más que la pantalla */
 }
 
 @media (min-width: 1024px) {
   .category-carousel-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1280px) {
-  .category-carousel-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+    width: 100%; /* En desktop ocupa todo el ancho y se ajusta */
   }
 }
 

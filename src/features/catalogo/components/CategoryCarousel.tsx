@@ -28,24 +28,26 @@ export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselPr
           </h2>
         </div>
 
-        {/* Grilla de tarjetas */}
-        <div className="category-carousel-grid">
-        {categories.length === 0 ? (
-          <p style={{ fontSize: "13px", color: "var(--text-light)", gridColumn: "1 / -1" }}>No hay categorías disponibles.</p>
-        ) : (
-          categories.map((cat, index) => (
-            <CategoryCard
-              imageUrl={cat.imageUrl}
-              key={cat.id}
-              name={cat.name}
-              panoramaIndex={index}
-              panoramaTotal={categories.length}
-              panoramaUrl={panoramaUrl ?? null}
-              productCount={cat.productCount}
-              slug={cat.slug}
-            />
-          ))
-        )}
+        {/* Carrusel móvil / Grilla desktop */}
+        <div className="category-carousel-wrapper">
+          <div className="category-carousel-grid">
+          {categories.length === 0 ? (
+            <p style={{ fontSize: "13px", color: "var(--text-light)", gridColumn: "1 / -1" }}>No hay categorías disponibles.</p>
+          ) : (
+            categories.map((cat, index) => (
+              <CategoryCard
+                imageUrl={cat.imageUrl}
+                key={cat.id}
+                name={cat.name}
+                panoramaIndex={index}
+                panoramaTotal={categories.length}
+                panoramaUrl={panoramaUrl ?? null}
+                productCount={cat.productCount}
+                slug={cat.slug}
+              />
+            ))
+          )}
+          </div>
         </div>
       </div>
     </section>

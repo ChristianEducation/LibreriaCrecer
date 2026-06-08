@@ -451,18 +451,20 @@ export default function AdminLandingCategoriasPage() {
                 </div>
               ) : null}
 
-              <div className="category-carousel-grid">
-                {previewCategories.map((cat, index) => (
-                  <CategoryCard
-                    key={cat.id}
-                    imageUrl={cat.imageUrl}
-                    name={cat.name}
-                    panoramaIndex={index}
-                    panoramaTotal={previewCategories.length}
-                    panoramaUrl={panoramaPreviewUrl}
-                    slug={cat.slug}
-                  />
-                ))}
+              <div className="category-carousel-wrapper">
+                <div className="category-carousel-grid">
+                  {previewCategories.map((cat, index) => (
+                    <CategoryCard
+                      key={cat.id}
+                      imageUrl={cat.imageUrl}
+                      name={cat.name}
+                      panoramaIndex={index}
+                      panoramaTotal={previewCategories.length}
+                      panoramaUrl={panoramaPreviewUrl}
+                      slug={cat.slug}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
