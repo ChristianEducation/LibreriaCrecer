@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { CreateOrderSchema } from "@/features/checkout/schemas";
 import { createOrder } from "@/features/checkout/services/order-service";
+import type { CreateOrderInput } from "@/features/checkout/types";
 
 export async function POST(request: Request) {
   try {
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await createOrder(parsed.data);
+    const result = await createOrder(parsed.data as unknown as CreateOrderInput);
 
     if (!result.success) {
       if (result.code === "stock_insufficient") {

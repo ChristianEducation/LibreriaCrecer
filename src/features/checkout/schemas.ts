@@ -28,17 +28,32 @@ export const CreateOrderSchema = z
     items: z.array(createOrderItemSchema).min(1),
     customer: createOrderCustomerSchema,
     deliveryMethod: z.enum(["pickup", "shipping"]),
-    address: createOrderAddressSchema.optional(),
+    address: z
+      .object({
+        street: z.string().optional(),
+        number: z.string().optional(),
+        apartment: z.string().optional(),
+        commune: z.string().optional(),
+        city: z.string().optional(),
+        region: z.string().optional(),
+        zipCode: z.string().optional(),
+        deliveryInstructions: z.string().optional(),
+      })
+      .optional(),
     couponCode: z.string().trim().min(1).optional(),
     notes: z.string().trim().max(500).optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.deliveryMethod === "shipping" && !data.address) {
-      ctx.addIssue({
-        path: ["address"],
-        code: z.ZodIssueCode.custom,
-        message: "Address is required when deliveryMethod is 'shipping'.",
-      });
+    if (data.deliveryMethod === "shipping") {
+      const parsed = createOrderAddressSchema.safeParse(data.address || {});
+      if (!parsed.success) {
+        parsed.error.issues.forEach((issue) => {
+          ctx.addIssue({
+            ...issue,
+            path: ["address", ...issue.path],
+          });
+        });
+      }
     }
   });
 
