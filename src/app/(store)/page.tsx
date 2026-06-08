@@ -17,7 +17,6 @@ import {
   getLibrosMesViewModel,
   getNewProducts,
 } from "@/features/catalogo";
-import { LandingWithSplash } from "@/features/landing/components/LandingWithSplash";
 import { MONTHLY_SELECTION_SECTION } from "@/shared/config/landing";
 
 export const metadata: Metadata = {
@@ -41,24 +40,22 @@ export default async function HomePage() {
   ]);
 
   return (
-    <LandingWithSplash>
-      <main className="bg-beige">
-        <HeroSlider data={hero} />
+    <main className="bg-beige">
+      <HeroSlider data={hero} />
 
-        <LibrosMesSection copy={librosMesCopy} items={seleccion} />
+      <LibrosMesSection copy={librosMesCopy} items={seleccion} />
 
-        <CategoryCarousel categories={categorias} panoramaUrl={categoriasPanorama?.imageUrl ?? null} />
+      <CategoryCarousel categories={categorias} panoramaUrl={categoriasPanorama?.imageUrl ?? null} />
 
-        <RecentProductsCarousel products={novedades} />
+      <RecentProductsCarousel products={novedades} />
 
-        <QuoteSection
-          author={heroIntermedio?.description ?? "Crecer Librería Católica"}
-          backgroundImageUrl={heroIntermedio?.imageUrl ?? hero.slides[0]?.imageUrl ?? null}
-          quote={heroIntermedio?.title ?? "Creemos en libros que no solo informan, sino que acompañan. Textos que permanecen abiertos sobre la mesa, vuelven a la conversación y se convierten en hábito."}
-        />
+      <QuoteSection
+        author={heroIntermedio?.description ?? "Crecer Librería Católica"}
+        backgroundImageUrl={heroIntermedio?.imageUrl ?? hero.slides[0]?.imageUrl ?? null}
+        quote={heroIntermedio?.title ?? "Creemos en libros que no solo informan, sino que acompañan. Textos que permanecen abiertos sobre la mesa, vuelven a la conversación y se convierten en hábito."}
+      />
 
-        <InstagramSection />
-      </main>
-    </LandingWithSplash>
+      <InstagramSection />
+    </main>
   );
 }
