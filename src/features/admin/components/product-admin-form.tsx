@@ -65,6 +65,9 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
   const [mainImageFile, setMainImageFile] = useState<File | null>(null);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<ProductImage[]>(initialData?.images ?? []);
+  const [coverLoading, setCoverLoading] = useState(false);
+  const [coverCandidates, setCoverCandidates] = useState<{ url: string; source: string }[]>([]);
+  const [coverMessage, setCoverMessage] = useState<string | null>(null);
 
   const defaultValues = useMemo<SchemaInput>(
     () => ({
@@ -217,6 +220,45 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
     toast({ message: "Imagen eliminada." });
   }
 
+  async function buscarPortada() {
+    setCoverLoading(true);
+    setCoverMessage(null);
+    setCoverCandidates([]);
+    try {
+      const sku = form.getValues("sku") ?? "";
+      const title = form.getValues("title") ?? "";
+      const author = form.getValues("author") ?? "";
+      const params = new URLSearchParams();
+      if (sku) params.set("isbn", sku);
+      if (title) params.set("titulo", title);
+      if (author) params.set("autor", author);
+      const response = await fetch(`/api/admin/productos/buscar-portada?${params.toString()}`, { cache: "no-store" });
+      const payload = (await response.json().catch(() => null)) as { data?: { url: string; source: string }[] } | null;
+      const data = payload?.data ?? [];
+      setCoverCandidates(data);
+      if (data.length === 0) setCoverMessage("No se encontraron portadas. Sube una manualmente.");
+    } catch {
+      setCoverMessage("No se pudo buscar la portada.");
+    } finally {
+      setCoverLoading(false);
+    }
+  }
+
+  async function usarPortada(url: string) {
+    try {
+      const response = await fetch(`/api/admin/productos/portada-proxy?url=${encodeURIComponent(url)}`);
+      if (!response.ok) { toast({ message: "No se pudo cargar esa portada.", variant: "error" }); return; }
+      const blob = await response.blob();
+      const file = new File([blob], "portada.jpg", { type: blob.type || "image/jpeg" });
+      setMainImageFile(file);
+      setCoverCandidates([]);
+      setCoverMessage(null);
+      toast({ message: "Portada cargada. Recuerda guardar el producto." });
+    } catch {
+      toast({ message: "No se pudo cargar esa portada.", variant: "error" });
+    }
+  }
+
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
@@ -338,6 +380,61 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
               onFileSelect={setMainImageFile}
               previewUrl={mainPreview}
             />
+
+            {/* Buscar portada online */}
+            <div style={{ marginTop: "16px" }}>
+              <button
+                type="button"
+                disabled={coverLoading}
+                onClick={buscarPortada}
+                className="w-full rounded-[8px] border border-dashed border-gold/40 text-sm text-moss transition-colors hover:border-gold hover:bg-gold/5 disabled:opacity-50"
+                style={{ padding: "10px 16px" }}
+              >
+                {coverLoading ? "Buscando portada..." : "Buscar portada online"}
+              </button>
+
+              {coverMessage ? (
+                <p className="text-[12px] text-text-mid" style={{ marginTop: "8px" }}>{coverMessage}</p>
+              ) : null}
+
+              {coverCandidates.length > 0 ? (
+                <div style={{ marginTop: "12px" }}>
+                  <p className="text-[11px] uppercase tracking-[0.12em] text-text-light" style={{ marginBottom: "8px" }}>Resultados</p>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {coverCandidates.map((candidate) => (
+                      <div key={candidate.url} className="group relative overflow-hidden rounded-[8px] border border-border">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          alt="Portada candidata"
+                          className="w-full object-cover"
+                          src={`/api/admin/productos/portada-proxy?url=${encodeURIComponent(candidate.url)}`}
+                          style={{ aspectRatio: "2/3" }}
+                        />
+                        <div
+                          className="absolute inset-0 flex items-end opacity-0 transition-opacity group-hover:opacity-100"
+                          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.6), transparent)" }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => usarPortada(candidate.url)}
+                            className="w-full rounded-[6px] bg-white text-[12px] font-medium text-moss"
+                            style={{ margin: "8px", padding: "6px 8px" }}
+                          >
+                            Usar esta
+                          </button>
+                        </div>
+                        <span
+                          className="absolute text-[9px] text-white"
+                          style={{ right: "4px", top: "4px", borderRadius: "4px", background: "rgba(0,0,0,0.5)", padding: "2px 6px" }}
+                        >
+                          {candidate.source === "openlibrary" ? "Open Library" : "Google Books"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
 
             <div className="mt-5 border-t border-border pt-4">
               <h3 className="mb-3 text-[0.78rem] font-medium text-text">Galeria</h3>
