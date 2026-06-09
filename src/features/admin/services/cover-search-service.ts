@@ -13,6 +13,12 @@ type GoogleBooksResponse = {
   }>;
 };
 
+type OpenLibrarySearchResponse = {
+  docs?: Array<{
+    cover_i?: number;
+  }>;
+};
+
 /**
  * Normaliza un ISBN: extrae el primer bloque de 13 dígitos que empiece en 978/979.
  * Si no encuentra un ISBN-13 válido, retorna null.
@@ -32,8 +38,113 @@ function normalizeGoogleBooksImageUrl(url: string): string {
   return normalized;
 }
 
+/* ---------- Open Library: portada directa por ISBN ---------- */
+async function searchOpenLibraryDirect(isbn: string): Promise<CoverCandidate[]> {
+  try {
+    const checkUrl = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg?default=false`;
+    const response = await fetch(checkUrl, { method: "HEAD" });
+    if (response.ok) {
+      return [{
+        url: `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`,
+        source: "openlibrary",
+      }];
+    }
+  } catch (error) {
+    console.warn("Open Library direct cover check failed", error);
+  }
+  return [];
+}
+
+/* ---------- Open Library: Search API (por ISBN, título o autor) ---------- */
+async function searchOpenLibrarySearch(params: {
+  isbn?: string | null;
+  title?: string;
+  author?: string;
+}): Promise<CoverCandidate[]> {
+  try {
+    const queryParts: string[] = [];
+    if (params.isbn) {
+      queryParts.push(`isbn=${encodeURIComponent(params.isbn)}`);
+    } else if (params.title) {
+      queryParts.push(`title=${encodeURIComponent(params.title)}`);
+      if (params.author) {
+        queryParts.push(`author=${encodeURIComponent(params.author)}`);
+      }
+    } else {
+      return [];
+    }
+
+    const searchUrl = `https://openlibrary.org/search.json?${queryParts.join("&")}&fields=cover_i&limit=4`;
+    const response = await fetch(searchUrl);
+    if (!response.ok) return [];
+
+    const data = (await response.json()) as OpenLibrarySearchResponse;
+    const candidates: CoverCandidate[] = [];
+    for (const doc of data.docs ?? []) {
+      if (doc.cover_i) {
+        candidates.push({
+          url: `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`,
+          source: "openlibrary",
+        });
+      }
+    }
+    return candidates;
+  } catch (error) {
+    console.warn("Open Library search API failed", error);
+    return [];
+  }
+}
+
+/* ---------- Google Books ---------- */
+async function searchGoogleBooks(params: {
+  isbn?: string | null;
+  title?: string;
+  author?: string;
+}): Promise<CoverCandidate[]> {
+  try {
+    let query: string;
+    if (params.isbn) {
+      query = `isbn:${params.isbn}`;
+    } else if (params.title) {
+      query = `intitle:${encodeURIComponent(params.title)}`;
+      if (params.author) {
+        query += `+inauthor:${encodeURIComponent(params.author)}`;
+      }
+    } else {
+      return [];
+    }
+
+    const gbUrl = `https://www.googleapis.com/books/v1/volumes?q=${query}`;
+    const gbResponse = await fetch(gbUrl);
+    if (!gbResponse.ok) return [];
+
+    const data = (await gbResponse.json()) as GoogleBooksResponse;
+    const maxItems = params.isbn ? 1 : 3;
+    const items = data.items?.slice(0, maxItems) ?? [];
+    const candidates: CoverCandidate[] = [];
+    for (const item of items) {
+      const imageUrl =
+        item.volumeInfo?.imageLinks?.thumbnail ??
+        item.volumeInfo?.imageLinks?.smallThumbnail;
+      if (imageUrl) {
+        candidates.push({
+          url: normalizeGoogleBooksImageUrl(imageUrl),
+          source: "googlebooks",
+        });
+      }
+    }
+    return candidates;
+  } catch (error) {
+    console.warn("Google Books search failed", error);
+    return [];
+  }
+}
+
+/* ---------- Orquestador principal ---------- */
+
 /**
  * Busca portadas de libros en Open Library y Google Books.
+ * Ejecuta todas las fuentes en paralelo para máxima velocidad.
  * Nunca lanza — devuelve lo que se haya podido reunir (puede ser []).
  */
 export async function searchCovers(input: {
@@ -41,77 +152,29 @@ export async function searchCovers(input: {
   title?: string;
   author?: string;
 }): Promise<CoverCandidate[]> {
-  const candidates: CoverCandidate[] = [];
   const isbn = input.isbn ? normalizeIsbn(input.isbn) : null;
 
-  if (isbn) {
-    // — Open Library (HEAD check) —
-    try {
-      const olCheckUrl = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg?default=false`;
-      const olResponse = await fetch(olCheckUrl, { method: "HEAD" });
-      if (olResponse.ok) {
-        candidates.push({
-          url: `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`,
-          source: "openlibrary",
-        });
-      }
-    } catch (error) {
-      console.warn("Open Library cover search failed", error);
-    }
+  // Lanzar todas las búsquedas en paralelo
+  const searches: Promise<CoverCandidate[]>[] = [];
 
-    // — Google Books por ISBN —
-    try {
-      const gbUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
-      const gbResponse = await fetch(gbUrl);
-      if (gbResponse.ok) {
-        const data = (await gbResponse.json()) as GoogleBooksResponse;
-        const item = data.items?.[0];
-        const imageUrl =
-          item?.volumeInfo?.imageLinks?.thumbnail ??
-          item?.volumeInfo?.imageLinks?.smallThumbnail;
-        if (imageUrl) {
-          candidates.push({
-            url: normalizeGoogleBooksImageUrl(imageUrl),
-            source: "googlebooks",
-          });
-        }
-      }
-    } catch (error) {
-      console.warn("Google Books ISBN search failed", error);
-    }
+  if (isbn) {
+    searches.push(searchOpenLibraryDirect(isbn));
+    searches.push(searchOpenLibrarySearch({ isbn }));
+    searches.push(searchGoogleBooks({ isbn }));
   } else if (input.title) {
-    // — Google Books por título + autor —
-    try {
-      let query = `intitle:${encodeURIComponent(input.title)}`;
-      if (input.author) {
-        query += `+inauthor:${encodeURIComponent(input.author)}`;
-      }
-      const gbUrl = `https://www.googleapis.com/books/v1/volumes?q=${query}`;
-      const gbResponse = await fetch(gbUrl);
-      if (gbResponse.ok) {
-        const data = (await gbResponse.json()) as GoogleBooksResponse;
-        const items = data.items?.slice(0, 3) ?? [];
-        for (const item of items) {
-          const imageUrl =
-            item.volumeInfo?.imageLinks?.thumbnail ??
-            item.volumeInfo?.imageLinks?.smallThumbnail;
-          if (imageUrl) {
-            candidates.push({
-              url: normalizeGoogleBooksImageUrl(imageUrl),
-              source: "googlebooks",
-            });
-          }
-        }
-      }
-    } catch (error) {
-      console.warn("Google Books title search failed", error);
-    }
+    searches.push(searchOpenLibrarySearch({ title: input.title, author: input.author }));
+    searches.push(searchGoogleBooks({ title: input.title, author: input.author }));
   }
+
+  if (searches.length === 0) return [];
+
+  const results = await Promise.all(searches);
+  const allCandidates = results.flat();
 
   // Deduplicar por URL y limitar a 4
   const seen = new Set<string>();
   const unique: CoverCandidate[] = [];
-  for (const candidate of candidates) {
+  for (const candidate of allCandidates) {
     if (!seen.has(candidate.url)) {
       seen.add(candidate.url);
       unique.push(candidate);
