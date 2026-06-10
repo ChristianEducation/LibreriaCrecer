@@ -164,7 +164,7 @@ async function searchGoogleCustomSearch(queryText: string): Promise<CoverCandida
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Google Custom Search Error HTTP", response.status, errorText);
-      throw new Error(`GOOGLE_ERROR: ${response.status} - ${errorText}`);
+      return [];
     }
 
     const data = (await response.json()) as GoogleCustomSearchResponse;
@@ -187,8 +187,7 @@ async function searchGoogleCustomSearch(queryText: string): Promise<CoverCandida
     return candidates;
   } catch (error) {
     console.warn("Google Custom Search failed", error);
-    // IMPORTANTE: Volvemos a lanzar el error para que rompa todo y llegue a la pantalla
-    throw error;
+    return [];
   }
 }
 
