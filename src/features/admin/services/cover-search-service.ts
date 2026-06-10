@@ -153,7 +153,11 @@ async function searchGoogleCustomSearch(queryText: string): Promise<CoverCandida
     const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
     const cx = process.env.GOOGLE_SEARCH_ENGINE_ID;
 
-    if (!apiKey || !cx || !queryText.trim()) {
+    if (!apiKey || !cx) {
+      throw new Error(`FALTAN VARIABLES EN VERCEL: apiKey=${!!apiKey}, cx=${!!cx}`);
+    }
+    
+    if (!queryText.trim()) {
       return [];
     }
 
@@ -164,7 +168,7 @@ async function searchGoogleCustomSearch(queryText: string): Promise<CoverCandida
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Google Custom Search Error HTTP", response.status, errorText);
-      return [];
+      throw new Error(`GOOGLE_ERROR: ${response.status} - ${errorText}`);
     }
 
     const data = (await response.json()) as GoogleCustomSearchResponse;
@@ -187,7 +191,7 @@ async function searchGoogleCustomSearch(queryText: string): Promise<CoverCandida
     return candidates;
   } catch (error) {
     console.warn("Google Custom Search failed", error);
-    return [];
+    throw error;
   }
 }
 
