@@ -11,7 +11,7 @@ import {
   type StorageUploadResult,
 } from "./types";
 
-const VALID_IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp"]);
+const VALID_IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "avif", "jfif"]);
 const FIVE_MB_IN_BYTES = 5 * 1024 * 1024;
 const TEN_MB_IN_BYTES = 10 * 1024 * 1024;
 
@@ -47,7 +47,7 @@ function ensureValidImage(file: File, bucket: StorageBucket) {
   if (!VALID_IMAGE_EXTENSIONS.has(extension)) {
     return {
       ok: false as const,
-      error: `Invalid file format for ${bucket}. Allowed formats: jpg, jpeg, png, webp.`,
+      error: `Formato inválido. Soportados: jpg, png, webp, avif, jfif.`,
     };
   }
 

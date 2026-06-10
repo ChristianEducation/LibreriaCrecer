@@ -140,20 +140,25 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
       const formData = new FormData();
       formData.append("file", mainImageFile);
       formData.append("isMain", "true");
-      await fetch(`/api/admin/productos/${targetProductId}/imagenes`, {
+      const res = await fetch(`/api/admin/productos/${targetProductId}/imagenes`, {
         method: "POST",
         body: formData,
       });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload?.message || "Error al subir la imagen principal");
+      }
     }
 
     for (const file of galleryFiles) {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("isMain", "false");
-      await fetch(`/api/admin/productos/${targetProductId}/imagenes`, {
+      const res = await fetch(`/api/admin/productos/${targetProductId}/imagenes`, {
         method: "POST",
         body: formData,
       });
+      if (!res.ok) throw new Error("Error al subir una imagen de la galería");
     }
   }
 
@@ -194,8 +199,8 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
 
       toast({ message: "Producto guardado correctamente." });
       window.location.href = "/admin/productos";
-    } catch {
-      const message = "Ocurrio un error inesperado.";
+    } catch (e: any) {
+      const message = e instanceof Error ? e.message : "Ocurrio un error inesperado al guardar.";
       setError(message);
       toast({ message, variant: "error" });
     } finally {
