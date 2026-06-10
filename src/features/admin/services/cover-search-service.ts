@@ -161,7 +161,7 @@ async function searchGoogleCustomSearch(params: {
       return [];
     }
 
-    let queryParts: string[] = [];
+    const queryParts: string[] = [];
     if (params.isbn) {
       queryParts.push(params.isbn);
     }
