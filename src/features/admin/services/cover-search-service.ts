@@ -174,8 +174,9 @@ async function searchGoogleCustomSearch(params: {
 
     if (queryParts.length === 0) return [];
 
-    // Buscamos "[ISBN/Título] portada libro" para mejorar resultados
-    const query = encodeURIComponent(`${queryParts.join(" ")} portada libro`);
+    // Buscamos solo por ISBN/Título sin sufijos inventados, porque en sitios de e-commerce 
+    // como MercadoLibre o Antártica no aparece la frase "portada libro" y eso arruina el match.
+    const query = encodeURIComponent(queryParts.join(" "));
 
     const url = `https://customsearch.googleapis.com/customsearch/v1?q=${query}&cx=${cx}&key=${apiKey}&searchType=image&num=4`;
     const response = await fetch(url);
