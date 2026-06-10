@@ -164,7 +164,7 @@ async function searchGoogleCustomSearch(queryText: string): Promise<CoverCandida
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Google Custom Search Error HTTP", response.status, errorText);
-      return [];
+      throw new Error(`GOOGLE_ERROR: ${response.status} - ${errorText}`);
     }
 
     const data = (await response.json()) as GoogleCustomSearchResponse;
