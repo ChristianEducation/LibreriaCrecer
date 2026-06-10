@@ -383,15 +383,35 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
 
             {/* Buscar portada online */}
             <div style={{ marginTop: "16px" }}>
-              <button
-                type="button"
-                disabled={coverLoading}
-                onClick={buscarPortada}
-                className="w-full rounded-[8px] border border-dashed border-gold/40 text-sm text-moss transition-colors hover:border-gold hover:bg-gold/5 disabled:opacity-50"
-                style={{ padding: "10px 16px" }}
-              >
-                {coverLoading ? "Buscando portada..." : "Buscar portada online"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={coverLoading}
+                  onClick={buscarPortada}
+                  className="flex-1 rounded-[8px] border border-dashed border-gold/40 text-[13px] text-moss transition-colors hover:border-gold hover:bg-gold/5 disabled:opacity-50"
+                  style={{ padding: "8px 10px" }}
+                >
+                  {coverLoading ? "Buscando..." : "Búsqueda automática"}
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    const sku = form.getValues("sku") ?? "";
+                    const title = form.getValues("title") ?? "";
+                    const q = sku ? sku : title;
+                    if (q) {
+                      window.open(`https://www.google.com/search?udm=2&q=${encodeURIComponent(q)}`, "_blank");
+                    } else {
+                      toast({ message: "Ingresa el SKU o Título primero para buscar en Google." });
+                    }
+                  }}
+                  className="flex-1 rounded-[8px] border border-border bg-white text-[13px] text-text-mid transition-colors hover:border-text-light hover:bg-gray-50"
+                  style={{ padding: "8px 10px" }}
+                >
+                  Buscar en Google
+                </button>
+              </div>
 
               {coverMessage ? (
                 <p className="text-[12px] text-text-mid" style={{ marginTop: "8px" }}>{coverMessage}</p>
