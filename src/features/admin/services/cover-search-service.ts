@@ -179,9 +179,15 @@ async function searchGoogleCustomSearch(params: {
 
     const url = `https://customsearch.googleapis.com/customsearch/v1?q=${query}&cx=${cx}&key=${apiKey}&searchType=image&num=4`;
     const response = await fetch(url);
-    if (!response.ok) return [];
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Google Custom Search Error HTTP", response.status, errorText);
+      return [];
+    }
 
     const data = (await response.json()) as GoogleCustomSearchResponse;
+    console.log("Google Custom Search Exito, items encontrados:", data.items?.length || 0);
+
     const candidates: CoverCandidate[] = [];
 
     for (const item of data.items ?? []) {
