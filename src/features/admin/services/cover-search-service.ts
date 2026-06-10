@@ -187,7 +187,8 @@ async function searchGoogleCustomSearch(queryText: string): Promise<CoverCandida
     return candidates;
   } catch (error) {
     console.warn("Google Custom Search failed", error);
-    return [];
+    // IMPORTANTE: Volvemos a lanzar el error para que rompa todo y llegue a la pantalla
+    throw error;
   }
 }
 

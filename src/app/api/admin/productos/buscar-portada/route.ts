@@ -21,7 +21,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("GET /api/admin/productos/buscar-portada failed", error);
     return NextResponse.json(
-      { error: "internal_server_error", message: "No se pudo buscar portadas." },
+      { error: "internal_server_error", message: error instanceof Error ? error.message : "No se pudo buscar portadas." },
       { status: 500 },
     );
   }
