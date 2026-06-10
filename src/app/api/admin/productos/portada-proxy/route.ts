@@ -4,11 +4,29 @@ const ALLOWED_HOSTS = [
   "covers.openlibrary.org",
   "books.google.com",
   "books.googleusercontent.com",
+  "buscalibre.cl",
+  "buscalibre.com",
+  "sanpablochile.cl",
+  "paulinas.cl",
+  "antartica.cl",
+  "amazon.com",
+  "amazon.es",
+  "casadellibro.com",
+  "todostuslibros.com",
+  "goodreads.com",
+  "mercadolibre.cl",
+  "agape.cl"
 ];
 
 function isHostAllowed(hostname: string): boolean {
   if (ALLOWED_HOSTS.includes(hostname)) return true;
   if (hostname.endsWith(".googleusercontent.com")) return true;
+  
+  // Para los sitios de la lista, también permitimos sus subdominios (ej. www.buscalibre.cl, images.amazon.com)
+  for (const host of ALLOWED_HOSTS) {
+    if (hostname.endsWith(`.${host}`)) return true;
+  }
+  
   return false;
 }
 

@@ -1,6 +1,6 @@
 import "server-only";
 
-export type CoverCandidate = { url: string; source: "openlibrary" | "googlebooks" };
+export type CoverCandidate = { url: string; source: "openlibrary" | "googlebooks" | "google_custom_search" };
 
 type GoogleBooksResponse = {
   items?: Array<{
@@ -16,6 +16,13 @@ type GoogleBooksResponse = {
 type OpenLibrarySearchResponse = {
   docs?: Array<{
     cover_i?: number;
+  }>;
+};
+
+type GoogleCustomSearchResponse = {
+  items?: Array<{
+    link?: string;
+    mime?: string;
   }>;
 };
 
@@ -140,10 +147,66 @@ async function searchGoogleBooks(params: {
   }
 }
 
+/* ---------- Google Custom Search ---------- */
+async function searchGoogleCustomSearch(params: {
+  isbn?: string | null;
+  title?: string;
+  author?: string;
+}): Promise<CoverCandidate[]> {
+  try {
+    const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
+    const cx = process.env.GOOGLE_SEARCH_ENGINE_ID;
+
+    if (!apiKey || !cx) {
+      return [];
+    }
+
+    let queryParts: string[] = [];
+    if (params.isbn) {
+      queryParts.push(params.isbn);
+    }
+    if (params.title) {
+      queryParts.push(params.title);
+    }
+    if (params.author) {
+      queryParts.push(params.author);
+    }
+
+    if (queryParts.length === 0) return [];
+
+    // Buscamos "[ISBN/Título] portada libro" para mejorar resultados
+    const query = encodeURIComponent(`${queryParts.join(" ")} portada libro`);
+
+    const url = `https://customsearch.googleapis.com/customsearch/v1?q=${query}&cx=${cx}&key=${apiKey}&searchType=image&num=4`;
+    const response = await fetch(url);
+    if (!response.ok) return [];
+
+    const data = (await response.json()) as GoogleCustomSearchResponse;
+    const candidates: CoverCandidate[] = [];
+
+    for (const item of data.items ?? []) {
+      if (item.link) {
+        // Ignorar SVG u otros formatos raros si vienen, aunque searchType=image suele limpiar esto
+        if (!item.link.endsWith(".svg")) {
+           candidates.push({
+             url: item.link,
+             source: "google_custom_search",
+           });
+        }
+      }
+    }
+
+    return candidates;
+  } catch (error) {
+    console.warn("Google Custom Search failed", error);
+    return [];
+  }
+}
+
 /* ---------- Orquestador principal ---------- */
 
 /**
- * Busca portadas de libros en Open Library y Google Books.
+ * Busca portadas de libros en Google Custom Search, Open Library y Google Books.
  * Ejecuta todas las fuentes en paralelo para máxima velocidad.
  * Nunca lanza — devuelve lo que se haya podido reunir (puede ser []).
  */
@@ -158,10 +221,12 @@ export async function searchCovers(input: {
   const searches: Promise<CoverCandidate[]>[] = [];
 
   if (isbn) {
+    searches.push(searchGoogleCustomSearch({ isbn, title: input.title, author: input.author }));
     searches.push(searchOpenLibraryDirect(isbn));
     searches.push(searchOpenLibrarySearch({ isbn }));
     searches.push(searchGoogleBooks({ isbn }));
   } else if (input.title) {
+    searches.push(searchGoogleCustomSearch({ title: input.title, author: input.author }));
     searches.push(searchOpenLibrarySearch({ title: input.title, author: input.author }));
     searches.push(searchGoogleBooks({ title: input.title, author: input.author }));
   }
