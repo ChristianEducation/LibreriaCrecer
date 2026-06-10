@@ -148,37 +148,18 @@ async function searchGoogleBooks(params: {
 }
 
 /* ---------- Google Custom Search ---------- */
-async function searchGoogleCustomSearch(params: {
-  isbn?: string | null;
-  title?: string;
-  author?: string;
-}): Promise<CoverCandidate[]> {
+async function searchGoogleCustomSearch(queryText: string): Promise<CoverCandidate[]> {
   try {
     const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
     const cx = process.env.GOOGLE_SEARCH_ENGINE_ID;
 
-    if (!apiKey || !cx) {
+    if (!apiKey || !cx || !queryText.trim()) {
       return [];
     }
 
-    const queryParts: string[] = [];
-    if (params.isbn) {
-      queryParts.push(params.isbn);
-    }
-    if (params.title) {
-      queryParts.push(params.title);
-    }
-    if (params.author) {
-      queryParts.push(params.author);
-    }
-
-    if (queryParts.length === 0) return [];
-
-    // Buscamos solo por ISBN/Título sin sufijos inventados, porque en sitios de e-commerce 
-    // como MercadoLibre o Antártica no aparece la frase "portada libro" y eso arruina el match.
-    const query = encodeURIComponent(queryParts.join(" "));
-
+    const query = encodeURIComponent(queryText.trim());
     const url = `https://customsearch.googleapis.com/customsearch/v1?q=${query}&cx=${cx}&key=${apiKey}&searchType=image&num=4`;
+    
     const response = await fetch(url);
     if (!response.ok) {
       const errorText = await response.text();
@@ -187,7 +168,7 @@ async function searchGoogleCustomSearch(params: {
     }
 
     const data = (await response.json()) as GoogleCustomSearchResponse;
-    console.log("Google Custom Search Exito, items encontrados:", data.items?.length || 0);
+    console.log(`Google Custom Search Exito para "${queryText}", items encontrados:`, data.items?.length || 0);
 
     const candidates: CoverCandidate[] = [];
 
@@ -228,12 +209,17 @@ export async function searchCovers(input: {
   const searches: Promise<CoverCandidate[]>[] = [];
 
   if (isbn) {
-    searches.push(searchGoogleCustomSearch({ isbn, title: input.title, author: input.author }));
+    searches.push(searchGoogleCustomSearch(isbn));
     searches.push(searchOpenLibraryDirect(isbn));
     searches.push(searchOpenLibrarySearch({ isbn }));
     searches.push(searchGoogleBooks({ isbn }));
-  } else if (input.title) {
-    searches.push(searchGoogleCustomSearch({ title: input.title, author: input.author }));
+  } 
+  
+  if (input.title) {
+    // Buscar el título entre comillas para que Google sea estricto con la frase
+    const titleQuery = input.author ? `"${input.title}" ${input.author}` : `"${input.title}"`;
+    searches.push(searchGoogleCustomSearch(titleQuery));
+    
     searches.push(searchOpenLibrarySearch({ title: input.title, author: input.author }));
     searches.push(searchGoogleBooks({ title: input.title, author: input.author }));
   }
