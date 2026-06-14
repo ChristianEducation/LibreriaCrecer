@@ -942,17 +942,21 @@ body {
 
 .category-carousel-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* Mobile: Carrusel horizontal con 4 columnas fijas para no romper el rompecabezas */
+  grid-template-columns: repeat(4, 140px);
   gap: 8px;
-  width: 100%;
-  max-width: 95%;
-  margin: 0 auto;
+  width: max-content; /* Permite desbordamiento y scroll horizontal */
+  max-width: none;
+  margin: 0;
 }
 
 @media (min-width: 1024px) {
   .category-carousel-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
+    width: 100%;
     max-width: 85%;
+    margin: 0 auto;
   }
 }
 

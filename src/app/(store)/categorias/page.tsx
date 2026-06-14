@@ -119,24 +119,18 @@ export default async function CategoriasPage() {
             </Link>
           </div>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: "clamp(6px, 1.5vw, 16px)",
-              maxWidth: "85%",
-              margin: "0 auto",
-            }}
-          >
-            {categories.map((category) => (
-              <CategoryCard
-                key={category.id}
-                imageUrl={category.imageUrl}
-                name={category.name}
-                productCount={category.productCount}
-                slug={category.slug}
-              />
-            ))}
+          <div className="category-carousel-wrapper">
+            <div className="category-carousel-grid">
+              {categories.map((category) => (
+                <CategoryCard
+                  key={category.id}
+                  imageUrl={category.imageUrl}
+                  name={category.name}
+                  productCount={category.productCount}
+                  slug={category.slug}
+                />
+              ))}
+            </div>
           </div>
         )}
       </section>
