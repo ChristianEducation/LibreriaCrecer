@@ -50,7 +50,7 @@ export function CategoryCard({
         style={{
           display: "block",
           position: "relative",
-          aspectRatio: "16/9",
+          aspectRatio: "3/1",
           overflow: "hidden",
           borderRadius: "var(--radius-sm)",
           transition: "transform 0.3s ease",
@@ -92,12 +92,12 @@ export function CategoryCard({
         <div style={{ position: "absolute", inset: 0, background: "rgba(58,48,1,0.35)" }} />
 
         {/* Content */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "clamp(8px, 1vw, 12px)" }}>
-          <p style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(12px, 1.5vw, 14px)", fontWeight: 400, color: "white", lineHeight: 1.2, marginBottom: productCount !== undefined ? "2px" : 0 }}>
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "clamp(4px, 0.8vw, 8px)" }}>
+          <p style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(10px, 1.2vw, 12px)", fontWeight: 400, color: "white", lineHeight: 1.1, marginBottom: productCount !== undefined ? "1px" : 0 }}>
             {name}
           </p>
           {productCount !== undefined && (
-            <p style={{ fontSize: "9px", color: "rgba(255,255,255,0.6)" }}>
+            <p style={{ fontSize: "8px", color: "rgba(255,255,255,0.7)" }}>
               {productCount} {productCount === 1 ? "título" : "títulos"}
             </p>
           )}
