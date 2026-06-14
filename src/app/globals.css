@@ -945,11 +945,14 @@ body {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   width: 100%;
+  max-width: 90%; /* Un poco de reducción en mobile */
+  margin: 0 auto;
 }
 
 @media (min-width: 1024px) {
   .category-carousel-grid {
     gap: 16px;
+    max-width: 75%; /* Reducción proporcional del 25% en desktop */
   }
 }
 
