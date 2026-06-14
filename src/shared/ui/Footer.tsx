@@ -105,6 +105,15 @@ export async function Footer() {
 
   return (
     <footer className="relative overflow-hidden" style={{ background: "var(--beige-warm)" }}>
+      {/* Gradiente de transición suave desde la sección anterior */}
+      <div
+        className="pointer-events-none absolute inset-x-0 z-[5]"
+        style={{
+          top: "-80px",
+          height: "80px",
+          background: "linear-gradient(to bottom, transparent, var(--beige-warm))",
+        }}
+      />
       <div
         className="absolute inset-x-0 top-0 h-px"
         style={{
@@ -117,15 +126,19 @@ export async function Footer() {
       {hasIllustration ? (
         <>
           <div className="absolute inset-0 z-[1] overflow-hidden">
-            <img
-              alt=""
-              className="h-full object-cover object-left"
-              src={banner.imageUrl ?? ""}
-              style={{
-                width: `${banner.imgWidth}%`,
-                opacity: banner.opacity,
-              }}
-            />
+            <div style={{ position: "relative", width: `${banner.imgWidth}%`, height: "100%" }}>
+              <Image
+                alt=""
+                fill
+                sizes="50vw"
+                src={banner.imageUrl ?? ""}
+                style={{
+                  objectFit: "cover",
+                  objectPosition: "left",
+                  opacity: banner.opacity,
+                }}
+              />
+            </div>
           </div>
           <div
             className="absolute inset-0 z-[2]"

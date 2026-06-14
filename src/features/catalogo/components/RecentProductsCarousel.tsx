@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import type { CatalogProduct } from "@/features/catalogo/types";
@@ -41,50 +40,15 @@ function EmptyPlaceholder() {
 }
 
 export function RecentProductsCarousel({ products }: RecentProductsCarouselProps) {
-  const isCarousel = products.length >= 6;
-  const productsLen = products.length;
-
-  const [startIndex, setStartIndex] = useState(0);
-  const [visible, setVisible] = useState(true);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (!isCarousel) return;
-
-    function rotate() {
-      setVisible(false);
-      setTimeout(() => {
-        setStartIndex((prev) => (prev + 1) % productsLen);
-        setVisible(true);
-      }, 300);
-    }
-
-    intervalRef.current = setInterval(rotate, 4000);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [isCarousel, productsLen]);
-
-  function goToIndex(index: number) {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    setVisible(false);
-    setTimeout(() => {
-      setStartIndex(index);
-      setVisible(true);
-      intervalRef.current = setInterval(() => {
-        setVisible(false);
-        setTimeout(() => {
-          setStartIndex((prev) => (prev + 1) % productsLen);
-          setVisible(true);
-        }, 300);
-      }, 4000);
-    }, 300);
+  if (!products.length) {
+    return (
+      <section className="page-px bg-white" id="recien-llegados" style={{ paddingTop: "8rem", paddingBottom: "8rem" }}>
+        <div className="storefront-container">
+          <EmptyPlaceholder />
+        </div>
+      </section>
+    );
   }
-
-  const visibleProducts = isCarousel
-    ? Array.from({ length: 5 }, (_, i) => products[(startIndex + i) % productsLen])
-    : products;
 
   return (
     <section className="page-px bg-white" id="recien-llegados" style={{ paddingTop: "8rem", paddingBottom: "8rem" }}>
@@ -138,68 +102,24 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
           </Link>
         </div>
 
-        {/* Contenido */}
-        {products.length === 0 ? (
-          <EmptyPlaceholder />
-        ) : (
-          <>
-            <div
-              className="recent-products-grid"
-              style={{
-                opacity: visible ? 1 : 0,
-                transform: visible ? "translateY(0)" : "translateY(6px)",
-                transition: "opacity 0.3s ease, transform 0.3s ease",
-              }}
-            >
-              {visibleProducts.map((product, i) => (
-                <ProductCard
-                  author={product.author}
-                  id={product.id}
-                  isNew
-                  isOnSale={product.hasDiscount}
-                  key={isCarousel ? `slot-${i}` : product.id}
-                  mainImageUrl={product.mainImageUrl}
-                  price={product.price}
-                  salePrice={product.salePrice}
-                  slug={product.slug}
-                  title={product.title}
-                  variant="clean"
-                />
-              ))}
-            </div>
-
-            {/* Indicador de puntos */}
-            {isCarousel && (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: "8px",
-                  marginTop: "2rem",
-                }}
-              >
-                {products.map((_, index) => (
-                  <button
-                    aria-label={`Ir al producto ${index + 1}`}
-                    key={index}
-                    onClick={() => goToIndex(index)}
-                    style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "50%",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: 0,
-                      background: index === startIndex ? "var(--gold)" : "var(--border)",
-                      transition: "background 0.3s",
-                    }}
-                    type="button"
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
+        {/* Productos — scroll horizontal en mobile, grilla en desktop */}
+        <div className="recent-products-grid">
+          {products.map((product) => (
+            <ProductCard
+              author={product.author}
+              id={product.id}
+              isNew
+              isOnSale={product.hasDiscount}
+              key={product.id}
+              mainImageUrl={product.mainImageUrl}
+              price={product.price}
+              salePrice={product.salePrice}
+              slug={product.slug}
+              title={product.title}
+              variant="clean"
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

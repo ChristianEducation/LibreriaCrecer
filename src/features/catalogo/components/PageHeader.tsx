@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -176,8 +176,70 @@ export function PageHeader({
       </div>
 
       {/* Tabs de categorías */}
+      <TabsWithFade
+        activeCategory={activeCategory}
+        categories={categories}
+        updateCategory={updateCategory}
+      />
+    </section>
+  );
+}
+
+/* ---------- Sub-componente: tabs con fade lateral ---------- */
+
+function TabsWithFade({
+  activeCategory,
+  categories,
+  updateCategory,
+}: {
+  activeCategory: string;
+  categories: PageHeaderProps["categories"];
+  updateCategory: (slug: string) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showLeft, setShowLeft] = useState(false);
+  const [showRight, setShowRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setShowLeft(el.scrollLeft > 4);
+    setShowRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener("resize", checkScroll);
+    return () => window.removeEventListener("resize", checkScroll);
+  }, [checkScroll]);
+
+  return (
+    <div className="relative z-[1]">
+      {/* Fade izquierdo */}
       <div
-        className="relative z-[1] flex gap-1 overflow-x-auto border-t [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="pointer-events-none absolute left-0 top-0 bottom-0 z-[2]"
+        style={{
+          width: "48px",
+          background: "linear-gradient(to right, rgba(58,48,1,0.85), transparent)",
+          opacity: showLeft ? 1 : 0,
+          transition: "opacity 0.25s",
+        }}
+      />
+      {/* Fade derecho */}
+      <div
+        className="pointer-events-none absolute right-0 top-0 bottom-0 z-[2]"
+        style={{
+          width: "48px",
+          background: "linear-gradient(to left, rgba(58,48,1,0.85), transparent)",
+          opacity: showRight ? 1 : 0,
+          transition: "opacity 0.25s",
+        }}
+      />
+
+      <div
+        ref={scrollRef}
+        className="flex gap-1 overflow-x-auto border-t [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        onScroll={checkScroll}
         style={{ borderColor: "rgba(255,255,255,0.07)" }}
       >
         <button
@@ -225,6 +287,6 @@ export function PageHeader({
           );
         })}
       </div>
-    </section>
+    </div>
   );
 }
