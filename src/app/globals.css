@@ -942,16 +942,14 @@ body {
 
 .category-carousel-grid {
   display: grid;
-  /* En mobile: forzamos columnas anchas (ej. 160px) para que se desborde y active el scroll */
-  grid-template-columns: repeat(5, 160px);
-  gap: 12px;
-  width: max-content; /* Permite que la cuadrícula crezca más que la pantalla */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
 }
 
 @media (min-width: 1024px) {
   .category-carousel-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    width: 100%; /* En desktop ocupa todo el ancho y se ajusta */
+    gap: 16px;
   }
 }
 

@@ -427,6 +427,10 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
     }
   }
 
+  function handleInvalidSubmit(errors: unknown) {
+    setSubmitError("Errores de validacion: " + JSON.stringify(errors, null, 2));
+  }
+
   return (
     <div>
       <div style={{ height: "52px", display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "1px solid var(--color-border)", background: "var(--color-white)", gap: 0 }}>
@@ -440,7 +444,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
       </div>
 
       <form
-        onSubmit={handleSubmit(handleValidSubmit)}
+        onSubmit={handleSubmit(handleValidSubmit, handleInvalidSubmit)}
         className="checkout-form-padding cart-layout-grid"
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "36px" }}>
@@ -634,7 +638,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
             />
           </section>
 
-          {submitError ? <p className="text-[11px] text-error">{submitError}</p> : null}
+          {submitError ? <pre className="text-[11px] text-error whitespace-pre-wrap">{submitError}</pre> : null}
 
           <div>
             <button

@@ -41,7 +41,7 @@ export function CategoryCard({
       {hasPanorama && (
         <style dangerouslySetInnerHTML={{
           __html: `
-            .puzzle-${slug} { ${getPuzzleStyle(panoramaIndex, panoramaTotal, 5)} }
+            .puzzle-${slug} { ${getPuzzleStyle(panoramaIndex, panoramaTotal, 4)} }
           `
         }} />
       )}

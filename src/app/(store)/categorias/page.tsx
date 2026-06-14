@@ -122,8 +122,8 @@ export default async function CategoriasPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: "16px",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: "clamp(6px, 1.5vw, 16px)",
             }}
           >
             {categories.map((category) => (
