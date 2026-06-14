@@ -168,7 +168,7 @@ async function searchGoogleCustomSearch(queryText: string): Promise<CoverCandida
     }
 
     const data = (await response.json()) as GoogleCustomSearchResponse;
-    console.log(`Google Custom Search Exito para "${queryText}", items encontrados:`, data.items?.length || 0);
+    // console.log(`Google Custom Search Exito para "${queryText}", items encontrados:`, data.items?.length || 0);
 
     const candidates: CoverCandidate[] = [];
 

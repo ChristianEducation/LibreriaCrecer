@@ -199,7 +199,7 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
 
       toast({ message: "Producto guardado correctamente." });
       window.location.href = "/admin/productos";
-    } catch (e: any) {
+    } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Ocurrio un error inesperado al guardar.";
       setError(message);
       toast({ message, variant: "error" });

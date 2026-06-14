@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function NotFound() {
@@ -37,10 +38,12 @@ export default function NotFound() {
 
           {/* Ilustración */}
           <div style={{ marginBottom: "40px" }}>
-            <img
+            <Image
               src="/images/404-illustration.svg"
               alt="Página no encontrada"
-              style={{ width: "200px", height: "auto", margin: "0 auto", display: "block", opacity: 0.85 }}
+              width={200}
+              height={200}
+              style={{ margin: "0 auto", display: "block", opacity: 0.85 }}
             />
           </div>
 
