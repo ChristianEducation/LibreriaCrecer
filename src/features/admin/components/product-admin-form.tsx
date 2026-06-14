@@ -452,7 +452,7 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
                           className="absolute text-[9px] text-white"
                           style={{ right: "4px", top: "4px", borderRadius: "4px", background: "rgba(0,0,0,0.5)", padding: "2px 6px" }}
                         >
-                          {candidate.source === "openlibrary" ? "Open Library" : "Google Books"}
+                          {candidate.source === "serper" ? "Google Imágenes" : "Otra fuente"}
                         </span>
                       </div>
                     ))}

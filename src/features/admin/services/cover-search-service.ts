@@ -1,28 +1,11 @@
 import "server-only";
 
-export type CoverCandidate = { url: string; source: "openlibrary" | "googlebooks" | "google_custom_search" };
+export type CoverCandidate = { url: string; source: "serper" };
 
-type GoogleBooksResponse = {
-  items?: Array<{
-    volumeInfo?: {
-      imageLinks?: {
-        thumbnail?: string;
-        smallThumbnail?: string;
-      };
-    };
-  }>;
-};
-
-type OpenLibrarySearchResponse = {
-  docs?: Array<{
-    cover_i?: number;
-  }>;
-};
-
-type GoogleCustomSearchResponse = {
-  items?: Array<{
+type SerperImageResponse = {
+  images?: Array<{
+    imageUrl?: string;
     link?: string;
-    mime?: string;
   }>;
 };
 
@@ -36,157 +19,54 @@ function normalizeIsbn(raw: string): string | null {
   return match ? match[1] : null;
 }
 
-/**
- * Fuerza HTTPS y elimina &edge=curl de las URLs de Google Books.
- */
-function normalizeGoogleBooksImageUrl(url: string): string {
-  let normalized = url.replace(/^http:\/\//, "https://");
-  normalized = normalized.replace(/&edge=curl/g, "");
-  return normalized;
-}
-
-/* ---------- Open Library: portada directa por ISBN ---------- */
-async function searchOpenLibraryDirect(isbn: string): Promise<CoverCandidate[]> {
+/* ---------- Serper API (Google Images) ---------- */
+async function searchSerperImages(queryText: string): Promise<CoverCandidate[]> {
   try {
-    const checkUrl = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg?default=false`;
-    const response = await fetch(checkUrl, { method: "HEAD" });
-    if (response.ok) {
-      return [{
-        url: `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`,
-        source: "openlibrary",
-      }];
-    }
-  } catch (error) {
-    console.warn("Open Library direct cover check failed", error);
-  }
-  return [];
-}
+    const apiKey = process.env.SERPER_API_KEY;
 
-/* ---------- Open Library: Search API (por ISBN, título o autor) ---------- */
-async function searchOpenLibrarySearch(params: {
-  isbn?: string | null;
-  title?: string;
-  author?: string;
-}): Promise<CoverCandidate[]> {
-  try {
-    const queryParts: string[] = [];
-    if (params.isbn) {
-      queryParts.push(`isbn=${encodeURIComponent(params.isbn)}`);
-    } else if (params.title) {
-      queryParts.push(`title=${encodeURIComponent(params.title)}`);
-      if (params.author) {
-        queryParts.push(`author=${encodeURIComponent(params.author)}`);
-      }
-    } else {
+    if (!apiKey) {
+      console.warn("ADVERTENCIA: SERPER_API_KEY no está definida en las variables de entorno.");
       return [];
     }
 
-    const searchUrl = `https://openlibrary.org/search.json?${queryParts.join("&")}&fields=cover_i&limit=4`;
-    const response = await fetch(searchUrl);
-    if (!response.ok) return [];
-
-    const data = (await response.json()) as OpenLibrarySearchResponse;
-    const candidates: CoverCandidate[] = [];
-    for (const doc of data.docs ?? []) {
-      if (doc.cover_i) {
-        candidates.push({
-          url: `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`,
-          source: "openlibrary",
-        });
-      }
-    }
-    return candidates;
-  } catch (error) {
-    console.warn("Open Library search API failed", error);
-    return [];
-  }
-}
-
-/* ---------- Google Books ---------- */
-async function searchGoogleBooks(params: {
-  isbn?: string | null;
-  title?: string;
-  author?: string;
-}): Promise<CoverCandidate[]> {
-  try {
-    let query: string;
-    if (params.isbn) {
-      query = `isbn:${params.isbn}`;
-    } else if (params.title) {
-      query = `intitle:${encodeURIComponent(params.title)}`;
-      if (params.author) {
-        query += `+inauthor:${encodeURIComponent(params.author)}`;
-      }
-    } else {
+    if (!queryText.trim()) {
       return [];
     }
 
-    const gbUrl = `https://www.googleapis.com/books/v1/volumes?q=${query}`;
-    const gbResponse = await fetch(gbUrl);
-    if (!gbResponse.ok) return [];
+    const response = await fetch("https://google.serper.dev/images", {
+      method: "POST",
+      headers: {
+        "X-API-KEY": apiKey,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        q: queryText.trim(),
+        num: 10 // Pedimos algunas extra por si hay duplicados o svgs
+      })
+    });
 
-    const data = (await gbResponse.json()) as GoogleBooksResponse;
-    const maxItems = params.isbn ? 1 : 3;
-    const items = data.items?.slice(0, maxItems) ?? [];
-    const candidates: CoverCandidate[] = [];
-    for (const item of items) {
-      const imageUrl =
-        item.volumeInfo?.imageLinks?.thumbnail ??
-        item.volumeInfo?.imageLinks?.smallThumbnail;
-      if (imageUrl) {
-        candidates.push({
-          url: normalizeGoogleBooksImageUrl(imageUrl),
-          source: "googlebooks",
-        });
-      }
-    }
-    return candidates;
-  } catch (error) {
-    console.warn("Google Books search failed", error);
-    return [];
-  }
-}
-
-/* ---------- Google Custom Search ---------- */
-async function searchGoogleCustomSearch(queryText: string): Promise<CoverCandidate[]> {
-  try {
-    const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
-    const cx = process.env.GOOGLE_SEARCH_ENGINE_ID;
-
-    if (!apiKey || !cx || !queryText.trim()) {
-      return [];
-    }
-
-    const query = encodeURIComponent(queryText.trim());
-    const url = `https://customsearch.googleapis.com/customsearch/v1?q=${query}&cx=${cx}&key=${apiKey}&searchType=image&num=4`;
-    
-    const response = await fetch(url);
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Google Custom Search Error HTTP", response.status, errorText);
+      console.error("Serper API Error HTTP", response.status, errorText);
       return [];
     }
 
-    const data = (await response.json()) as GoogleCustomSearchResponse;
-    // console.log(`Google Custom Search Exito para "${queryText}", items encontrados:`, data.items?.length || 0);
-
+    const data = (await response.json()) as SerperImageResponse;
     const candidates: CoverCandidate[] = [];
 
-    for (const item of data.items ?? []) {
-      if (item.link) {
-        // Ignorar SVG u otros formatos raros si vienen, aunque searchType=image suele limpiar esto
-        if (!item.link.endsWith(".svg")) {
-           candidates.push({
-             url: item.link,
-             source: "google_custom_search",
-           });
-        }
+    for (const item of data.images ?? []) {
+      const imgUrl = item.imageUrl || item.link;
+      if (imgUrl && !imgUrl.endsWith(".svg")) {
+        candidates.push({
+          url: imgUrl,
+          source: "serper",
+        });
       }
     }
 
     return candidates;
   } catch (error) {
-    console.warn("Google Custom Search failed", error);
+    console.warn("Serper API search failed", error);
     return [];
   }
 }
@@ -194,8 +74,7 @@ async function searchGoogleCustomSearch(queryText: string): Promise<CoverCandida
 /* ---------- Orquestador principal ---------- */
 
 /**
- * Busca portadas de libros en Google Custom Search, Open Library y Google Books.
- * Ejecuta todas las fuentes en paralelo para máxima velocidad.
+ * Busca portadas de libros en Google Imágenes usando Serper API.
  * Nunca lanza — devuelve lo que se haya podido reunir (puede ser []).
  */
 export async function searchCovers(input: {
@@ -205,23 +84,17 @@ export async function searchCovers(input: {
 }): Promise<CoverCandidate[]> {
   const isbn = input.isbn ? normalizeIsbn(input.isbn) : null;
 
-  // Lanzar todas las búsquedas en paralelo
+  // Lanzar todas las búsquedas en paralelo (ISBN y/o Título)
   const searches: Promise<CoverCandidate[]>[] = [];
 
   if (isbn) {
-    searches.push(searchGoogleCustomSearch(isbn));
-    searches.push(searchOpenLibraryDirect(isbn));
-    searches.push(searchOpenLibrarySearch({ isbn }));
-    searches.push(searchGoogleBooks({ isbn }));
+    searches.push(searchSerperImages(isbn));
   } 
   
   if (input.title) {
     // Buscar el título entre comillas para que Google sea estricto con la frase
-    const titleQuery = input.author ? `"${input.title}" ${input.author}` : `"${input.title}"`;
-    searches.push(searchGoogleCustomSearch(titleQuery));
-    
-    searches.push(searchOpenLibrarySearch({ title: input.title, author: input.author }));
-    searches.push(searchGoogleBooks({ title: input.title, author: input.author }));
+    const titleQuery = input.author ? `"${input.title}" ${input.author} libro portada` : `"${input.title}" libro portada`;
+    searches.push(searchSerperImages(titleQuery));
   }
 
   if (searches.length === 0) return [];
