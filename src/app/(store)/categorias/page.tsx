@@ -124,7 +124,7 @@ export default async function CategoriasPage() {
               display: "grid",
               gridTemplateColumns: "repeat(4, 1fr)",
               gap: "clamp(6px, 1.5vw, 16px)",
-              maxWidth: "80%", /* Reducción proporcional centrada */
+              maxWidth: "85%",
               margin: "0 auto",
             }}
           >
