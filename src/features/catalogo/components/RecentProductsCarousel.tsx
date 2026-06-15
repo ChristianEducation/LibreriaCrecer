@@ -34,6 +34,32 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
   const [isHovered, setIsHovered] = useState(false);
   const isCarousel = products.length >= 6;
 
+  // Función de scroll suave personalizada para un deslizamiento más lento y elegante (800ms)
+  const customSmoothScroll = useCallback((container: HTMLElement, targetLeft: number, duration: number) => {
+    const startLeft = container.scrollLeft;
+    const distance = targetLeft - startLeft;
+    let startTime: number | null = null;
+
+    function animation(currentTime: number) {
+      if (startTime === null) startTime = currentTime;
+      const timeElapsed = currentTime - startTime;
+      const progress = Math.min(timeElapsed / duration, 1);
+      
+      // Easing function (ease-in-out cubico)
+      const ease = progress < 0.5 
+        ? 4 * progress * progress * progress 
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+      container.scrollLeft = startLeft + distance * ease;
+
+      if (timeElapsed < duration) {
+        requestAnimationFrame(animation);
+      }
+    }
+
+    requestAnimationFrame(animation);
+  }, []);
+
   // Rotación automática: avanza 1 ítem a la vez suavemente
   const scrollNextItem = useCallback(() => {
     const container = containerRef.current;
@@ -45,19 +71,20 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
     const itemWidth = (container.children[0] as HTMLElement)?.offsetWidth || 0;
     const gap = 16; // 1rem definido en CSS
     const scrollAmount = itemWidth + gap;
+    const targetLeft = container.scrollLeft + scrollAmount;
 
-    // Si llegamos al final (con un pequeño margen de error), volvemos al principio
+    // Si llegamos al final, volvemos al principio suavemente
     if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) {
-      container.scrollTo({ left: 0, behavior: "smooth" });
+      customSmoothScroll(container, 0, 1000); // 1 segundo para volver
     } else {
-      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      customSmoothScroll(container, targetLeft, 800); // 800ms por ítem
     }
-  }, []);
+  }, [customSmoothScroll]);
 
   const startAutoRotate = useCallback(() => {
     if (!isCarousel || isHovered) return;
     if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(scrollNextItem, 3000);
+    intervalRef.current = setInterval(scrollNextItem, 3500); // Subimos a 3.5s por la animación larga
   }, [isCarousel, isHovered, scrollNextItem]);
 
   const stopAutoRotate = useCallback(() => {
@@ -69,31 +96,33 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
     return stopAutoRotate;
   }, [startAutoRotate, stopAutoRotate]);
 
-  // Navegación manual con las flechas: desliza "una página" (5 libros) a la vez
+  // Navegación manual con las flechas
   function handleManualNav(direction: "next" | "prev") {
     const container = containerRef.current;
     if (!container) return;
     
     stopAutoRotate();
     
-    // Al hacer clic, es mejor avanzar el ancho visible del contenedor entero
     const scrollAmount = container.clientWidth;
+    let targetLeft = container.scrollLeft;
 
     if (direction === "next") {
       if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) {
-        container.scrollTo({ left: 0, behavior: "smooth" });
+        targetLeft = 0;
       } else {
-        container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+        targetLeft = container.scrollLeft + scrollAmount;
       }
     } else {
       if (container.scrollLeft <= 0) {
-        container.scrollTo({ left: container.scrollWidth, behavior: "smooth" });
+        targetLeft = container.scrollWidth;
       } else {
-        container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+        targetLeft = container.scrollLeft - scrollAmount;
       }
     }
     
-    // Reinicia el auto-rotate luego del clic
+    // Las páginas se deslizan un poco más rápido (600ms) para respuesta ágil
+    customSmoothScroll(container, targetLeft, 600);
+    
     setTimeout(startAutoRotate, 300);
   }
 

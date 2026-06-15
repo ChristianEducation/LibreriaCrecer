@@ -1021,7 +1021,6 @@ body {
     display: flex;
     overflow-x: hidden; /* Oculta la barra, se navega con botones en JS */
     scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
     padding-bottom: 0;
   }
 
