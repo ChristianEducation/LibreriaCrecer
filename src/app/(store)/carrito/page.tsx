@@ -61,8 +61,7 @@ export default function CarritoPage() {
   const hydrated = useCartHydration();
   const {
     items,
-    incrementQuantity,
-    decrementQuantity,
+    updateQuantity,
     removeItem,
     applyCoupon,
     removeCoupon,
@@ -295,7 +294,13 @@ export default function CarritoPage() {
                           >
                             <button
                               type="button"
-                              onClick={() => decrementQuantity(item.productId)}
+                              onClick={() => {
+                                if (item.quantity <= 1) {
+                                  removeItem(item.productId);
+                                } else {
+                                  updateQuantity(item.productId, item.quantity - 1);
+                                }
+                              }}
                               style={{
                                 width: "32px",
                                 height: "36px",
@@ -326,7 +331,7 @@ export default function CarritoPage() {
                             </span>
                             <button
                               type="button"
-                              onClick={() => incrementQuantity(item.productId)}
+                              onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                               style={{
                                 width: "32px",
                                 height: "36px",

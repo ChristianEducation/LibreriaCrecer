@@ -13,8 +13,6 @@ export function useCart() {
   const addItem = useCartStore((state) => state.addItem);
   const removeItem = useCartStore((state) => state.removeItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
-  const incrementQuantity = useCartStore((state) => state.incrementQuantity);
-  const decrementQuantity = useCartStore((state) => state.decrementQuantity);
   const clearCart = useCartStore((state) => state.clearCart);
   const applyCoupon = useCartStore((state) => state.applyCoupon);
   const removeCoupon = useCartStore((state) => state.removeCoupon);
@@ -26,8 +24,6 @@ export function useCart() {
     addItem,
     removeItem,
     updateQuantity,
-    incrementQuantity,
-    decrementQuantity,
     clearCart,
     applyCoupon,
     removeCoupon,

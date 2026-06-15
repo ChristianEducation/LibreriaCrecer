@@ -59,7 +59,7 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
   }
 
   const categoryIds = product.categories.map((c) => c.id);
-  const relatedProducts = await getRelatedProducts(product.id, categoryIds, 5);
+  const relatedProducts = await getRelatedProducts(product.id, categoryIds, product.author, 5);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://crecerlibreria.cl";
 
   return (

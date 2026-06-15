@@ -7,6 +7,7 @@ import {
   ilike,
   inArray,
   isNotNull,
+  notInArray,
   or,
   sql,
   type SQL,
@@ -363,47 +364,91 @@ export async function getFeaturedProducts(): Promise<CatalogProduct[]> {
 export async function getRelatedProducts(
   productId: string,
   categoryIds: string[],
+  author: string | null = null,
   limit = 5,
 ): Promise<CatalogProduct[]> {
-  // Si no hay categorías, retornar vacío
-  if (categoryIds.length === 0) return [];
+  const allRelated: CatalogProduct[] = [];
 
-  // Subconsulta: product_ids que pertenecen a alguna de las categorías dadas
-  const relatedProductIdsSubquery = db
-    .select({ productId: productCategories.productId })
-    .from(productCategories)
-    .where(inArray(productCategories.categoryId, categoryIds));
+  // 1. Prioridad: mismo autor
+  if (author) {
+    const authorRows = await db
+      .select({
+        id: products.id,
+        title: products.title,
+        slug: products.slug,
+        author: products.author,
+        publisher: products.publisher,
+        price: products.price,
+        salePrice: products.salePrice,
+        mainImageUrl: products.mainImageUrl,
+        sku: products.sku,
+        inStock: products.inStock,
+        stockQuantity: products.stockQuantity,
+        createdAt: products.createdAt,
+      })
+      .from(products)
+      .where(
+        and(
+          eq(products.isActive, true),
+          eq(products.inStock, true),
+          sql`${products.id} != ${productId}`,
+          eq(products.author, author),
+        ),
+      )
+      .orderBy(desc(products.createdAt))
+      .limit(limit);
 
-  const rows = await db
-    .select({
-      id: products.id,
-      title: products.title,
-      slug: products.slug,
-      author: products.author,
-      publisher: products.publisher,
-      price: products.price,
-      salePrice: products.salePrice,
-      mainImageUrl: products.mainImageUrl,
-      sku: products.sku,
-      inStock: products.inStock,
-      stockQuantity: products.stockQuantity,
-      createdAt: products.createdAt,
-    })
-    .from(products)
-    .where(
-      and(
-        eq(products.isActive, true),
-        eq(products.inStock, true),
-        // excluir el producto actual
-        sql`${products.id} != ${productId}`,
-        inArray(products.id, relatedProductIdsSubquery),
-      ),
-    )
-    .orderBy(desc(products.createdAt))
-    .limit(limit);
+    if (authorRows.length > 0) {
+      const categoryMap = await getCategoryRefsByProductIds(authorRows.map((r) => r.id));
+      const authorProducts = authorRows.map((row) => mapProduct(row, categoryMap.get(row.id) ?? []));
+      allRelated.push(...authorProducts);
+    }
+  }
 
-  if (rows.length === 0) return [];
+  // 2. Rellenar con la misma categoría si es necesario
+  if (allRelated.length < limit && categoryIds.length > 0) {
+    const remainingLimit = limit - allRelated.length;
+    const authorIdsToExclude = allRelated.map((p) => p.id);
+    const excludeIds = [productId, ...authorIdsToExclude];
 
-  const categoryMap = await getCategoryRefsByProductIds(rows.map((r) => r.id));
-  return rows.map((row) => mapProduct(row, categoryMap.get(row.id) ?? []));
+    const relatedProductIdsSubquery = db
+      .select({ productId: productCategories.productId })
+      .from(productCategories)
+      .where(inArray(productCategories.categoryId, categoryIds));
+
+    const categoryRows = await db
+      .select({
+        id: products.id,
+        title: products.title,
+        slug: products.slug,
+        author: products.author,
+        publisher: products.publisher,
+        price: products.price,
+        salePrice: products.salePrice,
+        mainImageUrl: products.mainImageUrl,
+        sku: products.sku,
+        inStock: products.inStock,
+        stockQuantity: products.stockQuantity,
+        createdAt: products.createdAt,
+      })
+      .from(products)
+      .where(
+        and(
+          eq(products.isActive, true),
+          eq(products.inStock, true),
+          notInArray(products.id, excludeIds),
+          inArray(products.id, relatedProductIdsSubquery),
+        ),
+      )
+      .orderBy(desc(products.createdAt))
+      .limit(remainingLimit);
+
+    if (categoryRows.length > 0) {
+      const categoryMap = await getCategoryRefsByProductIds(categoryRows.map((r) => r.id));
+      const categoryProducts = categoryRows.map((row) => mapProduct(row, categoryMap.get(row.id) ?? []));
+      allRelated.push(...categoryProducts);
+    }
+  }
+
+  return allRelated;
 }

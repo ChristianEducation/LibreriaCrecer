@@ -15,8 +15,7 @@ type CartStoreActions = {
   addItem: (item: CartItemInput) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
-  incrementQuantity: (productId: string) => void;
-  decrementQuantity: (productId: string) => void;
+
   clearCart: () => void;
   applyCoupon: (code: string, discount: number) => void;
   removeCoupon: () => void;
@@ -86,20 +85,7 @@ export const useCartStore = create<CartStore>()(
             ),
           };
         }),
-      incrementQuantity: (productId) =>
-        set((state) => ({
-          items: state.items.map((item) =>
-            item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item,
-          ),
-        })),
-      decrementQuantity: (productId) =>
-        set((state) => ({
-          items: state.items
-            .map((item) =>
-              item.productId === productId ? { ...item, quantity: item.quantity - 1 } : item,
-            )
-            .filter((item) => item.quantity > 0),
-        })),
+
       clearCart: () => set(initialState),
       applyCoupon: (code, discount) =>
         set({

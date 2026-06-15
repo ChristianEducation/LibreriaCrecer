@@ -59,7 +59,7 @@ export interface CartPanelProps {
 
 export function CartPanel({ isOpen, onClose }: CartPanelProps) {
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const { items, incrementQuantity, decrementQuantity, removeItem } = useCart();
+  const { items, updateQuantity, removeItem } = useCart();
   const { total, totalItems, isEmpty } = useCartSummary();
   const isMobile = useIsMobile();
 
@@ -247,7 +247,13 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
                 </p>
                 <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                   <button
-                    onClick={() => decrementQuantity(item.productId)}
+                    onClick={() => {
+                      if (item.quantity <= 1) {
+                        removeItem(item.productId);
+                      } else {
+                        updateQuantity(item.productId, item.quantity - 1);
+                      }
+                    }}
                     type="button"
                     style={{
                       display: "flex",
@@ -277,7 +283,7 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
                     {item.quantity}
                   </span>
                   <button
-                    onClick={() => incrementQuantity(item.productId)}
+                    onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                     type="button"
                     style={{
                       display: "flex",
