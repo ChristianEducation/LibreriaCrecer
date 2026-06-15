@@ -898,7 +898,7 @@ body {
 
 @media (min-width: 768px) {
   .product-detail-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 4fr 6fr;
     gap: 72px;
   }
 }
