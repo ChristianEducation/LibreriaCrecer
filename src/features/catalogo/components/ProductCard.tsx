@@ -25,18 +25,61 @@ export interface ProductCardProps {
   variant?: "default" | "clean";
 }
 
-function BookFallbackIcon() {
+function ProductPlaceholder({ title }: { title: string }) {
   return (
-    <svg aria-hidden="true" className="h-10 w-10 text-moss/30" fill="none" viewBox="0 0 48 48">
-      <path
-        d="M15 10.5h15.75A5.25 5.25 0 0 1 36 15.75v21.75H18.75A3.75 3.75 0 0 0 15 41.25V10.5Zm0 0A3.75 3.75 0 0 0 11.25 14.25v23.5A2.75 2.75 0 0 0 14 40.5h4.75"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.5"
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
+      {/* Background image */}
+      <Image
+        alt="Crecer Librería Católica"
+        fill
+        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
+        src="/images/product-placeholder.png"
+        style={{ objectFit: "cover" }}
       />
-      <path d="M20 18h10M20 23h10" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
-    </svg>
+
+      {/* Title overlay at bottom */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: "linear-gradient(to top, rgba(58,42,32,0.88) 0%, rgba(58,42,32,0.65) 50%, transparent 100%)",
+          padding: "28px 12px 14px",
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "center",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: "clamp(11px, 1.4vw, 14px)",
+            fontWeight: 500,
+            fontStyle: "italic",
+            lineHeight: 1.3,
+            color: "rgba(245,240,232,0.92)",
+            textAlign: "center",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical" as const,
+            overflow: "hidden",
+            letterSpacing: "0.01em",
+            textShadow: "0 1px 4px rgba(0,0,0,0.4)",
+          }}
+        >
+          {title}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -127,9 +170,7 @@ export function ProductCard({
             }}
           />
         ) : (
-          <div className="flex h-full items-center justify-center">
-            <BookFallbackIcon />
-          </div>
+          <ProductPlaceholder title={title} />
         )}
 
         {/* Badges */}

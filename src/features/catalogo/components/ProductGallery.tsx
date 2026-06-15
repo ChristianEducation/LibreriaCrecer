@@ -63,27 +63,64 @@ function PlaceholderBook({
   return (
     <div
       className={cx(
-        "absolute inset-0 flex flex-col items-center justify-center bg-[linear-gradient(160deg,#3A2A20_0%,#5C3A28_40%,#3A2A20_100%)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]",
+        "absolute inset-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]",
         className,
       )}
     >
-      <div className="flex h-[88%] w-[78%] flex-col items-center justify-center border border-white/[0.12] px-5 py-7 text-center">
+      {/* Branded placeholder image */}
+      <Image
+        alt="Crecer Librería Católica"
+        fill
+        sizes="(max-width: 1024px) 100vw, 45vw"
+        src="/images/product-placeholder.png"
+        style={{ objectFit: "cover" }}
+      />
+
+      {/* Title overlay at bottom */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: "linear-gradient(to top, rgba(58,42,32,0.90) 0%, rgba(58,42,32,0.65) 55%, transparent 100%)",
+          padding: "48px 24px 24px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "6px",
+        }}
+      >
         {productAuthor ? (
-          <>
-            <span className="font-editorial mb-4 text-[11px] uppercase tracking-[0.22em] text-white/[0.55]">
-              {productAuthor}
-            </span>
-            <div className="mb-4 h-px w-[40%] bg-white/[0.15]" />
-          </>
+          <span
+            style={{
+              fontSize: "10px",
+              textTransform: "uppercase",
+              letterSpacing: "0.2em",
+              color: "rgba(245,240,232,0.55)",
+            }}
+          >
+            {productAuthor}
+          </span>
         ) : null}
-
-        <span className="editorial-emphasis text-[28px] leading-[1.2] text-white/[0.92]">
+        <span
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: "clamp(16px, 2.5vw, 22px)",
+            fontWeight: 500,
+            fontStyle: "italic",
+            lineHeight: 1.25,
+            color: "rgba(245,240,232,0.92)",
+            textAlign: "center",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical" as const,
+            overflow: "hidden",
+            letterSpacing: "0.01em",
+            textShadow: "0 1px 6px rgba(0,0,0,0.45)",
+          }}
+        >
           {productTitle}
-        </span>
-
-        <div className="my-4 h-px w-[40%] bg-white/[0.15]" />
-        <span className="font-editorial text-[9px] uppercase tracking-[0.2em] text-white/[0.3]">
-          Crecer Librería Católica
         </span>
       </div>
     </div>
