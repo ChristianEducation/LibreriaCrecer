@@ -1018,15 +1018,18 @@ body {
 
 @media (min-width: 1024px) {
   .recent-products-grid {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    overflow: visible;
+    display: flex;
+    overflow-x: hidden; /* Oculta la barra, se navega con botones en JS */
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
     padding-bottom: 0;
-    scroll-snap-type: none;
   }
 
   .recent-products-grid > * {
+    /* 5 ítems visibles por vez (4 gaps de 1rem) */
+    flex: 0 0 calc((100% - 4rem) / 5);
     min-width: 0;
+    scroll-snap-align: start;
   }
 }
 

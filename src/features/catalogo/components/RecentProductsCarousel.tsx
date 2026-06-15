@@ -28,30 +28,37 @@ function EmptyPlaceholder() {
 }
 
 export function RecentProductsCarousel({ products }: RecentProductsCarouselProps) {
-  const isCarousel = products.length >= 6;
-  const productsLen = products.length;
-
-  const [startIndex, setStartIndex] = useState(0);
-  const [visible, setVisible] = useState(true);
-  const [isHovered, setIsHovered] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  
+  const [isHovered, setIsHovered] = useState(false);
+  const isCarousel = products.length >= 6;
 
-  const rotate = useCallback((direction: "next" | "prev" = "next") => {
-    setVisible(false);
-    setTimeout(() => {
-      setStartIndex((prev) => {
-        if (direction === "next") return (prev + 1) % productsLen;
-        return (prev - 1 + productsLen) % productsLen;
-      });
-      setVisible(true);
-    }, 300);
-  }, [productsLen]);
+  // Rotación automática: avanza 1 ítem a la vez suavemente
+  const scrollNextItem = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // En pantallas pequeñas no hace auto-rotate (ya es scroll nativo)
+    if (window.innerWidth < 1024) return;
+
+    const itemWidth = (container.children[0] as HTMLElement)?.offsetWidth || 0;
+    const gap = 16; // 1rem definido en CSS
+    const scrollAmount = itemWidth + gap;
+
+    // Si llegamos al final (con un pequeño margen de error), volvemos al principio
+    if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) {
+      container.scrollTo({ left: 0, behavior: "smooth" });
+    } else {
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  }, []);
 
   const startAutoRotate = useCallback(() => {
     if (!isCarousel || isHovered) return;
     if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => rotate("next"), 3000); // 3 segundos
-  }, [isCarousel, isHovered, rotate]);
+    intervalRef.current = setInterval(scrollNextItem, 3000);
+  }, [isCarousel, isHovered, scrollNextItem]);
 
   const stopAutoRotate = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -62,10 +69,31 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
     return stopAutoRotate;
   }, [startAutoRotate, stopAutoRotate]);
 
+  // Navegación manual con las flechas: desliza "una página" (5 libros) a la vez
   function handleManualNav(direction: "next" | "prev") {
+    const container = containerRef.current;
+    if (!container) return;
+    
     stopAutoRotate();
-    rotate(direction);
-    // El useEffect se encargará de reiniciar el auto-rotate si no está hovereado
+    
+    // Al hacer clic, es mejor avanzar el ancho visible del contenedor entero
+    const scrollAmount = container.clientWidth;
+
+    if (direction === "next") {
+      if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) {
+        container.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      }
+    } else {
+      if (container.scrollLeft <= 0) {
+        container.scrollTo({ left: container.scrollWidth, behavior: "smooth" });
+      } else {
+        container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+      }
+    }
+    
+    // Reinicia el auto-rotate luego del clic
     setTimeout(startAutoRotate, 300);
   }
 
@@ -78,10 +106,6 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
       </section>
     );
   }
-
-  const visibleProductsDesktop = isCarousel
-    ? Array.from({ length: 5 }, (_, i) => products[(startIndex + i) % productsLen])
-    : products;
 
   return (
     <section className="page-px bg-white" id="recien-llegados" style={{ paddingTop: "8rem", paddingBottom: "8rem" }}>
@@ -126,26 +150,27 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
           </div>
         </div>
 
-        {/* VERSIÓN MOBILE: Scroll horizontal libre (Oculta en desktop) */}
-        <div className="recent-products-grid lg:hidden">
-          {products.map((product) => (
-            <ProductCard author={product.author} id={product.id} isNew isOnSale={product.hasDiscount} key={product.id} mainImageUrl={product.mainImageUrl} price={product.price} salePrice={product.salePrice} slug={product.slug} title={product.title} variant="clean" />
-          ))}
-        </div>
-
-        {/* VERSIÓN DESKTOP: Carrusel rotativo con animaciones (Oculta en mobile) */}
+        {/* Carrusel Unificado: Scroll nativo (táctil en móvil, JS en desktop) */}
         <div 
-          className="recent-products-grid hidden lg:grid"
+          className="recent-products-grid"
+          ref={containerRef}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          style={{
-            opacity: visible ? 1 : 0,
-            transform: visible ? "translateY(0)" : "translateY(6px)",
-            transition: "opacity 0.3s ease, transform 0.3s ease",
-          }}
         >
-          {visibleProductsDesktop.map((product, i) => (
-            <ProductCard author={product.author} id={product.id} isNew isOnSale={product.hasDiscount} key={isCarousel ? `slot-${startIndex}-${i}` : product.id} mainImageUrl={product.mainImageUrl} price={product.price} salePrice={product.salePrice} slug={product.slug} title={product.title} variant="clean" />
+          {products.map((product) => (
+            <ProductCard 
+              author={product.author} 
+              id={product.id} 
+              isNew 
+              isOnSale={product.hasDiscount} 
+              key={product.id} 
+              mainImageUrl={product.mainImageUrl} 
+              price={product.price} 
+              salePrice={product.salePrice} 
+              slug={product.slug} 
+              title={product.title} 
+              variant="clean" 
+            />
           ))}
         </div>
       </div>
