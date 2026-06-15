@@ -31,7 +31,7 @@ export function ProductGrid({ products }: ProductGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 lg:gap-x-5 lg:gap-y-10">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 lg:gap-x-5 lg:gap-y-10">
       {products.map((product) => (
         <ProductCard
           author={product.author}
