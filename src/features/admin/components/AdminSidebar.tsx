@@ -53,6 +53,12 @@ const sections: { label: string; items: SidebarItem[] }[] = [
     ],
   },
   {
+    label: "Acciones Rápidas",
+    items: [
+      { href: "/", label: "Ir a la tienda", icon: "layout", exact: true },
+    ],
+  },
+  {
     label: "Contenido",
     items: [
       { href: "/admin/landing/top-banner", label: "Top Banner", icon: "banner" },
