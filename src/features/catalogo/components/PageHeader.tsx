@@ -214,27 +214,46 @@ function TabsWithFade({
   }, [checkScroll]);
 
   return (
-    <div className="relative z-[1]">
-      {/* Fade izquierdo */}
+    <div className="relative z-[1] group">
+      {/* Fade izquierdo y botón */}
       <div
-        className="pointer-events-none absolute left-0 top-0 bottom-0 z-[2]"
+        className="absolute left-0 top-0 bottom-0 z-[2] flex items-center"
         style={{
           width: "48px",
-          background: "linear-gradient(to right, rgba(58,48,1,0.85), transparent)",
+          background: "linear-gradient(to right, rgba(58,48,1,0.9), transparent)",
           opacity: showLeft ? 1 : 0,
           transition: "opacity 0.25s",
+          pointerEvents: showLeft ? "auto" : "none",
         }}
-      />
-      {/* Fade derecho */}
+      >
+        <button
+          onClick={() => scrollRef.current?.scrollBy({ left: -200, behavior: "smooth" })}
+          className="hidden lg:flex items-center justify-center w-6 h-6 ml-1 rounded-full bg-black/20 text-white/70 hover:text-white hover:bg-black/40 transition-colors opacity-0 group-hover:opacity-100"
+          aria-label="Desplazar a la izquierda"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+      </div>
+
+      {/* Fade derecho y botón */}
       <div
-        className="pointer-events-none absolute right-0 top-0 bottom-0 z-[2]"
+        className="absolute right-0 top-0 bottom-0 z-[2] flex items-center justify-end"
         style={{
           width: "48px",
-          background: "linear-gradient(to left, rgba(58,48,1,0.85), transparent)",
+          background: "linear-gradient(to left, rgba(58,48,1,0.9), transparent)",
           opacity: showRight ? 1 : 0,
           transition: "opacity 0.25s",
+          pointerEvents: showRight ? "auto" : "none",
         }}
-      />
+      >
+        <button
+          onClick={() => scrollRef.current?.scrollBy({ left: 200, behavior: "smooth" })}
+          className="hidden lg:flex items-center justify-center w-6 h-6 mr-1 rounded-full bg-black/20 text-white/70 hover:text-white hover:bg-black/40 transition-colors opacity-0 group-hover:opacity-100"
+          aria-label="Desplazar a la derecha"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
 
       <div
         ref={scrollRef}

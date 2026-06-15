@@ -105,13 +105,12 @@ export async function Footer() {
 
   return (
     <footer className="relative overflow-hidden" style={{ background: "var(--beige-warm)" }}>
-      {/* Gradiente de transición suave desde la sección anterior */}
+      {/* Gradiente de transición suave superpuesto a la ilustración */}
       <div
-        className="pointer-events-none absolute inset-x-0 z-[5]"
+        className="pointer-events-none absolute inset-x-0 top-0 z-[10]"
         style={{
-          top: "-80px",
           height: "80px",
-          background: "linear-gradient(to bottom, transparent, var(--beige-warm))",
+          background: "linear-gradient(to bottom, var(--color-beige) 0%, transparent 100%)",
         }}
       />
       <div
