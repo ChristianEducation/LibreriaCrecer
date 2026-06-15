@@ -1025,8 +1025,8 @@ body {
   }
 
   .recent-products-grid > * {
-    /* 5 ítems visibles por vez (4 gaps de 1rem) */
-    flex: 0 0 calc((100% - 4rem) / 5);
+    /* 6 ítems visibles por vez (5 gaps de 1rem) */
+    flex: 0 0 calc((100% - 5rem) / 6);
     min-width: 0;
     scroll-snap-align: start;
   }
