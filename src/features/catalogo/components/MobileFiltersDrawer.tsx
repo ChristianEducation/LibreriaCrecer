@@ -21,9 +21,9 @@ const sortOptions: Array<{ value: SortOption; label: string }> = [
   { value: "name", label: "A – Z" },
 ];
 
-const filterChips: Array<{ value: string; label: string; icon: string }> = [
-  { value: "nuevo", label: "Nuevos", icon: "✦" },
-  { value: "seleccion", label: "Selección", icon: "★" },
+const filterOptions: Array<{ value: string; label: string }> = [
+  { value: "nuevo", label: "Nuevos" },
+  { value: "seleccion", label: "Selección del mes" },
 ];
 
 export function MobileFiltersDrawer({
@@ -37,10 +37,13 @@ export function MobileFiltersDrawer({
   const searchParams = useSearchParams();
 
   const [catOpen, setCatOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  
   const [searchInput, setSearchInput] = useState(searchParams.get("search") ?? "");
   const catRef = useRef<HTMLDivElement>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,7 +54,7 @@ export function MobileFiltersDrawer({
 
   // Close dropdowns on click outside
   useEffect(() => {
-    if (!catOpen && !sortOpen) return;
+    if (!catOpen && !sortOpen && !filterOpen) return;
     function handleClickOutside(e: MouseEvent) {
       if (catOpen && catRef.current && !catRef.current.contains(e.target as Node)) {
         setCatOpen(false);
@@ -59,10 +62,13 @@ export function MobileFiltersDrawer({
       if (sortOpen && sortRef.current && !sortRef.current.contains(e.target as Node)) {
         setSortOpen(false);
       }
+      if (filterOpen && filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setFilterOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [catOpen, sortOpen]);
+  }, [catOpen, sortOpen, filterOpen]);
 
   // Focus search input when opened
   useEffect(() => {
@@ -85,13 +91,9 @@ export function MobileFiltersDrawer({
 
   function closeAll() {
     setCatOpen(false);
+    setFilterOpen(false);
     setSortOpen(false);
     setSearchOpen(false);
-  }
-
-  function toggleFilter(value: string) {
-    closeAll();
-    updateParam("filter", activeFilter === value ? "" : value);
   }
 
   function handleSearch(e: React.FormEvent) {
@@ -107,8 +109,10 @@ export function MobileFiltersDrawer({
     setSearchOpen(false);
   }
 
-  const currentSortLabel = sortOptions.find((o) => o.value === activeSort)?.label ?? "Recientes";
   const activeCatLabel = categories.find((c) => c.slug === activeCategory)?.name ?? "Categoría";
+  const activeFilterLabel = filterOptions.find((o) => o.value === activeFilter)?.label ?? "Filtro";
+  const currentSortLabel = sortOptions.find((o) => o.value === activeSort)?.label ?? "Orden";
+
   const hasActiveSearch = !!searchParams.get("search");
   const hasAnyFilter = !!activeFilter || hasActiveSearch || !!activeCategory;
 
@@ -123,12 +127,12 @@ export function MobileFiltersDrawer({
     >
       {/* ── Barra principal ── */}
       <div
-        className="page-px flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="page-px flex items-center gap-1.5 overflow-visible"
         style={{ height: "52px" }}
       >
         {/* Botón buscar */}
         <button
-          onClick={() => { setSearchOpen(!searchOpen); setCatOpen(false); setSortOpen(false); }}
+          onClick={() => { setSearchOpen(!searchOpen); setCatOpen(false); setSortOpen(false); setFilterOpen(false); }}
           className={cx(
             "flex shrink-0 items-center justify-center rounded-full border transition-all duration-200",
             hasActiveSearch || searchOpen
@@ -148,35 +152,29 @@ export function MobileFiltersDrawer({
         <div style={{ width: "1px", height: "18px", background: "rgba(115,96,2,0.1)", flexShrink: 0 }} />
 
         {/* Dropdown de categoría */}
-        <div ref={catRef} className="relative shrink-0">
+        <div ref={catRef} className="relative shrink-0 flex-1 min-w-0 max-w-[130px]">
           <button
-            onClick={() => { setCatOpen(!catOpen); setSortOpen(false); setSearchOpen(false); }}
+            onClick={() => { setCatOpen(!catOpen); setSortOpen(false); setSearchOpen(false); setFilterOpen(false); }}
             className={cx(
-              "flex items-center gap-1.5 rounded-full border transition-all duration-200",
+              "w-full flex items-center justify-between gap-1.5 rounded-full border transition-all duration-200",
               activeCategory || catOpen
                 ? "border-moss/80 bg-moss text-white shadow-sm"
                 : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid",
             )}
-            style={{ height: "36px", paddingInline: "14px", fontSize: "12px", fontWeight: 500 }}
+            style={{ height: "36px", paddingInline: "12px", fontSize: "12px", fontWeight: 500 }}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" />
-              <rect x="14" y="14" width="7" height="7" rx="1" />
-            </svg>
-            <span style={{ maxWidth: "100px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {activeCategory ? activeCatLabel : "Categoría"}
             </span>
             <svg
               width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
-              style={{ transition: "transform 200ms", transform: catOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+              style={{ flexShrink: 0, transition: "transform 200ms", transform: catOpen ? "rotate(180deg)" : "rotate(0deg)" }}
             >
               <path d="m6 9 6 6 6-6" />
             </svg>
           </button>
 
-          {/* Category dropdown */}
+          {/* Category dropdown menu */}
           {catOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setCatOpen(false)} />
@@ -191,7 +189,6 @@ export function MobileFiltersDrawer({
                 }}
               >
                 <div style={{ padding: "4px" }}>
-                  {/* Todas las categorías */}
                   <button
                     onClick={() => { updateParam("cat", ""); setCatOpen(false); }}
                     className="flex w-full items-center gap-2.5 rounded-lg text-left transition-colors duration-150"
@@ -213,7 +210,6 @@ export function MobileFiltersDrawer({
                     Todas
                   </button>
 
-                  {/* Separador */}
                   <div style={{ height: "1px", background: "rgba(115,96,2,0.06)", margin: "2px 14px" }} />
 
                   {categories.map((cat) => {
@@ -248,49 +244,111 @@ export function MobileFiltersDrawer({
           )}
         </div>
 
-        {/* Chips de filtro */}
-        {filterChips.map((chip) => {
-          const isActive = activeFilter === chip.value;
-          return (
-            <button
-              key={chip.value}
-              onClick={() => toggleFilter(chip.value)}
-              className={cx(
-                "shrink-0 flex items-center gap-1.5 rounded-full border transition-all duration-200",
-                isActive
-                  ? "border-moss/80 bg-moss text-white shadow-sm"
-                  : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid",
-              )}
-              style={{ height: "36px", paddingInline: "14px", fontSize: "12px", fontWeight: 500, letterSpacing: "0.01em" }}
+        {/* Dropdown de Filtro */}
+        <div ref={filterRef} className="relative shrink-0 flex-1 min-w-0 max-w-[100px]">
+          <button
+            onClick={() => { setFilterOpen(!filterOpen); setCatOpen(false); setSortOpen(false); setSearchOpen(false); }}
+            className={cx(
+              "w-full flex items-center justify-between gap-1.5 rounded-full border transition-all duration-200",
+              activeFilter || filterOpen
+                ? "border-moss/80 bg-moss text-white shadow-sm"
+                : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid",
+            )}
+            style={{ height: "36px", paddingInline: "12px", fontSize: "12px", fontWeight: 500 }}
+          >
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {activeFilter ? activeFilterLabel : "Filtro"}
+            </span>
+            <svg
+              width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+              style={{ flexShrink: 0, transition: "transform 200ms", transform: filterOpen ? "rotate(180deg)" : "rotate(0deg)" }}
             >
-              <span style={{ fontSize: "10px", opacity: isActive ? 1 : 0.5 }}>{chip.icon}</span>
-              {chip.label}
-            </button>
-          );
-        })}
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
 
-        {/* Separador */}
-        <div style={{ width: "1px", height: "18px", background: "rgba(115,96,2,0.1)", flexShrink: 0 }} />
+          {/* Filter dropdown menu */}
+          {filterOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setFilterOpen(false)} />
+              <div
+                className="absolute left-1/2 -translate-x-1/2 top-full z-50 overflow-hidden rounded-xl border border-border/60 bg-white shadow-xl"
+                style={{ marginTop: "8px", minWidth: "160px", animation: "mobileFilterDropIn 200ms cubic-bezier(0.16, 1, 0.3, 1)" }}
+              >
+                <div style={{ padding: "4px" }}>
+                  <button
+                    onClick={() => { updateParam("filter", ""); setFilterOpen(false); }}
+                    className="flex w-full items-center gap-2.5 rounded-lg text-left transition-colors duration-150"
+                    style={{
+                      padding: "10px 14px",
+                      fontSize: "13px",
+                      fontWeight: !activeFilter ? 600 : 400,
+                      color: !activeFilter ? "var(--text)" : "var(--text-mid)",
+                      background: !activeFilter ? "var(--beige)" : "transparent",
+                    }}
+                  >
+                    <span style={{ width: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {!activeFilter && (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--moss)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </span>
+                    Todos
+                  </button>
+
+                  <div style={{ height: "1px", background: "rgba(115,96,2,0.06)", margin: "2px 14px" }} />
+
+                  {filterOptions.map((opt) => {
+                    const isActive = activeFilter === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => { updateParam("filter", opt.value); setFilterOpen(false); }}
+                        className="flex w-full items-center gap-2.5 rounded-lg text-left transition-colors duration-150"
+                        style={{
+                          padding: "10px 14px",
+                          fontSize: "13px",
+                          fontWeight: isActive ? 600 : 400,
+                          color: isActive ? "var(--text)" : "var(--text-mid)",
+                          background: isActive ? "var(--beige)" : "transparent",
+                        }}
+                      >
+                        <span style={{ width: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          {isActive && (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--moss)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </span>
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* Sort dropdown */}
-        <div ref={sortRef} className="relative shrink-0">
+        <div ref={sortRef} className="relative shrink-0 flex-1 min-w-0 max-w-[100px]">
           <button
-            onClick={() => { setSortOpen(!sortOpen); setCatOpen(false); setSearchOpen(false); }}
+            onClick={() => { setSortOpen(!sortOpen); setCatOpen(false); setFilterOpen(false); setSearchOpen(false); }}
             className={cx(
-              "flex items-center gap-1.5 rounded-full border transition-all duration-200",
+              "w-full flex items-center justify-between gap-1.5 rounded-full border transition-all duration-200",
               sortOpen
                 ? "border-moss/50 bg-white text-text shadow-sm"
                 : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid",
             )}
             style={{ height: "36px", paddingInline: "12px", fontSize: "12px", fontWeight: 500 }}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M3 6h18M7 12h10M10 18h4" />
-            </svg>
-            <span className="hidden min-[400px]:inline">{currentSortLabel}</span>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {activeSort ? currentSortLabel : "Orden"}
+            </span>
             <svg
               width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
-              style={{ transition: "transform 200ms", transform: sortOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+              style={{ flexShrink: 0, transition: "transform 200ms", transform: sortOpen ? "rotate(180deg)" : "rotate(0deg)" }}
             >
               <path d="m6 9 6 6 6-6" />
             </svg>
@@ -348,7 +406,7 @@ export function MobileFiltersDrawer({
                 params.delete("cat");
                 params.delete("page");
                 router.push(params.toString() ? `/productos?${params.toString()}` : "/productos");
-                setSearchOpen(false);
+                closeAll();
                 setSearchInput("");
               }}
               className="flex items-center justify-center rounded-full text-text-light hover:text-text transition-colors"
