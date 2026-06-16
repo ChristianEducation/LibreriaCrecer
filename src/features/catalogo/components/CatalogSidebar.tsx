@@ -21,7 +21,6 @@ const sortOptions: Array<{ value: SortOption; label: string }> = [
 const filterOptions: Array<{ value: string; label: string }> = [
   { value: "", label: "Todos" },
   { value: "nuevo", label: "Nuevos" },
-  { value: "oferta", label: "En oferta" },
   { value: "seleccion", label: "Selección del mes" },
 ];
 

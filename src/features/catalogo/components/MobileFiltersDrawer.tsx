@@ -10,6 +10,8 @@ export interface MobileFiltersDrawerProps {
   activeFilter: string;
   activeSort: string;
   totalResults: number;
+  categories: { id: string; name: string; slug: string }[];
+  activeCategory: string;
 }
 
 const sortOptions: Array<{ value: SortOption; label: string }> = [
@@ -21,7 +23,6 @@ const sortOptions: Array<{ value: SortOption; label: string }> = [
 
 const filterChips: Array<{ value: string; label: string; icon: string }> = [
   { value: "nuevo", label: "Nuevos", icon: "✦" },
-  { value: "oferta", label: "Ofertas", icon: "%" },
   { value: "seleccion", label: "Selección", icon: "★" },
 ];
 
@@ -29,13 +30,17 @@ export function MobileFiltersDrawer({
   activeFilter,
   activeSort,
   totalResults,
+  categories,
+  activeCategory,
 }: MobileFiltersDrawerProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [catOpen, setCatOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchInput, setSearchInput] = useState(searchParams.get("search") ?? "");
+  const catRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,22 +49,24 @@ export function MobileFiltersDrawer({
     setSearchInput(searchParams.get("search") ?? "");
   }, [searchParams]);
 
-  // Close sort dropdown on click outside
+  // Close dropdowns on click outside
   useEffect(() => {
-    if (!sortOpen) return;
+    if (!catOpen && !sortOpen) return;
     function handleClickOutside(e: MouseEvent) {
-      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+      if (catOpen && catRef.current && !catRef.current.contains(e.target as Node)) {
+        setCatOpen(false);
+      }
+      if (sortOpen && sortRef.current && !sortRef.current.contains(e.target as Node)) {
         setSortOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [sortOpen]);
+  }, [catOpen, sortOpen]);
 
   // Focus search input when opened
   useEffect(() => {
     if (searchOpen && searchInputRef.current) {
-      // Small delay to allow the animation to start
       const timer = setTimeout(() => searchInputRef.current?.focus(), 100);
       return () => clearTimeout(timer);
     }
@@ -73,10 +80,17 @@ export function MobileFiltersDrawer({
       params.delete("page");
       router.push(params.toString() ? `/productos?${params.toString()}` : "/productos");
     },
-    [router, searchParams]
+    [router, searchParams],
   );
 
+  function closeAll() {
+    setCatOpen(false);
+    setSortOpen(false);
+    setSearchOpen(false);
+  }
+
   function toggleFilter(value: string) {
+    closeAll();
     updateParam("filter", activeFilter === value ? "" : value);
   }
 
@@ -94,31 +108,32 @@ export function MobileFiltersDrawer({
   }
 
   const currentSortLabel = sortOptions.find((o) => o.value === activeSort)?.label ?? "Recientes";
+  const activeCatLabel = categories.find((c) => c.slug === activeCategory)?.name ?? "Categoría";
   const hasActiveSearch = !!searchParams.get("search");
-  const hasAnyFilter = !!activeFilter || hasActiveSearch;
+  const hasAnyFilter = !!activeFilter || hasActiveSearch || !!activeCategory;
 
   return (
     <div
       className="lg:hidden sticky z-30"
       style={{
-        top: "64px", // Navbar height
+        top: "64px",
         background: "var(--beige)",
         borderBottom: "1px solid rgba(115, 96, 2, 0.08)",
       }}
     >
-      {/* ── Barra principal de filtros ── */}
+      {/* ── Barra principal ── */}
       <div
-        className="page-px flex items-center gap-2"
+        className="page-px flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ height: "52px" }}
       >
         {/* Botón buscar */}
         <button
-          onClick={() => { setSearchOpen(!searchOpen); setSortOpen(false); }}
+          onClick={() => { setSearchOpen(!searchOpen); setCatOpen(false); setSortOpen(false); }}
           className={cx(
             "flex shrink-0 items-center justify-center rounded-full border transition-all duration-200",
             hasActiveSearch || searchOpen
               ? "border-moss/80 bg-moss text-white shadow-sm"
-              : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid"
+              : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid",
           )}
           style={{ width: "36px", height: "36px" }}
           aria-label="Buscar"
@@ -129,8 +144,109 @@ export function MobileFiltersDrawer({
           </svg>
         </button>
 
-        {/* Separador sutil */}
+        {/* Separador */}
         <div style={{ width: "1px", height: "18px", background: "rgba(115,96,2,0.1)", flexShrink: 0 }} />
+
+        {/* Dropdown de categoría */}
+        <div ref={catRef} className="relative shrink-0">
+          <button
+            onClick={() => { setCatOpen(!catOpen); setSortOpen(false); setSearchOpen(false); }}
+            className={cx(
+              "flex items-center gap-1.5 rounded-full border transition-all duration-200",
+              activeCategory || catOpen
+                ? "border-moss/80 bg-moss text-white shadow-sm"
+                : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid",
+            )}
+            style={{ height: "36px", paddingInline: "14px", fontSize: "12px", fontWeight: 500 }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+            <span style={{ maxWidth: "100px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {activeCategory ? activeCatLabel : "Categoría"}
+            </span>
+            <svg
+              width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+              style={{ transition: "transform 200ms", transform: catOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+
+          {/* Category dropdown */}
+          {catOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setCatOpen(false)} />
+              <div
+                className="absolute left-0 top-full z-50 overflow-hidden rounded-xl border border-border/60 bg-white shadow-xl"
+                style={{
+                  marginTop: "8px",
+                  minWidth: "200px",
+                  maxHeight: "320px",
+                  overflowY: "auto",
+                  animation: "mobileFilterDropIn 200ms cubic-bezier(0.16, 1, 0.3, 1)",
+                }}
+              >
+                <div style={{ padding: "4px" }}>
+                  {/* Todas las categorías */}
+                  <button
+                    onClick={() => { updateParam("cat", ""); setCatOpen(false); }}
+                    className="flex w-full items-center gap-2.5 rounded-lg text-left transition-colors duration-150"
+                    style={{
+                      padding: "10px 14px",
+                      fontSize: "13px",
+                      fontWeight: !activeCategory ? 600 : 400,
+                      color: !activeCategory ? "var(--text)" : "var(--text-mid)",
+                      background: !activeCategory ? "var(--beige)" : "transparent",
+                    }}
+                  >
+                    <span style={{ width: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {!activeCategory && (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--moss)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </span>
+                    Todas
+                  </button>
+
+                  {/* Separador */}
+                  <div style={{ height: "1px", background: "rgba(115,96,2,0.06)", margin: "2px 14px" }} />
+
+                  {categories.map((cat) => {
+                    const isActive = activeCategory === cat.slug;
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => { updateParam("cat", cat.slug); setCatOpen(false); }}
+                        className="flex w-full items-center gap-2.5 rounded-lg text-left transition-colors duration-150"
+                        style={{
+                          padding: "10px 14px",
+                          fontSize: "13px",
+                          fontWeight: isActive ? 600 : 400,
+                          color: isActive ? "var(--text)" : "var(--text-mid)",
+                          background: isActive ? "var(--beige)" : "transparent",
+                        }}
+                      >
+                        <span style={{ width: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          {isActive && (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--moss)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </span>
+                        {cat.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* Chips de filtro */}
         {filterChips.map((chip) => {
@@ -143,7 +259,7 @@ export function MobileFiltersDrawer({
                 "shrink-0 flex items-center gap-1.5 rounded-full border transition-all duration-200",
                 isActive
                   ? "border-moss/80 bg-moss text-white shadow-sm"
-                  : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid"
+                  : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid",
               )}
               style={{ height: "36px", paddingInline: "14px", fontSize: "12px", fontWeight: 500, letterSpacing: "0.01em" }}
             >
@@ -153,18 +269,18 @@ export function MobileFiltersDrawer({
           );
         })}
 
-        {/* Espacio flexible empuja sort y contador a la derecha */}
-        <div className="flex-1" />
+        {/* Separador */}
+        <div style={{ width: "1px", height: "18px", background: "rgba(115,96,2,0.1)", flexShrink: 0 }} />
 
         {/* Sort dropdown */}
         <div ref={sortRef} className="relative shrink-0">
           <button
-            onClick={() => { setSortOpen(!sortOpen); setSearchOpen(false); }}
+            onClick={() => { setSortOpen(!sortOpen); setCatOpen(false); setSearchOpen(false); }}
             className={cx(
               "flex items-center gap-1.5 rounded-full border transition-all duration-200",
               sortOpen
                 ? "border-moss/50 bg-white text-text shadow-sm"
-                : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid"
+                : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid",
             )}
             style={{ height: "36px", paddingInline: "12px", fontSize: "12px", fontWeight: 500 }}
           >
@@ -183,15 +299,10 @@ export function MobileFiltersDrawer({
           {/* Sort dropdown menu */}
           {sortOpen && (
             <>
-              {/* Invisible overlay for touch devices */}
               <div className="fixed inset-0 z-40" onClick={() => setSortOpen(false)} />
               <div
                 className="absolute right-0 top-full z-50 overflow-hidden rounded-xl border border-border/60 bg-white shadow-xl"
-                style={{
-                  marginTop: "8px",
-                  minWidth: "180px",
-                  animation: "mobileFilterDropIn 200ms cubic-bezier(0.16, 1, 0.3, 1)",
-                }}
+                style={{ marginTop: "8px", minWidth: "180px", animation: "mobileFilterDropIn 200ms cubic-bezier(0.16, 1, 0.3, 1)" }}
               >
                 <div style={{ padding: "4px" }}>
                   {sortOptions.map((opt) => {
@@ -199,10 +310,7 @@ export function MobileFiltersDrawer({
                     return (
                       <button
                         key={opt.value}
-                        onClick={() => {
-                          updateParam("sort", opt.value);
-                          setSortOpen(false);
-                        }}
+                        onClick={() => { updateParam("sort", opt.value); setSortOpen(false); }}
                         className="flex w-full items-center gap-2.5 rounded-lg text-left transition-colors duration-150"
                         style={{
                           padding: "10px 14px",
@@ -212,14 +320,7 @@ export function MobileFiltersDrawer({
                           background: isActive ? "var(--beige)" : "transparent",
                         }}
                       >
-                        <span
-                          style={{
-                            width: "16px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
+                        <span style={{ width: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           {isActive && (
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--moss)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M5 13l4 4L19 7" />
@@ -236,21 +337,22 @@ export function MobileFiltersDrawer({
           )}
         </div>
 
-        {/* Contador de resultados con badge */}
-        <div className="shrink-0 flex items-center gap-1">
+        {/* Limpiar + Contador */}
+        <div className="shrink-0 flex items-center gap-1" style={{ marginLeft: "auto" }}>
           {hasAnyFilter && (
             <button
               onClick={() => {
                 const params = new URLSearchParams(searchParams.toString());
                 params.delete("filter");
                 params.delete("search");
+                params.delete("cat");
                 params.delete("page");
                 router.push(params.toString() ? `/productos?${params.toString()}` : "/productos");
                 setSearchOpen(false);
                 setSearchInput("");
               }}
               className="flex items-center justify-center rounded-full text-text-light hover:text-text transition-colors"
-              style={{ width: "20px", height: "20px", fontSize: "10px" }}
+              style={{ width: "20px", height: "20px" }}
               aria-label="Limpiar filtros"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

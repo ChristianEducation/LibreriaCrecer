@@ -77,7 +77,9 @@ export default async function ProductosPage({ searchParams }: ProductosPageProps
       <MobileFiltersDrawer 
         activeFilter={filter} 
         activeSort={sort} 
-        totalResults={productResult.total} 
+        totalResults={productResult.total}
+        categories={categories}
+        activeCategory={activeCategory}
       />
 
       <section id="catalogo-grid" className="page-px" style={{ paddingTop: "3rem", paddingBottom: "4rem" }}>

@@ -177,12 +177,14 @@ export function PageHeader({
         </p>
       </div>
 
-      {/* Tabs de categorías */}
-      <TabsWithFade
-        activeCategory={activeCategory}
-        categories={categories}
-        updateCategory={updateCategory}
-      />
+      {/* Tabs de categorías — solo desktop, en móvil están en la barra de filtros */}
+      <div className="hidden lg:block">
+        <TabsWithFade
+          activeCategory={activeCategory}
+          categories={categories}
+          updateCategory={updateCategory}
+        />
+      </div>
     </section>
   );
 }
