@@ -127,7 +127,7 @@ export function MobileFiltersDrawer({
     >
       {/* ── Barra principal ── */}
       <div
-        className="page-px flex items-center gap-1.5 overflow-visible"
+        className="page-px flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ height: "52px" }}
       >
         {/* Botón buscar */}
@@ -152,7 +152,7 @@ export function MobileFiltersDrawer({
         <div style={{ width: "1px", height: "18px", background: "rgba(115,96,2,0.1)", flexShrink: 0 }} />
 
         {/* Dropdown de categoría */}
-        <div ref={catRef} className="relative shrink-0 flex-1 min-w-0 max-w-[130px]">
+        <div ref={catRef} className="relative shrink-0">
           <button
             onClick={() => { setCatOpen(!catOpen); setSortOpen(false); setSearchOpen(false); setFilterOpen(false); }}
             className={cx(
@@ -163,7 +163,7 @@ export function MobileFiltersDrawer({
             )}
             style={{ height: "36px", paddingInline: "12px", fontSize: "12px", fontWeight: 500 }}
           >
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <span style={{ whiteSpace: "nowrap" }}>
               {activeCategory ? activeCatLabel : "Categoría"}
             </span>
             <svg
@@ -179,10 +179,11 @@ export function MobileFiltersDrawer({
             <>
               <div className="fixed inset-0 z-40" onClick={() => setCatOpen(false)} />
               <div
-                className="absolute left-0 top-full z-50 overflow-hidden rounded-xl border border-border/60 bg-white shadow-xl"
+                className="fixed z-50 overflow-hidden rounded-xl border border-border/60 bg-white shadow-xl"
                 style={{
-                  marginTop: "8px",
-                  minWidth: "200px",
+                  top: "124px",
+                  left: "16px",
+                  right: "16px",
                   maxHeight: "320px",
                   overflowY: "auto",
                   animation: "mobileFilterDropIn 200ms cubic-bezier(0.16, 1, 0.3, 1)",
@@ -245,7 +246,7 @@ export function MobileFiltersDrawer({
         </div>
 
         {/* Dropdown de Filtro */}
-        <div ref={filterRef} className="relative shrink-0 flex-1 min-w-0 max-w-[100px]">
+        <div ref={filterRef} className="relative shrink-0">
           <button
             onClick={() => { setFilterOpen(!filterOpen); setCatOpen(false); setSortOpen(false); setSearchOpen(false); }}
             className={cx(
@@ -256,7 +257,7 @@ export function MobileFiltersDrawer({
             )}
             style={{ height: "36px", paddingInline: "12px", fontSize: "12px", fontWeight: 500 }}
           >
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <span style={{ whiteSpace: "nowrap" }}>
               {activeFilter ? activeFilterLabel : "Filtro"}
             </span>
             <svg
@@ -272,8 +273,13 @@ export function MobileFiltersDrawer({
             <>
               <div className="fixed inset-0 z-40" onClick={() => setFilterOpen(false)} />
               <div
-                className="absolute left-1/2 -translate-x-1/2 top-full z-50 overflow-hidden rounded-xl border border-border/60 bg-white shadow-xl"
-                style={{ marginTop: "8px", minWidth: "160px", animation: "mobileFilterDropIn 200ms cubic-bezier(0.16, 1, 0.3, 1)" }}
+                className="fixed z-50 overflow-hidden rounded-xl border border-border/60 bg-white shadow-xl"
+                style={{ 
+                  top: "124px",
+                  left: "16px",
+                  right: "16px",
+                  animation: "mobileFilterDropIn 200ms cubic-bezier(0.16, 1, 0.3, 1)" 
+                }}
               >
                 <div style={{ padding: "4px" }}>
                   <button
@@ -332,7 +338,7 @@ export function MobileFiltersDrawer({
         </div>
 
         {/* Sort dropdown */}
-        <div ref={sortRef} className="relative shrink-0 flex-1 min-w-0 max-w-[100px]">
+        <div ref={sortRef} className="relative shrink-0">
           <button
             onClick={() => { setSortOpen(!sortOpen); setCatOpen(false); setFilterOpen(false); setSearchOpen(false); }}
             className={cx(
@@ -343,7 +349,7 @@ export function MobileFiltersDrawer({
             )}
             style={{ height: "36px", paddingInline: "12px", fontSize: "12px", fontWeight: 500 }}
           >
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <span style={{ whiteSpace: "nowrap" }}>
               {activeSort ? currentSortLabel : "Orden"}
             </span>
             <svg
@@ -359,8 +365,13 @@ export function MobileFiltersDrawer({
             <>
               <div className="fixed inset-0 z-40" onClick={() => setSortOpen(false)} />
               <div
-                className="absolute right-0 top-full z-50 overflow-hidden rounded-xl border border-border/60 bg-white shadow-xl"
-                style={{ marginTop: "8px", minWidth: "180px", animation: "mobileFilterDropIn 200ms cubic-bezier(0.16, 1, 0.3, 1)" }}
+                className="fixed z-50 overflow-hidden rounded-xl border border-border/60 bg-white shadow-xl"
+                style={{ 
+                  top: "124px",
+                  left: "16px",
+                  right: "16px",
+                  animation: "mobileFilterDropIn 200ms cubic-bezier(0.16, 1, 0.3, 1)" 
+                }}
               >
                 <div style={{ padding: "4px" }}>
                   {sortOptions.map((opt) => {
