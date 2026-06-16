@@ -2,6 +2,8 @@ export { AddToCartButton } from "./AddToCartButton";
 export { CategoryCard } from "./CategoryCard";
 export { CategoryCarousel } from "./CategoryCarousel";
 export { FilterBar } from "./FilterBar";
+export { CatalogSidebar } from "./CatalogSidebar";
+export { MobileFiltersDrawer } from "./MobileFiltersDrawer";
 export { HeroPreview } from "./hero/HeroPreview";
 export type { HeroPreviewProps } from "./hero/HeroPreview";
 export { HeroSlider } from "./HeroSlider";

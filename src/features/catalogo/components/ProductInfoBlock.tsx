@@ -188,7 +188,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
       {/* Descripción */}
       {product.description && (
         <div
-          className="font-editorial"
+          className="font-editorial description-text"
           style={{ fontSize: "14px", lineHeight: 1.85, color: "var(--text-mid)", fontWeight: 300, marginBottom: "20px" }}
         >
           {product.description}

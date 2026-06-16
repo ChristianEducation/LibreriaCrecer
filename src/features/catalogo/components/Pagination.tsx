@@ -32,6 +32,13 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
 
     const query = params.toString();
     router.push(query ? `/productos?${query}` : "/productos");
+
+    // Scroll al inicio del grid de catálogo
+    const gridElement = document.getElementById("catalogo-grid");
+    if (gridElement) {
+      const topOffset = gridElement.getBoundingClientRect().top + window.scrollY - 120; // 120px offset para el header sticky
+      window.scrollTo({ top: topOffset, behavior: "smooth" });
+    }
   }
 
   const visiblePages = getVisiblePages(currentPage, totalPages);

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { FilterBar, PageHeader, Pagination, ProductGrid } from "@/features/catalogo/components";
+import { MobileFiltersDrawer, CatalogSidebar, PageHeader, Pagination, ProductGrid } from "@/features/catalogo/components";
 import { getCategories, getProducts, type ProductSortBy } from "@/features/catalogo";
 import { getCatalogoHeaderBanner } from "@/features/catalogo/services/landing-service";
 
@@ -68,17 +68,39 @@ export default async function ProductosPage({ searchParams }: ProductosPageProps
   const defaultHeaderImageUrl = headerBanner?.imageUrl ?? null;
 
   return (
-    <main className="bg-beige">
+    <main style={{ background: "#E8E3CC" }}>
       <PageHeader
         activeCategory={activeCategory}
         categories={categories}
         defaultHeaderImageUrl={defaultHeaderImageUrl}
       />
-      <FilterBar activeFilter={filter} activeSort={sort} totalResults={productResult.total} />
+      <MobileFiltersDrawer 
+        categories={categories}
+        activeCategory={activeCategory}
+        activeFilter={filter} 
+        activeSort={sort} 
+        totalResults={productResult.total} 
+      />
 
-      <section className="page-px" style={{ paddingTop: "3rem", paddingBottom: "4rem" }}>
-        <ProductGrid products={productResult.products} />
-        <Pagination currentPage={page} totalPages={productResult.totalPages} />
+      <section id="catalogo-grid" className="page-px" style={{ paddingTop: "3rem", paddingBottom: "4rem" }}>
+        <div className="flex flex-col lg:flex-row lg:gap-8 xl:gap-12">
+          {/* Sidebar - Desktop Only */}
+          <CatalogSidebar 
+            categories={categories}
+            activeCategory={activeCategory}
+            activeFilter={filter}
+            activeSort={sort}
+          />
+          
+          {/* Main Content */}
+          <div className="flex-1">
+            <div className="hidden lg:flex justify-end mb-6 text-sm text-text-light">
+              {productResult.total} {productResult.total === 1 ? "producto" : "productos"}
+            </div>
+            <ProductGrid products={productResult.products} />
+            <Pagination currentPage={page} totalPages={productResult.totalPages} />
+          </div>
+        </div>
       </section>
     </main>
   );
