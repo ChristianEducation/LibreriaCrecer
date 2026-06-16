@@ -121,28 +121,27 @@ export function PageHeader({
       <div className="relative z-[1] border-b" style={{ borderColor: "rgba(58,48,1,0.1)", paddingBottom: "2.5rem" }}>
         {/* Breadcrumb */}
         <div
-          className="flex flex-wrap items-center gap-2 font-display"
-          style={{ marginBottom: "1.25rem", fontSize: "14px" }}
+          className="flex flex-wrap items-center gap-2"
+          style={{ marginBottom: "1.25rem", fontSize: "11px", color: "var(--text)", letterSpacing: "0.05em", textTransform: "uppercase" }}
         >
           <Link
-            className="transition-colors"
+            className="transition-colors hover:opacity-70"
             href="/"
-            style={{ color: "var(--text-light)" }}
           >
             Inicio
           </Link>
-          <span style={{ color: "var(--text-light)", opacity: 0.5 }}>/</span>
+          <span style={{ opacity: 0.3 }}>/</span>
           <Link
-            className="transition-colors"
+            className="transition-colors hover:opacity-70"
             href="/productos"
-            style={{ color: activeCategoryData ? "var(--text-light)" : "var(--text)" }}
+            style={{ opacity: activeCategoryData ? 0.7 : 1 }}
           >
             Colección
           </Link>
           {activeCategoryData ? (
             <>
-              <span style={{ color: "var(--text-light)", opacity: 0.5 }}>/</span>
-              <span style={{ color: "var(--text)" }}>{activeCategoryData.name}</span>
+              <span style={{ opacity: 0.3 }}>/</span>
+              <span>{activeCategoryData.name}</span>
             </>
           ) : null}
         </div>
@@ -171,8 +170,8 @@ export function PageHeader({
 
         {/* Subtítulo */}
         <p
-          className="font-display font-normal text-text-mid"
-          style={{ fontSize: "18px", lineHeight: 1.6, marginTop: "1rem", maxWidth: "42rem" }}
+          className="font-editorial font-medium text-text"
+          style={{ fontSize: "14px", lineHeight: 1.8, marginTop: "1rem", maxWidth: "42rem" }}
         >
           {subtitle}
         </p>
@@ -266,11 +265,11 @@ function TabsWithFade({
       >
         <button
           className={cx(
-            "relative shrink-0 transition-colors font-display",
-            !activeCategory ? "font-medium text-text" : "text-text-light hover:text-text",
+            "relative shrink-0 transition-colors",
+            !activeCategory ? "font-semibold text-text" : "text-text opacity-70 hover:opacity-100",
           )}
           onClick={() => updateCategory("")}
-          style={{ padding: "1rem 1.25rem", fontSize: "16px" }}
+          style={{ padding: "1rem 1.25rem", fontSize: "12px", letterSpacing: "0.05em" }}
           type="button"
         >
           Todos
@@ -289,12 +288,12 @@ function TabsWithFade({
           return (
             <button
               className={cx(
-                "relative shrink-0 transition-colors font-display",
-                isActive ? "font-medium text-text" : "text-text-light hover:text-text",
+                "relative shrink-0 transition-colors",
+                isActive ? "font-semibold text-text" : "text-text opacity-70 hover:opacity-100",
               )}
               key={category.id}
               onClick={() => updateCategory(category.slug)}
-              style={{ padding: "1rem 1.25rem", fontSize: "16px" }}
+              style={{ padding: "1rem 1.25rem", fontSize: "12px", letterSpacing: "0.05em" }}
               type="button"
             >
               {category.name}
