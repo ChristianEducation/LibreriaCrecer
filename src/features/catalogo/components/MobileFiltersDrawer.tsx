@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cx } from "class-variance-authority";
 
@@ -16,13 +16,13 @@ const sortOptions: Array<{ value: SortOption; label: string }> = [
   { value: "newest", label: "Recientes" },
   { value: "price_asc", label: "Menor precio" },
   { value: "price_desc", label: "Mayor precio" },
-  { value: "name", label: "A–Z" },
+  { value: "name", label: "A – Z" },
 ];
 
-const filterChips: Array<{ value: string; label: string }> = [
-  { value: "nuevo", label: "Nuevos" },
-  { value: "oferta", label: "Ofertas" },
-  { value: "seleccion", label: "Selección" },
+const filterChips: Array<{ value: string; label: string; icon: string }> = [
+  { value: "nuevo", label: "Nuevos", icon: "✦" },
+  { value: "oferta", label: "Ofertas", icon: "%" },
+  { value: "seleccion", label: "Selección", icon: "★" },
 ];
 
 export function MobileFiltersDrawer({
@@ -46,29 +46,35 @@ export function MobileFiltersDrawer({
 
   // Close sort dropdown on click outside
   useEffect(() => {
+    if (!sortOpen) return;
     function handleClickOutside(e: MouseEvent) {
       if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
         setSortOpen(false);
       }
     }
-    if (sortOpen) document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [sortOpen]);
 
   // Focus search input when opened
   useEffect(() => {
     if (searchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
+      // Small delay to allow the animation to start
+      const timer = setTimeout(() => searchInputRef.current?.focus(), 100);
+      return () => clearTimeout(timer);
     }
   }, [searchOpen]);
 
-  function updateParam(key: string, value: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) params.set(key, value);
-    else params.delete(key);
-    params.delete("page");
-    router.push(params.toString() ? `/productos?${params.toString()}` : "/productos");
-  }
+  const updateParam = useCallback(
+    (key: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value) params.set(key, value);
+      else params.delete(key);
+      params.delete("page");
+      router.push(params.toString() ? `/productos?${params.toString()}` : "/productos");
+    },
+    [router, searchParams]
+  );
 
   function toggleFilter(value: string) {
     updateParam("filter", activeFilter === value ? "" : value);
@@ -89,45 +95,42 @@ export function MobileFiltersDrawer({
 
   const currentSortLabel = sortOptions.find((o) => o.value === activeSort)?.label ?? "Recientes";
   const hasActiveSearch = !!searchParams.get("search");
+  const hasAnyFilter = !!activeFilter || hasActiveSearch;
 
   return (
-    <div className="lg:hidden" style={{ background: "var(--beige)" }}>
-      {/* ── Barra compacta de filtros ── */}
+    <div
+      className="lg:hidden sticky z-30"
+      style={{
+        top: "64px", // Navbar height
+        background: "var(--beige)",
+        borderBottom: "1px solid rgba(115, 96, 2, 0.08)",
+      }}
+    >
+      {/* ── Barra principal de filtros ── */}
       <div
-        className="page-px flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        style={{ paddingTop: "0.75rem", paddingBottom: "0.75rem" }}
+        className="page-px flex items-center gap-2"
+        style={{ height: "52px" }}
       >
         {/* Botón buscar */}
         <button
-          onClick={() => setSearchOpen(!searchOpen)}
+          onClick={() => { setSearchOpen(!searchOpen); setSortOpen(false); }}
           className={cx(
-            "flex shrink-0 items-center justify-center rounded-full border transition-colors",
+            "flex shrink-0 items-center justify-center rounded-full border transition-all duration-200",
             hasActiveSearch || searchOpen
-              ? "border-moss bg-moss text-white"
-              : "border-border bg-white text-text-mid hover:border-moss/40"
+              ? "border-moss/80 bg-moss text-white shadow-sm"
+              : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid"
           )}
-          style={{ width: "34px", height: "34px" }}
+          style={{ width: "36px", height: "36px" }}
           aria-label="Buscar"
         >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <circle cx="11" cy="11" r="7" />
             <path d="m16.5 16.5 4 4" />
           </svg>
         </button>
 
-        {/* Separador */}
-        <div
-          className="shrink-0"
-          style={{ width: "1px", height: "20px", background: "var(--border)" }}
-        />
+        {/* Separador sutil */}
+        <div style={{ width: "1px", height: "18px", background: "rgba(115,96,2,0.1)", flexShrink: 0 }} />
 
         {/* Chips de filtro */}
         {filterChips.map((chip) => {
@@ -137,52 +140,41 @@ export function MobileFiltersDrawer({
               key={chip.value}
               onClick={() => toggleFilter(chip.value)}
               className={cx(
-                "shrink-0 rounded-full border px-3 text-xs font-medium transition-all",
+                "shrink-0 flex items-center gap-1.5 rounded-full border transition-all duration-200",
                 isActive
-                  ? "border-moss bg-moss text-white"
-                  : "border-border bg-white text-text-mid hover:border-moss/40 hover:text-text"
+                  ? "border-moss/80 bg-moss text-white shadow-sm"
+                  : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid"
               )}
-              style={{ height: "34px", letterSpacing: "0.02em" }}
+              style={{ height: "36px", paddingInline: "14px", fontSize: "12px", fontWeight: 500, letterSpacing: "0.01em" }}
             >
+              <span style={{ fontSize: "10px", opacity: isActive ? 1 : 0.5 }}>{chip.icon}</span>
               {chip.label}
             </button>
           );
         })}
 
-        {/* Separador */}
-        <div
-          className="shrink-0"
-          style={{ width: "1px", height: "20px", background: "var(--border)" }}
-        />
+        {/* Espacio flexible empuja sort y contador a la derecha */}
+        <div className="flex-1" />
 
-        {/* Sort dropdown trigger */}
+        {/* Sort dropdown */}
         <div ref={sortRef} className="relative shrink-0">
           <button
-            onClick={() => setSortOpen(!sortOpen)}
-            className="flex items-center gap-1.5 rounded-full border border-border bg-white px-3 text-xs font-medium text-text-mid transition-colors hover:border-moss/40 hover:text-text"
-            style={{ height: "34px" }}
+            onClick={() => { setSortOpen(!sortOpen); setSearchOpen(false); }}
+            className={cx(
+              "flex items-center gap-1.5 rounded-full border transition-all duration-200",
+              sortOpen
+                ? "border-moss/50 bg-white text-text shadow-sm"
+                : "border-border/80 bg-white/80 text-text-light hover:border-moss/30 hover:text-text-mid"
+            )}
+            style={{ height: "36px", paddingInline: "12px", fontSize: "12px", fontWeight: 500 }}
           >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            >
-              <path d="M3 6h18M6 12h12M9 18h6" />
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M3 6h18M7 12h10M10 18h4" />
             </svg>
-            {currentSortLabel}
+            <span className="hidden min-[400px]:inline">{currentSortLabel}</span>
             <svg
-              width="10"
-              height="10"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              className={cx("transition-transform", sortOpen && "rotate-180")}
+              width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+              style={{ transition: "transform 200ms", transform: sortOpen ? "rotate(180deg)" : "rotate(0deg)" }}
             >
               <path d="m6 9 6 6 6-6" />
             </svg>
@@ -190,69 +182,101 @@ export function MobileFiltersDrawer({
 
           {/* Sort dropdown menu */}
           {sortOpen && (
-            <div
-              className="absolute right-0 top-full z-50 mt-2 min-w-[160px] rounded-lg border border-border bg-white shadow-lg"
-              style={{ animation: "fadeIn 150ms ease" }}
-            >
-              {sortOptions.map((opt) => {
-                const isActive = activeSort === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    onClick={() => {
-                      updateParam("sort", opt.value);
-                      setSortOpen(false);
-                    }}
-                    className={cx(
-                      "flex w-full items-center gap-2 px-4 py-2.5 text-left text-xs transition-colors first:rounded-t-lg last:rounded-b-lg",
-                      isActive
-                        ? "bg-beige font-medium text-text"
-                        : "text-text-mid hover:bg-beige-warm/50 hover:text-text"
-                    )}
-                  >
-                    {isActive && (
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+            <>
+              {/* Invisible overlay for touch devices */}
+              <div className="fixed inset-0 z-40" onClick={() => setSortOpen(false)} />
+              <div
+                className="absolute right-0 top-full z-50 overflow-hidden rounded-xl border border-border/60 bg-white shadow-xl"
+                style={{
+                  marginTop: "8px",
+                  minWidth: "180px",
+                  animation: "mobileFilterDropIn 200ms cubic-bezier(0.16, 1, 0.3, 1)",
+                }}
+              >
+                <div style={{ padding: "4px" }}>
+                  {sortOptions.map((opt) => {
+                    const isActive = activeSort === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => {
+                          updateParam("sort", opt.value);
+                          setSortOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 rounded-lg text-left transition-colors duration-150"
+                        style={{
+                          padding: "10px 14px",
+                          fontSize: "13px",
+                          fontWeight: isActive ? 600 : 400,
+                          color: isActive ? "var(--text)" : "var(--text-mid)",
+                          background: isActive ? "var(--beige)" : "transparent",
+                        }}
                       >
-                        <path d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                    <span className={!isActive ? "ml-5" : ""}>{opt.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+                        <span
+                          style={{
+                            width: "16px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {isActive && (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--moss)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </span>
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
           )}
         </div>
 
-        {/* Contador de resultados */}
-        <span
-          className="ml-auto shrink-0 text-text-light"
-          style={{ fontSize: "11px", whiteSpace: "nowrap" }}
-        >
-          {totalResults}
-        </span>
+        {/* Contador de resultados con badge */}
+        <div className="shrink-0 flex items-center gap-1">
+          {hasAnyFilter && (
+            <button
+              onClick={() => {
+                const params = new URLSearchParams(searchParams.toString());
+                params.delete("filter");
+                params.delete("search");
+                params.delete("page");
+                router.push(params.toString() ? `/productos?${params.toString()}` : "/productos");
+                setSearchOpen(false);
+                setSearchInput("");
+              }}
+              className="flex items-center justify-center rounded-full text-text-light hover:text-text transition-colors"
+              style={{ width: "20px", height: "20px", fontSize: "10px" }}
+              aria-label="Limpiar filtros"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+              </svg>
+            </button>
+          )}
+          <span style={{ fontSize: "11px", color: "var(--text-light)", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+            {totalResults}
+          </span>
+        </div>
       </div>
 
       {/* ── Barra de búsqueda expandible ── */}
       <div
-        className="overflow-hidden transition-all duration-300 ease-in-out"
         style={{
-          maxHeight: searchOpen ? "60px" : "0px",
+          overflow: "hidden",
+          transition: "max-height 250ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms ease",
+          maxHeight: searchOpen ? "56px" : "0px",
           opacity: searchOpen ? 1 : 0,
         }}
       >
         <form
           onSubmit={handleSearch}
           className="page-px flex items-center gap-2"
-          style={{ paddingBottom: "0.75rem" }}
+          style={{ paddingBottom: "12px" }}
         >
           <div className="relative flex-1">
             <input
@@ -260,14 +284,29 @@ export function MobileFiltersDrawer({
               type="search"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Buscar por título o autor..."
-              className="w-full rounded-full border border-border bg-white py-2 pl-4 pr-10 text-sm text-text placeholder:text-text-light/50 focus:border-moss focus:outline-none transition-colors"
+              placeholder="Título, autor..."
+              style={{
+                width: "100%",
+                height: "38px",
+                borderRadius: "999px",
+                border: "1px solid rgba(115,96,2,0.12)",
+                background: "var(--white)",
+                paddingLeft: "16px",
+                paddingRight: searchInput ? "36px" : "16px",
+                fontSize: "13px",
+                color: "var(--text)",
+                outline: "none",
+                transition: "border-color 200ms",
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "var(--moss)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(115,96,2,0.12)"; }}
             />
             {searchInput && (
               <button
                 type="button"
                 onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-light/50 hover:text-text transition-colors"
+                className="absolute top-1/2 -translate-y-1/2"
+                style={{ right: "12px", color: "var(--text-light)", opacity: 0.5 }}
                 aria-label="Limpiar búsqueda"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -278,7 +317,19 @@ export function MobileFiltersDrawer({
           </div>
           <button
             type="submit"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-moss text-white transition-colors hover:bg-moss/90"
+            style={{
+              width: "38px",
+              height: "38px",
+              borderRadius: "999px",
+              background: "var(--moss)",
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              border: "none",
+              cursor: "pointer",
+            }}
             aria-label="Buscar"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -288,13 +339,13 @@ export function MobileFiltersDrawer({
         </form>
       </div>
 
-      {/* Keyframe animation */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-4px); }
-          to { opacity: 1; transform: translateY(0); }
+      {/* Keyframe for dropdown animation */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes mobileFilterDropIn {
+          from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
-      `}</style>
+      ` }} />
     </div>
   );
 }
