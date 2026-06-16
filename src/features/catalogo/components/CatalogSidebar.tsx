@@ -59,10 +59,10 @@ export function CatalogSidebar({
 
   return (
     <aside className="hidden lg:block w-56 shrink-0">
-      <div className="sticky top-[100px] flex flex-col gap-8 rounded-2xl bg-white/40 border border-border/50 p-5 shadow-sm backdrop-blur-sm">
+      <div className="sticky top-[100px] flex flex-col gap-10 py-2">
         {/* Search */}
         <div>
-          <h3 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-text-light">
+          <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-text-light/80">
             Buscar
           </h3>
           <form onSubmit={handleSearch} className="relative">
@@ -71,12 +71,12 @@ export function CatalogSidebar({
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Título, autor..."
-              className="w-full rounded-lg border border-border bg-white/60 py-2 pl-3 pr-8 text-sm text-text placeholder:text-text-light focus:border-moss focus:bg-white focus:outline-none transition-colors shadow-inner"
+              className="w-full border-b border-border/60 bg-transparent py-2 pl-0 pr-8 text-sm text-text placeholder:text-text-light/60 focus:border-moss focus:outline-none transition-colors"
             />
             <button
               type="submit"
               aria-label="Buscar"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-text-light hover:text-text"
+              className="absolute right-0 top-1/2 -translate-y-1/2 text-text-light/60 hover:text-text transition-colors"
             >
               <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" className="h-4 w-4">
                 <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.5" />
@@ -88,24 +88,33 @@ export function CatalogSidebar({
 
         {/* Filters */}
         <div>
-          <h3 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-text-light">
+          <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-text-light/80">
             Filtros Especiales
           </h3>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {filterOptions.map((opt) => {
               const isActive = activeFilter === opt.value;
               return (
                 <button
                   key={opt.value}
                   onClick={() => updateParams("filter", opt.value)}
-                  className={cx(
-                    "rounded-lg border px-3 py-2 text-sm text-left transition-all",
-                    isActive
-                      ? "border-moss bg-moss text-white shadow-md shadow-moss/20"
-                      : "border-border/50 bg-white/60 text-text hover:bg-white hover:border-border"
-                  )}
+                  className="group flex items-center gap-3 text-left transition-all"
                 >
-                  {opt.label}
+                  <div className={cx(
+                    "flex h-4 w-8 shrink-0 items-center rounded-full transition-colors duration-300",
+                    isActive ? "bg-moss" : "bg-border/60 group-hover:bg-border"
+                  )}>
+                    <div className={cx(
+                      "h-3 w-3 rounded-full bg-white shadow-sm transition-transform duration-300",
+                      isActive ? "translate-x-4.5" : "translate-x-0.5"
+                    )} />
+                  </div>
+                  <span className={cx(
+                    "text-sm transition-colors duration-300",
+                    isActive ? "text-text font-medium" : "text-text-mid group-hover:text-text"
+                  )}>
+                    {opt.label}
+                  </span>
                 </button>
               );
             })}
@@ -114,30 +123,41 @@ export function CatalogSidebar({
 
         {/* Sort */}
         <div>
-          <h3 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-text-light">
+          <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-text-light/80">
             Ordenar por
           </h3>
-          <div className="flex flex-col gap-1.5">
-            {sortOptions.map((opt) => (
-              <label key={opt.value} className="group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-white/60 transition-colors text-sm text-text-mid hover:text-text">
-                <div className={cx(
-                  "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors",
-                  activeSort === opt.value ? "border-moss" : "border-border/80 group-hover:border-moss/50"
-                )}>
-                  {activeSort === opt.value && (
-                    <div className="h-2 w-2 rounded-full bg-moss" />
-                  )}
-                </div>
-                <input
-                  type="radio"
-                  name="sort"
-                  className="hidden"
-                  checked={activeSort === opt.value}
-                  onChange={() => updateParams("sort", opt.value)}
-                />
-                {opt.label}
-              </label>
-            ))}
+          <div className="flex flex-col gap-3">
+            {sortOptions.map((opt) => {
+              const isActive = activeSort === opt.value;
+              return (
+                <label key={opt.value} className="group flex cursor-pointer items-center gap-3 transition-colors">
+                  <div className={cx(
+                    "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-all duration-300",
+                    isActive ? "border-moss bg-moss" : "border-border/80 bg-transparent group-hover:border-moss/50"
+                  )}>
+                    <svg 
+                      className={cx("h-2.5 w-2.5 text-white transition-opacity duration-300", isActive ? "opacity-100" : "opacity-0")}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <input
+                    type="radio"
+                    name="sort"
+                    className="hidden"
+                    checked={isActive}
+                    onChange={() => updateParams("sort", opt.value)}
+                  />
+                  <span className={cx(
+                    "text-sm transition-colors duration-300",
+                    isActive ? "text-text font-medium" : "text-text-mid group-hover:text-text"
+                  )}>
+                    {opt.label}
+                  </span>
+                </label>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -132,57 +132,98 @@ export function MobileFiltersDrawer({
         <div className="flex-1 overflow-y-auto px-5 py-6 space-y-8">
           {/* Buscar */}
           <div>
-            <h3 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-text-light">
+            <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-text-light/80">
               Buscar
             </h3>
-            <input
-              type="search"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Título, autor..."
-              className="w-full rounded-md border border-border bg-white py-2 pl-3 pr-4 text-sm text-text placeholder:text-text-light focus:border-moss focus:outline-none"
-            />
+            <div className="relative">
+              <input
+                type="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Título, autor..."
+                className="w-full border-b border-border/60 bg-transparent py-2 pl-0 pr-8 text-sm text-text placeholder:text-text-light/60 focus:border-moss focus:outline-none transition-colors"
+              />
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 text-text-light/60">
+                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" className="h-4 w-4">
+                  <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="m16 16 4.25 4.25" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+                </svg>
+              </div>
+            </div>
           </div>
 
           {/* Filtros */}
           <div>
-            <h3 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-text-light">
+            <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-text-light/80">
               Filtros Especiales
             </h3>
-            <div className="flex flex-wrap gap-2">
-              {filterOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => setLocalFilter(opt.value)}
-                  className={cx(
-                    "rounded-full border px-4 py-1.5 text-sm transition-colors",
-                    localFilter === opt.value ? "border-moss bg-moss text-white" : "border-border text-text-mid hover:bg-beige-warm"
-                  )}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            <div className="flex flex-col gap-3">
+              {filterOptions.map((opt) => {
+                const isActive = localFilter === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => setLocalFilter(opt.value)}
+                    className="group flex items-center gap-3 text-left transition-all"
+                  >
+                    <div className={cx(
+                      "flex h-4 w-8 shrink-0 items-center rounded-full transition-colors duration-300",
+                      isActive ? "bg-moss" : "bg-border/60 group-hover:bg-border"
+                    )}>
+                      <div className={cx(
+                        "h-3 w-3 rounded-full bg-white shadow-sm transition-transform duration-300",
+                        isActive ? "translate-x-4.5" : "translate-x-0.5"
+                      )} />
+                    </div>
+                    <span className={cx(
+                      "text-sm transition-colors duration-300",
+                      isActive ? "text-text font-medium" : "text-text-mid group-hover:text-text"
+                    )}>
+                      {opt.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Ordenar */}
           <div>
-            <h3 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-text-light">
+            <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-text-light/80">
               Ordenar por
             </h3>
-            <div className="space-y-3">
-              {sortOptions.map((opt) => (
-                <label key={opt.value} className="flex items-center justify-between text-text-mid">
-                  <span>{opt.label}</span>
-                  <input
-                    type="radio"
-                    name="mobile-sort"
-                    checked={localSort === opt.value}
-                    onChange={() => setLocalSort(opt.value)}
-                    className="accent-moss h-4 w-4"
-                  />
-                </label>
-              ))}
+            <div className="flex flex-col gap-3">
+              {sortOptions.map((opt) => {
+                const isActive = localSort === opt.value;
+                return (
+                  <label key={opt.value} className="group flex cursor-pointer items-center gap-3 transition-colors">
+                    <div className={cx(
+                      "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-all duration-300",
+                      isActive ? "border-moss bg-moss" : "border-border/80 bg-transparent group-hover:border-moss/50"
+                    )}>
+                      <svg 
+                        className={cx("h-2.5 w-2.5 text-white transition-opacity duration-300", isActive ? "opacity-100" : "opacity-0")}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <input
+                      type="radio"
+                      name="mobile-sort"
+                      className="hidden"
+                      checked={isActive}
+                      onChange={() => setLocalSort(opt.value)}
+                    />
+                    <span className={cx(
+                      "text-sm transition-colors duration-300",
+                      isActive ? "text-text font-medium" : "text-text-mid group-hover:text-text"
+                    )}>
+                      {opt.label}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           </div>
         </div>
