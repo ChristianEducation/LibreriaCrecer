@@ -7,8 +7,6 @@ import { cx } from "class-variance-authority";
 type SortOption = "newest" | "price_asc" | "price_desc" | "name";
 
 export interface MobileFiltersDrawerProps {
-  categories: { id: string; name: string; slug: string }[];
-  activeCategory: string;
   activeFilter: string;
   activeSort: string;
   totalResults: number;
@@ -29,8 +27,6 @@ const filterOptions: Array<{ value: string; label: string }> = [
 ];
 
 export function MobileFiltersDrawer({
-  categories,
-  activeCategory,
   activeFilter,
   activeSort,
   totalResults,
@@ -41,16 +37,14 @@ export function MobileFiltersDrawer({
   const [searchInput, setSearchInput] = useState(searchParams.get("search") ?? "");
 
   // Local state for the drawer before applying
-  const [localCategory, setLocalCategory] = useState(activeCategory);
   const [localFilter, setLocalFilter] = useState(activeFilter);
   const [localSort, setLocalSort] = useState(activeSort);
 
   useEffect(() => {
     setSearchInput(searchParams.get("search") ?? "");
-    setLocalCategory(activeCategory);
     setLocalFilter(activeFilter);
     setLocalSort(activeSort);
-  }, [searchParams, activeCategory, activeFilter, activeSort, isOpen]);
+  }, [searchParams, activeFilter, activeSort, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -65,9 +59,6 @@ export function MobileFiltersDrawer({
 
   function handleApply() {
     const params = new URLSearchParams(searchParams.toString());
-    
-    if (localCategory) params.set("cat", localCategory);
-    else params.delete("cat");
     
     if (localFilter) params.set("filter", localFilter);
     else params.delete("filter");
@@ -86,7 +77,6 @@ export function MobileFiltersDrawer({
   }
 
   function handleClear() {
-    setLocalCategory("");
     setLocalFilter("");
     setLocalSort("newest");
     setSearchInput("");
@@ -105,7 +95,7 @@ export function MobileFiltersDrawer({
           <circle cx="10" cy="12" r="3" fill="none" />
         </svg>
         Filtros
-        {(activeFilter || activeCategory || searchInput) && (
+        {(activeFilter || searchInput) && (
           <span className="ml-1 flex h-2 w-2 rounded-full bg-moss"></span>
         )}
       </button>
@@ -152,36 +142,6 @@ export function MobileFiltersDrawer({
               placeholder="Título, autor..."
               className="w-full rounded-md border border-border bg-white py-2 pl-3 pr-4 text-sm text-text placeholder:text-text-light focus:border-moss focus:outline-none"
             />
-          </div>
-
-          {/* Categorías */}
-          <div>
-            <h3 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-text-light">
-              Categorías
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setLocalCategory("")}
-                className={cx(
-                  "rounded-full border px-4 py-1.5 text-sm transition-colors",
-                  !localCategory ? "border-moss bg-moss text-white" : "border-border text-text-mid hover:bg-beige-warm"
-                )}
-              >
-                Todas
-              </button>
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setLocalCategory(cat.slug)}
-                  className={cx(
-                    "rounded-full border px-4 py-1.5 text-sm transition-colors",
-                    localCategory === cat.slug ? "border-moss bg-moss text-white" : "border-border text-text-mid hover:bg-beige-warm"
-                  )}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Filtros */}

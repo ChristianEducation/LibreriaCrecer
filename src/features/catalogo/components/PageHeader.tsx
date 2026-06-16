@@ -71,7 +71,7 @@ export function PageHeader({
     <section
       className="page-px relative overflow-hidden"
       style={{
-        background: "#E8E3CC",
+        background: "rgba(232,210,140,1)",
         paddingTop: "3.5rem",
       }}
     >
@@ -90,7 +90,7 @@ export function PageHeader({
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to bottom, rgba(232,227,204,0.65) 0%, rgba(232,227,204,0.85) 100%)",
+                "linear-gradient(to bottom, rgba(232,210,140,0.65) 0%, rgba(232,210,140,0.85) 100%)",
             }}
           />
         </div>
@@ -111,7 +111,7 @@ export function PageHeader({
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to bottom, rgba(232,227,204,0.65) 0%, rgba(232,227,204,0.85) 100%)",
+                "linear-gradient(to bottom, rgba(232,210,140,0.65) 0%, rgba(232,210,140,0.85) 100%)",
             }}
           />
         </div>
@@ -158,13 +158,9 @@ export function PageHeader({
             <>
               Nuestra{" "}
               <em
-                className="editorial-emphasis inline-block"
+                className="editorial-emphasis"
                 style={{
-                  background: "var(--beige-warm)",
-                  color: "var(--text-mid)",
-                  padding: "0.15em 0.35em",
-                  borderRadius: "100px",
-                  border: "1px solid rgba(58,48,1,0.05)",
+                  color: "var(--text)",
                 }}
               >
                 colección
@@ -227,7 +223,7 @@ function TabsWithFade({
         className="absolute left-0 top-0 bottom-0 z-[2] flex items-center"
         style={{
           width: "48px",
-          background: "linear-gradient(to right, #E8E3CC, transparent)",
+          background: "linear-gradient(to right, rgba(232,210,140,1), transparent)",
           opacity: showLeft ? 1 : 0,
           transition: "opacity 0.25s",
           pointerEvents: showLeft ? "auto" : "none",
@@ -247,7 +243,7 @@ function TabsWithFade({
         className="absolute right-0 top-0 bottom-0 z-[2] flex items-center justify-end"
         style={{
           width: "48px",
-          background: "linear-gradient(to left, #E8E3CC, transparent)",
+          background: "linear-gradient(to left, rgba(232,210,140,1), transparent)",
           opacity: showRight ? 1 : 0,
           transition: "opacity 0.25s",
           pointerEvents: showRight ? "auto" : "none",

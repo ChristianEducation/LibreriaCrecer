@@ -68,15 +68,13 @@ export default async function ProductosPage({ searchParams }: ProductosPageProps
   const defaultHeaderImageUrl = headerBanner?.imageUrl ?? null;
 
   return (
-    <main style={{ background: "#E8E3CC" }}>
+    <main style={{ background: "var(--beige)" }}>
       <PageHeader
         activeCategory={activeCategory}
         categories={categories}
         defaultHeaderImageUrl={defaultHeaderImageUrl}
       />
       <MobileFiltersDrawer 
-        categories={categories}
-        activeCategory={activeCategory}
         activeFilter={filter} 
         activeSort={sort} 
         totalResults={productResult.total} 
@@ -86,8 +84,6 @@ export default async function ProductosPage({ searchParams }: ProductosPageProps
         <div className="flex flex-col lg:flex-row lg:gap-8 xl:gap-12">
           {/* Sidebar - Desktop Only */}
           <CatalogSidebar 
-            categories={categories}
-            activeCategory={activeCategory}
             activeFilter={filter}
             activeSort={sort}
           />
