@@ -121,8 +121,8 @@ export function PageHeader({
       <div className="relative z-[1] border-b" style={{ borderColor: "rgba(58,48,1,0.1)", paddingBottom: "2.5rem" }}>
         {/* Breadcrumb */}
         <div
-          className="flex flex-wrap items-center gap-2"
-          style={{ marginBottom: "1.25rem", fontSize: "10px" }}
+          className="flex flex-wrap items-center gap-2 font-display"
+          style={{ marginBottom: "1.25rem", fontSize: "14px" }}
         >
           <Link
             className="transition-colors"
@@ -171,8 +171,8 @@ export function PageHeader({
 
         {/* Subtítulo */}
         <p
-          className="font-editorial font-light text-text-mid"
-          style={{ fontSize: "14px", lineHeight: 1.8, marginTop: "1rem", maxWidth: "42rem" }}
+          className="font-display font-normal text-text-mid"
+          style={{ fontSize: "18px", lineHeight: 1.6, marginTop: "1rem", maxWidth: "42rem" }}
         >
           {subtitle}
         </p>
@@ -266,11 +266,11 @@ function TabsWithFade({
       >
         <button
           className={cx(
-            "relative shrink-0 transition-colors",
+            "relative shrink-0 transition-colors font-display",
             !activeCategory ? "font-medium text-text" : "text-text-light hover:text-text",
           )}
           onClick={() => updateCategory("")}
-          style={{ padding: "1rem 1.25rem", fontSize: "12px", letterSpacing: "0.05em" }}
+          style={{ padding: "1rem 1.25rem", fontSize: "16px" }}
           type="button"
         >
           Todos
@@ -289,12 +289,12 @@ function TabsWithFade({
           return (
             <button
               className={cx(
-                "relative shrink-0 transition-colors",
+                "relative shrink-0 transition-colors font-display",
                 isActive ? "font-medium text-text" : "text-text-light hover:text-text",
               )}
               key={category.id}
               onClick={() => updateCategory(category.slug)}
-              style={{ padding: "1rem 1.25rem", fontSize: "12px", letterSpacing: "0.05em" }}
+              style={{ padding: "1rem 1.25rem", fontSize: "16px" }}
               type="button"
             >
               {category.name}
