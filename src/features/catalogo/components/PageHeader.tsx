@@ -71,7 +71,7 @@ export function PageHeader({
     <section
       className="page-px relative overflow-hidden"
       style={{
-        background: "var(--beige-warm)",
+        background: "var(--beige-mid)",
         paddingTop: "3.5rem",
       }}
     >
@@ -90,7 +90,7 @@ export function PageHeader({
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to bottom, rgba(237,233,212,0.65) 0%, rgba(237,233,212,0.85) 100%)",
+                "linear-gradient(to bottom, rgba(224,219,184,0.65) 0%, rgba(224,219,184,0.85) 100%)",
             }}
           />
         </div>
@@ -111,7 +111,7 @@ export function PageHeader({
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to bottom, rgba(237,233,212,0.65) 0%, rgba(237,233,212,0.85) 100%)",
+                "linear-gradient(to bottom, rgba(224,219,184,0.65) 0%, rgba(224,219,184,0.85) 100%)",
             }}
           />
         </div>
@@ -223,7 +223,7 @@ function TabsWithFade({
         className="absolute left-0 top-0 bottom-0 z-[2] flex items-center"
         style={{
           width: "48px",
-          background: "linear-gradient(to right, var(--beige-warm), transparent)",
+          background: "linear-gradient(to right, var(--beige-mid), transparent)",
           opacity: showLeft ? 1 : 0,
           transition: "opacity 0.25s",
           pointerEvents: showLeft ? "auto" : "none",
@@ -243,7 +243,7 @@ function TabsWithFade({
         className="absolute right-0 top-0 bottom-0 z-[2] flex items-center justify-end"
         style={{
           width: "48px",
-          background: "linear-gradient(to left, var(--beige-warm), transparent)",
+          background: "linear-gradient(to left, var(--beige-mid), transparent)",
           opacity: showRight ? 1 : 0,
           transition: "opacity 0.25s",
           pointerEvents: showRight ? "auto" : "none",
