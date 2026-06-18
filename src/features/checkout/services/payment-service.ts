@@ -312,8 +312,8 @@ export async function processPaymentResultByOrderNumber(
 
 export function validateNotification(body: NotificationPayload): ServiceResult<{ accepted: boolean }> {
   const requestId = parseRequestId(body.requestId);
-  const status = body.status;
-  const date = body.date;
+  const status = typeof body.status === "object" ? (body.status as { status: string }).status : (body.status as string);
+  const date = typeof body.status === "object" ? (body.status as { date: string }).date : body.date;
   const signature = body.signature;
 
   if (!requestId || !status || !date || !signature) {
