@@ -208,7 +208,7 @@ export function ProductGallery({
     <>
       <div className="lg:sticky lg:top-[88px]">
         <button
-          className="group relative mb-3 block aspect-[2/3] w-full overflow-hidden rounded-[2px] bg-[#ffffff] shadow-[0_8px_40px_rgba(58,48,1,0.1)]"
+          className="group relative mb-3 block w-full overflow-hidden rounded-[2px] bg-[#ffffff] shadow-[0_8px_40px_rgba(58,48,1,0.1)]"
           onClick={() => setIsLightboxOpen(true)}
           style={{ maxWidth: "320px", margin: "0 auto" }}
           type="button"
@@ -216,11 +216,11 @@ export function ProductGallery({
           {activeImage?.url ? (
             <Image
               alt={activeImage.altText ?? productTitle}
-              className="object-contain"
-              fill
+              width={0}
+              height={0}
               sizes="(max-width: 1024px) 100vw, 45vw"
               src={activeImage.url}
-              style={{ padding: "16px" }}
+              style={{ width: "100%", height: "auto", padding: "16px" }}
             />
           ) : (
             <PlaceholderBook productAuthor={productAuthor} productTitle={productTitle} />
