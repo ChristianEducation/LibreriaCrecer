@@ -208,7 +208,7 @@ export function ProductGallery({
     <>
       <div className="lg:sticky lg:top-[88px]">
         <button
-          className="group relative mb-3 block aspect-[3/4] w-full overflow-hidden rounded-[2px] bg-[linear-gradient(145deg,var(--beige-warm),var(--beige-mid))] shadow-[0_8px_40px_rgba(58,48,1,0.1)]"
+          className="group relative mb-3 block aspect-[3/4] w-full overflow-hidden rounded-[2px] bg-white shadow-[0_8px_40px_rgba(58,48,1,0.1)]"
           onClick={() => setIsLightboxOpen(true)}
           style={{ maxWidth: "380px", margin: "0 auto" }}
           type="button"
@@ -216,7 +216,7 @@ export function ProductGallery({
           {activeImage?.url ? (
             <Image
               alt={activeImage.altText ?? productTitle}
-              className="object-cover"
+              className="object-contain p-4"
               fill
               sizes="(max-width: 1024px) 100vw, 45vw"
               src={activeImage.url}
@@ -238,7 +238,7 @@ export function ProductGallery({
             return (
               <button
                 className={cx(
-                  "relative aspect-[2/3] w-16 overflow-hidden rounded-[2px] border-2 border-transparent bg-[linear-gradient(145deg,var(--beige-warm),var(--beige-mid))] opacity-55 transition-[border-color,opacity] duration-200 hover:opacity-85",
+                  "relative aspect-[2/3] w-16 overflow-hidden rounded-[2px] border-2 border-transparent bg-white opacity-55 transition-[border-color,opacity] duration-200 hover:opacity-85 shadow-sm",
                   isActive ? "border-gold opacity-100" : "",
                 )}
                 key={image.id}
@@ -248,7 +248,7 @@ export function ProductGallery({
                 {image.url ? (
                   <Image
                     alt={image.altText ?? `${productTitle} ${index + 1}`}
-                    className="object-cover"
+                    className="object-contain p-1.5"
                     fill
                     sizes="64px"
                     src={image.url}

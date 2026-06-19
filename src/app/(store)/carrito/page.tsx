@@ -223,14 +223,14 @@ export default function CarritoPage() {
                           width: "72px",
                           flexShrink: 0,
                           aspectRatio: "2/3",
-                          background:
-                            "linear-gradient(145deg, var(--color-beige-warm), var(--color-beige-mid))",
+                          background: "var(--color-white)",
                           borderRadius: "2px",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                           overflow: "hidden",
                           position: "relative",
+                          boxShadow: "0 2px 8px rgba(58,48,1,0.06)",
                         }}
                       >
                         {item.imageUrl ? (
@@ -238,7 +238,7 @@ export default function CarritoPage() {
                             src={item.imageUrl}
                             alt={item.title}
                             fill
-                            style={{ objectFit: "cover" }}
+                            style={{ objectFit: "contain", padding: "6px" }}
                             sizes="72px"
                           />
                         ) : (

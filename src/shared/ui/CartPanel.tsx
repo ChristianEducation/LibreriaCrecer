@@ -187,14 +187,15 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
                   flexShrink: 0,
                   overflow: "hidden",
                   borderRadius: "2px",
-                  background: "linear-gradient(145deg, var(--beige-warm), var(--beige-mid))",
+                  background: "var(--white)",
+                  boxShadow: "0 2px 4px rgba(58,48,1,0.06)",
                 }}
               >
                 {item.imageUrl ? (
                   <img
                     alt={item.title}
                     src={item.imageUrl}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{ width: "100%", height: "100%", objectFit: "contain", padding: "4px" }}
                   />
                 ) : (
                   <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center" }}>

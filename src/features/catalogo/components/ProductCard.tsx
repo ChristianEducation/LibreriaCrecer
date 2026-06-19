@@ -149,7 +149,7 @@ export function ProductCard({
           aspectRatio: "2/3",
           overflow: "hidden",
           borderRadius: "var(--radius-md)",
-          background: "linear-gradient(145deg, var(--beige-warm), var(--beige-mid))",
+          background: "var(--white)",
           boxShadow: isHovered
             ? "4px 12px 30px rgba(58,48,1,0.22)"
             : "0 0 0.5px rgba(58,48,1,0.14), 0 2px 6px rgba(58,48,1,0.10)",
@@ -164,8 +164,9 @@ export function ProductCard({
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
             src={mainImageUrl}
             style={{
-              objectFit: "cover",
-              transform: isHovered ? "scale(1.04)" : "scale(1)",
+              objectFit: "contain",
+              padding: "10px",
+              transform: isHovered ? "scale(1.02)" : "scale(1)",
               transition: "transform 0.6s ease-out",
             }}
           />
