@@ -149,7 +149,7 @@ export function ProductCard({
           aspectRatio: "2/3",
           overflow: "hidden",
           borderRadius: "var(--radius-md)",
-          background: "var(--white)",
+          background: "#ffffff",
           boxShadow: isHovered
             ? "4px 12px 30px rgba(58,48,1,0.22)"
             : "0 0 0.5px rgba(58,48,1,0.14), 0 2px 6px rgba(58,48,1,0.10)",

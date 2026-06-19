@@ -208,9 +208,9 @@ export function ProductGallery({
     <>
       <div className="lg:sticky lg:top-[88px]">
         <button
-          className="group relative mb-3 block aspect-[2/3] w-full overflow-hidden rounded-[2px] bg-white shadow-[0_8px_40px_rgba(58,48,1,0.1)]"
+          className="group relative mb-3 block aspect-[2/3] w-full overflow-hidden rounded-[2px] bg-[#ffffff] shadow-[0_8px_40px_rgba(58,48,1,0.1)]"
           onClick={() => setIsLightboxOpen(true)}
-          style={{ maxWidth: "380px", margin: "0 auto" }}
+          style={{ maxWidth: "320px", margin: "0 auto" }}
           type="button"
         >
           {activeImage?.url ? (
@@ -239,7 +239,7 @@ export function ProductGallery({
             return (
               <button
                 className={cx(
-                  "relative aspect-[2/3] w-16 overflow-hidden rounded-[2px] border-2 border-transparent bg-white opacity-55 transition-[border-color,opacity] duration-200 hover:opacity-85 shadow-sm",
+                  "relative aspect-[2/3] w-16 overflow-hidden rounded-[2px] border-2 border-transparent bg-[#ffffff] opacity-55 transition-[border-color,opacity] duration-200 hover:opacity-85 shadow-sm",
                   isActive ? "border-gold opacity-100" : "",
                 )}
                 key={image.id}

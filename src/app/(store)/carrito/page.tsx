@@ -223,7 +223,7 @@ export default function CarritoPage() {
                           width: "72px",
                           flexShrink: 0,
                           aspectRatio: "2/3",
-                          background: "var(--color-white)",
+                          background: "#ffffff",
                           borderRadius: "2px",
                           display: "flex",
                           alignItems: "center",

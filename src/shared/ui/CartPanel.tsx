@@ -187,7 +187,7 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
                   flexShrink: 0,
                   overflow: "hidden",
                   borderRadius: "2px",
-                  background: "var(--white)",
+                  background: "#ffffff",
                   boxShadow: "0 2px 4px rgba(58,48,1,0.06)",
                 }}
               >
