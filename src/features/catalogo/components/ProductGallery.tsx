@@ -216,10 +216,11 @@ export function ProductGallery({
           {activeImage?.url ? (
             <Image
               alt={activeImage.altText ?? productTitle}
-              className="object-contain p-4"
+              className="object-contain"
               fill
               sizes="(max-width: 1024px) 100vw, 45vw"
               src={activeImage.url}
+              style={{ padding: "16px" }}
             />
           ) : (
             <PlaceholderBook productAuthor={productAuthor} productTitle={productTitle} />
@@ -248,10 +249,11 @@ export function ProductGallery({
                 {image.url ? (
                   <Image
                     alt={image.altText ?? `${productTitle} ${index + 1}`}
-                    className="object-contain p-1.5"
+                    className="object-contain"
                     fill
                     sizes="64px"
                     src={image.url}
+                    style={{ padding: "6px" }}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-moss/20">
