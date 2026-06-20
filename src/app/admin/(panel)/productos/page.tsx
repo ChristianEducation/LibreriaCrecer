@@ -565,7 +565,7 @@ export default function AdminProductosPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [isActive, setIsActive] = useState("");
+  const [isActive, setIsActive] = useState("true");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -660,9 +660,13 @@ export default function AdminProductosPage() {
       localUpdate = { categories: [{ id: value as string, name: displayValue as string }] };
     }
 
-    setProducts((prev) =>
-      prev.map((p) => (p.id === productId ? { ...p, ...localUpdate } : p)),
-    );
+    setProducts((prev) => {
+      // Remove product immediately if the current filter does not match the new state
+      if (field === "isActive" && isActive !== "" && String(value) !== isActive) {
+        return prev.filter((p) => p.id !== productId);
+      }
+      return prev.map((p) => (p.id === productId ? { ...p, ...localUpdate } : p));
+    });
 
     try {
       const response = await fetch(`/api/admin/productos/${productId}`, {
