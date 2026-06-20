@@ -339,6 +339,224 @@ function ActionMenu({
   );
 }
 
+// ----------------------------------------------------------------------
+// INLINE EDIT COMPONENTS
+// ----------------------------------------------------------------------
+
+function EditablePrice({
+  value,
+  effectivePrice,
+  onSave,
+}: {
+  value: number;
+  effectivePrice: number;
+  onSave: (val: number) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [val, setVal] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+    } else {
+      setVal(value);
+    }
+  }, [isEditing, value]);
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    if (val !== value) onSave(val);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleBlur();
+    if (e.key === "Escape") {
+      setVal(value);
+      setIsEditing(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <input
+        ref={inputRef}
+        type="number"
+        value={val}
+        onChange={(e) => setVal(Number(e.target.value))}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        style={{
+          width: "90px",
+          padding: "4px 8px",
+          border: "1px solid var(--gold)",
+          borderRadius: "4px",
+          fontSize: 14,
+          fontWeight: 600,
+          color: "var(--text)",
+          outline: "none",
+        }}
+      />
+    );
+  }
+
+  return (
+    <div
+      onClick={() => setIsEditing(true)}
+      style={{
+        cursor: "pointer",
+        display: "inline-block",
+        padding: "4px 8px",
+        margin: "-4px -8px",
+        borderRadius: "4px",
+        transition: "background 0.2s",
+      }}
+      className="hover:bg-gold/10"
+      title="Clic para editar"
+    >
+      <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>
+        {formatCLP(effectivePrice)}
+      </div>
+      {effectivePrice !== value ? (
+        <div style={{ fontSize: 11, color: "var(--text-light)", textDecoration: "line-through", marginTop: 1 }}>
+          {formatCLP(value)}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function EditableStock({ stock, inStock, onSave }: { stock: number; inStock: boolean; onSave: (val: number) => void }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [val, setVal] = useState(stock);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+    } else {
+      setVal(stock);
+    }
+  }, [isEditing, stock]);
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    if (val !== stock) onSave(val);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleBlur();
+    if (e.key === "Escape") {
+      setVal(stock);
+      setIsEditing(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <input
+        ref={inputRef}
+        type="number"
+        value={val}
+        onChange={(e) => setVal(Number(e.target.value))}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        style={{
+          width: "60px",
+          padding: "2px 6px",
+          border: "1px solid var(--gold)",
+          borderRadius: "4px",
+          fontSize: 13,
+          fontWeight: 500,
+          color: "var(--text-mid)",
+          outline: "none",
+        }}
+      />
+    );
+  }
+
+  return (
+    <div
+      onClick={() => setIsEditing(true)}
+      style={{ cursor: "pointer", display: "inline-block", padding: "4px", margin: "-4px", borderRadius: "4px" }}
+      className="hover:bg-gold/10"
+      title="Clic para editar"
+    >
+      <StockIndicator inStock={inStock} stock={stock} />
+    </div>
+  );
+}
+
+function EditableStatus({ isActive, onToggle }: { isActive: boolean; onToggle: () => void }) {
+  return (
+    <div
+      onClick={onToggle}
+      style={{ cursor: "pointer", display: "inline-block", padding: "2px", margin: "-2px", borderRadius: "999px" }}
+      className="hover:ring-2 hover:ring-gold/30 hover:opacity-80 transition-all"
+      title="Clic para cambiar estado"
+    >
+      <AdminStatusPill status={isActive ? "active" : "inactive"}>
+        {isActive ? "Activo" : "Inactivo"}
+      </AdminStatusPill>
+    </div>
+  );
+}
+
+function EditableCategory({
+  categories,
+  allCategories,
+  onSave,
+}: {
+  categories: Array<{ id: string; name: string }>;
+  allCategories: CategoryOption[];
+  onSave: (id: string, name: string) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const mainCategoryId = categories[0]?.id ?? "";
+
+  if (isEditing) {
+    return (
+      <select
+        autoFocus
+        value={mainCategoryId}
+        onChange={(e) => {
+          const selectedId = e.target.value;
+          const selectedName = allCategories.find((c) => c.id === selectedId)?.name ?? "";
+          onSave(selectedId, selectedName);
+          setIsEditing(false);
+        }}
+        onBlur={() => setIsEditing(false)}
+        style={{
+          padding: "2px 6px",
+          border: "1px solid var(--gold)",
+          borderRadius: "4px",
+          fontSize: 11,
+          outline: "none",
+          background: "white",
+          maxWidth: "140px",
+          cursor: "pointer",
+        }}
+      >
+        <option value="" disabled>Seleccionar...</option>
+        {allCategories.map((c) => (
+          <option key={c.id} value={c.id}>{c.name}</option>
+        ))}
+      </select>
+    );
+  }
+
+  return (
+    <div
+      onClick={() => setIsEditing(true)}
+      style={{ cursor: "pointer", display: "inline-block", padding: "4px", margin: "-4px", borderRadius: "4px" }}
+      className="hover:bg-gold/10"
+      title="Clic para cambiar"
+    >
+      <CategoryPill label={categories.map((c) => c.name).join(", ") || "Sin categoría"} />
+    </div>
+  );
+}
+
 export default function AdminProductosPage() {
   const { toast } = useToast();
   const [products, setProducts] = useState<ProductListItem[]>([]);
@@ -414,6 +632,48 @@ export default function AdminProductosPage() {
 
     setProducts((prev) => prev.filter((item) => item.id !== productId));
     toast({ message: "Producto desactivado correctamente." });
+  }
+
+  async function handleInlineUpdate(productId: string, field: string, value: any, displayValue?: any) {
+    const previousProducts = [...products];
+    
+    // Determine API payload and local state update
+    let apiPayload: Record<string, any> = {};
+    let localUpdate: Partial<ProductListItem> = {};
+
+    if (field === "price") {
+      apiPayload = { price: value, salePrice: null };
+      localUpdate = { price: value, effectivePrice: value };
+    } else if (field === "stockQuantity") {
+      apiPayload = { stockQuantity: value, inStock: value > 0 };
+      localUpdate = { stockQuantity: value, inStock: value > 0 };
+    } else if (field === "isActive") {
+      apiPayload = { isActive: value };
+      localUpdate = { isActive: value };
+    } else if (field === "categoryId") {
+      apiPayload = { categoryIds: [value] };
+      localUpdate = { categories: [{ id: value, name: displayValue }] };
+    }
+
+    setProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, ...localUpdate } : p)),
+    );
+
+    try {
+      const response = await fetch(`/api/admin/productos/${productId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(apiPayload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update");
+      }
+      toast({ message: "Guardado", variant: "success" });
+    } catch {
+      toast({ message: "Error al guardar", variant: "error" });
+      setProducts(previousProducts); // rollback
+    }
   }
 
   function handlePreview(product: ProductListItem) {
@@ -788,38 +1048,32 @@ export default function AdminProductosPage() {
                 key: "precio",
                 header: "Precio",
                 render: (product) => (
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>
-                      {formatCLP(product.effectivePrice)}
-                    </div>
-                    {product.effectivePrice !== product.price ? (
-                      <div
-                        style={{
-                          fontSize: 11,
-                          color: "var(--text-light)",
-                          textDecoration: "line-through",
-                          marginTop: 1,
-                        }}
-                      >
-                        {formatCLP(product.price)}
-                      </div>
-                    ) : null}
-                  </div>
+                  <EditablePrice
+                    effectivePrice={product.effectivePrice}
+                    onSave={(val) => handleInlineUpdate(product.id, "price", val)}
+                    value={product.price}
+                  />
                 ),
               },
               {
                 key: "stock",
                 header: "Stock",
                 render: (product) => (
-                  <StockIndicator inStock={product.inStock} stock={product.stockQuantity} />
+                  <EditableStock
+                    inStock={product.inStock}
+                    onSave={(val) => handleInlineUpdate(product.id, "stockQuantity", val)}
+                    stock={product.stockQuantity}
+                  />
                 ),
               },
               {
                 key: "categorias",
                 header: "Categoría",
                 render: (product) => (
-                  <CategoryPill
-                    label={product.categories.map((category) => category.name).join(", ") || "Sin categoría"}
+                  <EditableCategory
+                    allCategories={categories}
+                    categories={product.categories}
+                    onSave={(id, name) => handleInlineUpdate(product.id, "categoryId", id, name)}
                   />
                 ),
               },
@@ -827,9 +1081,10 @@ export default function AdminProductosPage() {
                 key: "estado",
                 header: "Estado",
                 render: (product) => (
-                  <AdminStatusPill status={product.isActive ? "active" : "inactive"}>
-                    {product.isActive ? "Activo" : "Inactivo"}
-                  </AdminStatusPill>
+                  <EditableStatus
+                    isActive={product.isActive}
+                    onToggle={() => handleInlineUpdate(product.id, "isActive", !product.isActive)}
+                  />
                 ),
               },
               {
