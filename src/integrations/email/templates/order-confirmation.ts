@@ -144,7 +144,7 @@ export function buildOrderConfirmationEmail({
               <tr>
                 <td style="background-color: #ede9d4; padding: 30px; text-align: center; border-top: 1px solid #e0dbb8;">
                   <p style="margin: 0 0 10px 0; font-size: 13px; color: #8a7830;">
-                    <strong>Crecer Librería Cristiana</strong><br/>
+                    <strong>Crecer Librería Católica</strong><br/>
                     Antofagasta, Chile
                   </p>
                   <p style="margin: 0; font-size: 12px; color: #8a7830;">
