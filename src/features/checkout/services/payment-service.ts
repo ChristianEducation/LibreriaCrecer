@@ -195,6 +195,7 @@ export async function processPaymentResult(
           .select({ id: orders.id, adminNotes: orders.adminNotes })
           .from(orders)
           .where(and(eq(orders.id, order.id), eq(orders.status, "pending")))
+          .for("update")
           .limit(1);
 
         if (!currentOrder) {
