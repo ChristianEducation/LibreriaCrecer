@@ -80,10 +80,12 @@ export function useScrollRevealMultiple<T extends HTMLElement>(baseDelayMs = 0, 
   );
 
   useEffect(() => {
+    const currentObservers = observersRef.current;
+    const currentElements = elementsRef.current;
     return () => {
-      observersRef.current.forEach((observer) => observer.disconnect());
-      observersRef.current.clear();
-      elementsRef.current.clear();
+      currentObservers.forEach((observer) => observer.disconnect());
+      currentObservers.clear();
+      currentElements.clear();
     };
   }, []);
 

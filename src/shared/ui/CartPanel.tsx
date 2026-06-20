@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 import { useCart, useCartSummary } from "@/features/carrito/hooks";
 import { useIsMobile } from "@/shared/hooks/useIsMobile";
@@ -192,10 +193,11 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
                 }}
               >
                 {item.imageUrl ? (
-                  <img
+                  <Image
                     alt={item.title}
+                    fill
                     src={item.imageUrl}
-                    style={{ width: "100%", height: "100%", objectFit: "contain", padding: "4px" }}
+                    style={{ objectFit: "contain", padding: "4px" }}
                   />
                 ) : (
                   <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center" }}>

@@ -634,25 +634,30 @@ export default function AdminProductosPage() {
     toast({ message: "Producto desactivado correctamente." });
   }
 
-  async function handleInlineUpdate(productId: string, field: string, value: any, displayValue?: any) {
+  async function handleInlineUpdate(
+    productId: string,
+    field: string,
+    value: string | number | boolean,
+    displayValue?: string,
+  ) {
     const previousProducts = [...products];
     
     // Determine API payload and local state update
-    let apiPayload: Record<string, any> = {};
+    let apiPayload: Record<string, unknown> = {};
     let localUpdate: Partial<ProductListItem> = {};
 
     if (field === "price") {
       apiPayload = { price: value, salePrice: null };
-      localUpdate = { price: value, effectivePrice: value };
+      localUpdate = { price: value as number, effectivePrice: value as number };
     } else if (field === "stockQuantity") {
-      apiPayload = { stockQuantity: value, inStock: value > 0 };
-      localUpdate = { stockQuantity: value, inStock: value > 0 };
+      apiPayload = { stockQuantity: value, inStock: (value as number) > 0 };
+      localUpdate = { stockQuantity: value as number, inStock: (value as number) > 0 };
     } else if (field === "isActive") {
       apiPayload = { isActive: value };
-      localUpdate = { isActive: value };
+      localUpdate = { isActive: value as boolean };
     } else if (field === "categoryId") {
       apiPayload = { categoryIds: [value] };
-      localUpdate = { categories: [{ id: value, name: displayValue }] };
+      localUpdate = { categories: [{ id: value as string, name: displayValue as string }] };
     }
 
     setProducts((prev) =>
