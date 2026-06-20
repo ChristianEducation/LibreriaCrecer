@@ -4,7 +4,6 @@ import {
   count,
   desc,
   eq,
-  ilike,
   inArray,
   isNotNull,
   notInArray,
@@ -179,10 +178,10 @@ function buildProductConditions({
     const searchTerm = `%${search.trim()}%`;
     conditions.push(
       or(
-        ilike(products.title, searchTerm),
-        ilike(products.author, searchTerm),
-        ilike(products.coverType, searchTerm),
-        ilike(products.publisher, searchTerm),
+        sql`unaccent(${products.title}) ILIKE unaccent(${searchTerm})`,
+        sql`unaccent(${products.author}) ILIKE unaccent(${searchTerm})`,
+        sql`unaccent(${products.coverType}) ILIKE unaccent(${searchTerm})`,
+        sql`unaccent(${products.publisher}) ILIKE unaccent(${searchTerm})`,
       ) as SQL,
     );
   }

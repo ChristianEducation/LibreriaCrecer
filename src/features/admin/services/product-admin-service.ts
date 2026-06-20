@@ -4,7 +4,6 @@ import {
   count,
   desc,
   eq,
-  ilike,
   inArray,
   max,
   sql,
@@ -83,7 +82,7 @@ export async function getProductsAdmin(params: ProductAdminListParams) {
   const filters = [];
   if (params.search?.trim()) {
     const term = `%${params.search.trim()}%`;
-    filters.push(sql`(${ilike(products.title, term)} OR ${ilike(products.author, term)})`);
+    filters.push(sql`(unaccent(${products.title}) ILIKE unaccent(${term}) OR unaccent(${products.author}) ILIKE unaccent(${term}))`);
   }
   if (params.categoryId) {
     const subquery = db
