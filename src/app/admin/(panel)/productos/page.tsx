@@ -648,7 +648,12 @@ export default function AdminProductosPage() {
 
     if (field === "price") {
       apiPayload = { price: value };
-      localUpdate = { price: value as number };
+      const product = previousProducts.find((p) => p.id === productId);
+      const hadSalePrice = product ? product.price !== product.effectivePrice : false;
+      localUpdate = { 
+        price: value as number,
+        effectivePrice: hadSalePrice ? product!.effectivePrice : (value as number)
+      };
     } else if (field === "stockQuantity") {
       apiPayload = { stockQuantity: value, inStock: (value as number) > 0 };
       localUpdate = { stockQuantity: value as number, inStock: (value as number) > 0 };
