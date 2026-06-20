@@ -647,8 +647,8 @@ export default function AdminProductosPage() {
     let localUpdate: Partial<ProductListItem> = {};
 
     if (field === "price") {
-      apiPayload = { price: value, salePrice: null };
-      localUpdate = { price: value as number, effectivePrice: value as number };
+      apiPayload = { price: value };
+      localUpdate = { price: value as number };
     } else if (field === "stockQuantity") {
       apiPayload = { stockQuantity: value, inStock: (value as number) > 0 };
       localUpdate = { stockQuantity: value as number, inStock: (value as number) > 0 };
