@@ -17,7 +17,7 @@ export async function sendOrderConfirmationEmail(params: OrderConfirmationEmailP
     await resend.emails.send({
       from: `${emailConfig.fromName} <${emailConfig.fromAddress}>`,
       to: params.toEmail,
-      subject: `Confirmación de pedido ${params.orderNumber} - Crecer Librería Cristiana`,
+      subject: `Confirmación de pedido ${params.orderNumber} - Crecer Librería`,
       html,
     });
     

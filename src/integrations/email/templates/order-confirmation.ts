@@ -77,7 +77,7 @@ export function buildOrderConfirmationEmail({
               <tr>
                 <td style="background-color: #736002; padding: 30px; text-align: center;">
                   <h1 style="color: #faf9f4; margin: 0; font-family: Georgia, serif; font-size: 24px; font-weight: normal;">
-                    Crecer Librería Cristiana
+                    Crecer Librería
                   </h1>
                 </td>
               </tr>
