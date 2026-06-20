@@ -2,7 +2,7 @@ import { createHash } from "crypto";
 import { and, eq } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
-import { orderCustomers, orderItems, orders } from "@/integrations/drizzle/schema";
+import { orderAddresses, orderCustomers, orderItems, orders } from "@/integrations/drizzle/schema";
 import {
   createPaymentSession,
   getGetnetCancelUrl,
@@ -12,6 +12,7 @@ import {
   mapGetnetStatusToInternal,
   type GetnetSessionStatus,
 } from "@/integrations/payments/getnet";
+import { sendOrderConfirmationEmail } from "@/integrations/email";
 
 import type { OrderStatus, ServiceResult } from "../types";
 import { decrementStock } from "./stock-service";
@@ -186,6 +187,8 @@ export async function processPaymentResult(
         firstPayment?.authorization ?? firstPayment?.processorFields?.authorization;
       const receipt = firstPayment?.receipt ?? firstPayment?.processorFields?.receipt;
 
+      let wasAlreadyProcessed = false;
+
       await db.transaction(async (tx) => {
         // Guard: solo proceder si la orden sigue en "pending"
         const [currentOrder] = await tx
@@ -196,6 +199,7 @@ export async function processPaymentResult(
 
         if (!currentOrder) {
           // Ya fue procesada (ej: webhook llegó primero). No hacer nada.
+          wasAlreadyProcessed = true;
           return;
         }
 
@@ -233,6 +237,67 @@ export async function processPaymentResult(
           })
           .where(eq(orders.id, order.id));
       });
+
+      if (!wasAlreadyProcessed) {
+        // SELECT order data for email
+        const [fullOrder] = await db
+          .select({
+            subtotal: orders.subtotal,
+            shippingCost: orders.shippingCost,
+            total: orders.total,
+            deliveryMethod: orders.deliveryMethod,
+          })
+          .from(orders)
+          .where(eq(orders.id, order.id))
+          .limit(1);
+
+        const [customer] = await db
+          .select({
+            firstName: orderCustomers.firstName,
+            lastName: orderCustomers.lastName,
+            email: orderCustomers.email,
+          })
+          .from(orderCustomers)
+          .where(eq(orderCustomers.orderId, order.id))
+          .limit(1);
+
+        const [address] = await db
+          .select({
+            street: orderAddresses.street,
+            number: orderAddresses.number,
+            apartment: orderAddresses.apartment,
+            commune: orderAddresses.commune,
+            city: orderAddresses.city,
+            region: orderAddresses.region,
+          })
+          .from(orderAddresses)
+          .where(eq(orderAddresses.orderId, order.id))
+          .limit(1);
+
+        const items = await db
+          .select({
+            productTitle: orderItems.productTitle,
+            quantity: orderItems.quantity,
+            unitPrice: orderItems.unitPrice,
+            subtotal: orderItems.subtotal,
+          })
+          .from(orderItems)
+          .where(eq(orderItems.orderId, order.id));
+
+        if (fullOrder && customer) {
+          await sendOrderConfirmationEmail({
+            toEmail: customer.email,
+            orderNumber: order.orderNumber,
+            customerName: customer.firstName,
+            items,
+            subtotal: fullOrder.subtotal,
+            shippingCost: fullOrder.shippingCost,
+            total: fullOrder.total,
+            deliveryMethod: fullOrder.deliveryMethod,
+            address,
+          });
+        }
+      }
 
       return {
         success: true,
