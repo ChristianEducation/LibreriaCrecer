@@ -786,10 +786,6 @@ body {
 }
 
 .about-cta-section {
-  background:
-    radial-gradient(circle at 15% 20%, rgba(232, 208, 96, 0.14), transparent 30%),
-    linear-gradient(135deg, rgba(58, 48, 1, 0.98), rgba(91, 76, 3, 0.96)),
-    var(--moss);
 }
 
 .about-cta {
@@ -809,7 +805,7 @@ body {
   font-weight: 400;
   line-height: 1.02;
   letter-spacing: -0.04em;
-  color: var(--white);
+  color: var(--moss);
 }
 
 .about-cta p:not(.about-eyebrow) {
@@ -819,7 +815,7 @@ body {
   font-size: 15px;
   font-weight: 300;
   line-height: 1.75;
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--text-mid);
 }
 
 .about-cta-link {

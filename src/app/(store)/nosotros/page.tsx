@@ -69,7 +69,7 @@ export default async function NosotrosPage() {
       </section>
 
       <section
-        className="page-px about-manifesto-section"
+        className="page-px about-manifesto-section bg-white"
         style={{ paddingTop: "4.5rem", paddingBottom: "4.5rem" }}
       >
         <div className="about-manifesto">
@@ -91,7 +91,7 @@ export default async function NosotrosPage() {
 
       {sections.length === 0 ? (
         <section
-          className="page-px bg-white"
+          className="page-px bg-beige"
           style={{ paddingTop: "5rem", paddingBottom: "5rem" }}
         >
           <div className="about-empty-state">
@@ -157,10 +157,14 @@ export default async function NosotrosPage() {
 
       <section
         className="page-px about-cta-section"
-        style={{ paddingTop: "5rem", paddingBottom: "5.5rem" }}
+        style={{
+          paddingTop: "5rem",
+          paddingBottom: "5.5rem",
+          background: (sections.length === 0 || sections.length % 2 !== 0) ? "var(--white)" : "var(--beige)"
+        }}
       >
         <div className="about-cta">
-          <p className="about-eyebrow">
+          <p className="about-eyebrow about-eyebrow--dark">
             <span aria-hidden="true" />
             Nuestra colección
           </p>
