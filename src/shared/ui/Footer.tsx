@@ -161,7 +161,7 @@ export async function Footer() {
           <div className="grid grid-cols-1 gap-7 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
             <div>
               <Image src="/images/Logo-Crecer.png" alt="Crecer Librería" width={44} height={44} style={{ objectFit: "contain", marginBottom: "12px" }} />
-              <p style={{ fontFamily: "var(--font-castoro)", fontSize: "18px", color: "var(--text)", fontWeight: 400 }}>Crecer Libreria</p>
+              <p style={{ fontFamily: "var(--font-castoro)", fontSize: "18px", color: "var(--text)", fontWeight: 400 }}>Crecer Librería</p>
               <p style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--gold)", marginBottom: "12px", marginTop: "2px" }}>Fe, lectura y formación</p>
               <p style={{ fontFamily: "var(--font-inter)", fontSize: "13px", lineHeight: 1.7, color: bodyTextColor, maxWidth: "240px" }}>
                 {content.brandDescription}

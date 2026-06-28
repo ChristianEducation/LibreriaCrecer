@@ -64,6 +64,7 @@ function ChevronDownIcon({ open }: { open: boolean }) {
 const navLinksAfterCategories = [
   { href: "/productos?filter=seleccion", label: "Selección del mes" },
   { href: "/productos?filter=nuevo", label: "Recién llegados" },
+  { href: "/encuentros", label: "Encuentros" },
   { href: "/nosotros", label: "Conócenos" },
 ] as const;
 

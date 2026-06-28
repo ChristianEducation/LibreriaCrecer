@@ -7,6 +7,7 @@ export interface SectionHeaderProps {
   description?: string;
   align?: "left" | "center";
   className?: string;
+  as?: "h1" | "h2";
 }
 
 export function SectionHeader({
@@ -16,8 +17,11 @@ export function SectionHeader({
   description,
   align = "left",
   className,
+  as = "h2",
 }: SectionHeaderProps) {
   const isCentered = align === "center";
+
+  const Tag = as === "h1" ? "h1" : "h2";
 
   return (
     <div className={cx("flex flex-col gap-3", isCentered ? "items-center text-center" : "", className)}>
@@ -33,7 +37,7 @@ export function SectionHeader({
         </div>
       ) : null}
 
-      <h2 className="font-serif text-[clamp(28px,2.8vw,42px)] font-normal leading-[1.15] tracking-[-0.01em] text-moss">
+      <Tag className="font-serif text-[clamp(28px,2.8vw,42px)] font-normal leading-[1.15] tracking-[-0.01em] text-moss">
         {title}
         {titleEm ? (
           <>
@@ -41,7 +45,7 @@ export function SectionHeader({
             <em className="font-normal italic">{titleEm}</em>
           </>
         ) : null}
-      </h2>
+      </Tag>
 
       {description ? (
         <p

@@ -68,6 +68,7 @@ const sections: { label: string; items: SidebarItem[] }[] = [
       { href: "/admin/landing/hero-final", label: "Hero final", icon: "image" },
       { href: "/admin/landing/footer", label: "Footer", icon: "footer" },
       { href: "/admin/nosotros", label: "Página Conócenos", icon: "info" },
+      { href: "/admin/encuentros", label: "Encuentros", icon: "image" },
     ],
   },
 ];

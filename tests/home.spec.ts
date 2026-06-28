@@ -10,12 +10,12 @@ test.describe("Home", () => {
   });
 
   test("carga sin errores y muestra la navbar con el logo", async ({ page }) => {
-    await expect(page.getByText("Crecer Libreria").first()).toBeVisible();
-    await expect(page.getByText("Libreria cristiana").first()).toBeVisible();
+    await expect(page.getByText("Crecer Librería").first()).toBeVisible();
+    await expect(page.getByText("C A T Ó L I C A").first()).toBeVisible();
   });
 
   test("muestra el hero con slider", async ({ page }) => {
-    const hero = page.locator(".hero-wrapper");
+    const hero = page.locator(".hero-full");
     await expect(hero).toBeVisible();
   });
 
@@ -35,10 +35,11 @@ test.describe("Home", () => {
     const footer = page.locator("footer");
     await footer.scrollIntoViewIfNeeded();
     await expect(footer).toBeVisible();
-    await expect(footer.getByText("Crecer Libreria").first()).toBeVisible();
+    await expect(footer.getByText("Crecer Librería").first()).toBeVisible();
   });
 
-  test("link Colección navega a /productos", async ({ page }) => {
+  test("link Colección navega a /productos", async ({ page, isMobile }) => {
+    if (isMobile) test.skip();
     // Buscar en el nav desktop (visible en viewport ancho)
     await page.getByRole("link", { name: "Colección" }).first().click();
     await expect(page).toHaveURL(/\/productos/);

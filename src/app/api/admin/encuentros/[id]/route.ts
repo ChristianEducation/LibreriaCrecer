@@ -31,19 +31,28 @@ export async function GET(request: Request, context: { params: Promise<Params> }
 export async function PUT(request: Request, context: { params: Promise<Params> }) {
   try {
     const { id } = await context.params;
-    const formData = await request.formData();
-    const file = formData.get("file");
+    
+    const contentType = request.headers.get("content-type") || "";
+    let payload: Record<string, unknown> = {};
+    let file: File | null = null;
 
-    const payload: Record<string, unknown> = {};
-
-    if (formData.has("title")) payload.title = formData.get("title")?.toString();
-    if (formData.has("event_date")) payload.event_date = formData.get("event_date")?.toString();
-    if (formData.has("excerpt")) payload.excerpt = formData.get("excerpt")?.toString();
-    if (formData.has("description")) payload.description = formData.get("description")?.toString();
-    if (formData.has("video_url")) payload.video_url = formData.get("video_url")?.toString() || undefined;
-    if (formData.has("location")) payload.location = formData.get("location")?.toString();
-    if (formData.has("display_order")) payload.display_order = Number(formData.get("display_order"));
-    if (formData.has("is_active")) payload.is_active = formData.get("is_active") === "true";
+    if (contentType.includes("application/json")) {
+      payload = await request.json();
+    } else if (contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      file = formData.get("file") as File | null;
+      
+      if (formData.has("title")) payload.title = formData.get("title")?.toString();
+      if (formData.has("event_date")) payload.event_date = formData.get("event_date")?.toString();
+      if (formData.has("excerpt")) payload.excerpt = formData.get("excerpt")?.toString();
+      if (formData.has("description")) payload.description = formData.get("description")?.toString();
+      if (formData.has("video_url")) payload.video_url = formData.get("video_url")?.toString() || undefined;
+      if (formData.has("location")) payload.location = formData.get("location")?.toString();
+      if (formData.has("display_order")) payload.display_order = Number(formData.get("display_order"));
+      if (formData.has("is_active")) payload.is_active = formData.get("is_active") === "true";
+    } else {
+      return NextResponse.json({ error: "bad_request", message: "Unsupported content type" }, { status: 400 });
+    }
 
     const parsed = UpdateEncounterSchema.safeParse(payload);
     if (!parsed.success) {
