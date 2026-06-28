@@ -325,10 +325,10 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
     try {
       if (form.id) {
         const updatePayload = {
-          title: form.title || undefined,
-          subtitle: form.subtitle || undefined,
-          link_url: form.link_url || undefined,
-          cta_text: form.cta_text || undefined,
+          title: form.title || null,
+          subtitle: form.subtitle || null,
+          link_url: form.link_url || null,
+          cta_text: form.cta_text || null,
           cta_position: form.cta_position,
           cta_bg_color: form.cta_bg_color,
           cta_text_color: form.cta_text_color,

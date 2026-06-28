@@ -52,10 +52,10 @@ const FooterBannerMetadataSchema = z.object({
 });
 
 export const HeroSlideSchema = z.object({
-  title: optionalString,
-  subtitle: optionalString,
-  link_url: optionalUrl,
-  cta_text: optionalString,
+  title: optionalString.nullable(),
+  subtitle: optionalString.nullable(),
+  link_url: optionalUrl.nullable(),
+  cta_text: optionalString.nullable(),
   show_content: z.boolean().default(true),
   cta_position: z.enum(HERO_CTA_POSITIONS).default(HERO_CTA_POSITION_DEFAULT),
   cta_bg_color: optionalHex,

@@ -263,10 +263,10 @@ export function HeroSlider({ data }: HeroSliderProps) {
         ) : null}
 
         {ctaIsLink && activeSlide.linkUrl ? (
-          <div className={cx("absolute inset-0 z-[2] flex p-6 md:p-10 lg:p-14", CTA_ANCHOR[activeSlide.ctaPosition])}>
-            <BlurFade delay={0.55} inView>
+          <div className={cx("absolute inset-0 z-[2] flex p-6 md:p-10 lg:p-14 pointer-events-none", CTA_ANCHOR[activeSlide.ctaPosition])}>
+            <BlurFade delay={0.55}>
               <Link
-                className="hero-cta inline-flex items-center gap-2 uppercase tracking-[0.14em] transition-opacity duration-200 hover:opacity-80"
+                className="hero-cta pointer-events-auto inline-flex items-center gap-2 uppercase tracking-[0.14em] transition-opacity duration-200 hover:opacity-80"
                 href={activeSlide.linkUrl}
                 style={{
                   background: activeSlide.ctaBgColor ?? "transparent",
