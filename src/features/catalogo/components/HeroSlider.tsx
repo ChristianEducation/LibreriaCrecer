@@ -6,7 +6,7 @@ import Link from "next/link";
 import { cx } from "class-variance-authority";
 
 import { BlurFade } from "@/shared/ui/BlurFade";
-import type { HeroTextAlign, HeroTextPosition } from "@/shared/config/landing";
+import type { HeroCtaPosition, HeroTextAlign, HeroTextPosition } from "@/shared/config/landing";
 import type {
   HeroOverlayVariantViewModel,
   HeroSlideViewModel,
@@ -15,6 +15,18 @@ import type {
 
 type HeroSliderProps = {
   data: HeroViewModel;
+};
+
+const CTA_ANCHOR: Record<HeroCtaPosition, string> = {
+  "top-left": "items-start justify-start",
+  "top-center": "items-start justify-center",
+  "top-right": "items-start justify-end",
+  "middle-left": "items-center justify-start",
+  "middle-center": "items-center justify-center",
+  "middle-right": "items-center justify-end",
+  "bottom-left": "items-end justify-start",
+  "bottom-center": "items-end justify-center",
+  "bottom-right": "items-end justify-end",
 };
 
 const POSITION_JUSTIFY: Record<HeroTextPosition, string> = {
@@ -246,33 +258,36 @@ export function HeroSlider({ data }: HeroSliderProps) {
                 </BlurFade>
               ) : null}
 
-              {ctaIsLink && activeSlide.linkUrl ? (
-                <BlurFade delay={0.55} inView>
-                  <div className="flex items-center gap-4">
-                    <Link
-                      className="hero-cta inline-flex items-center gap-2 uppercase tracking-[0.14em] text-white transition-opacity duration-200 hover:opacity-80"
-                      href={activeSlide.linkUrl}
-                      style={{
-                        background: "#c8a830",
-                        borderRadius: "var(--radius-xl)",
-                      }}
-                    >
-                      {activeSlide.ctaText}
-                      <svg
-                        fill="none"
-                        height="16"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                        width="16"
-                      >
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  </div>
-                </BlurFade>
-              ) : null}
             </div>
+          </div>
+        ) : null}
+
+        {ctaIsLink && activeSlide.linkUrl ? (
+          <div className={cx("absolute inset-0 z-[2] flex p-6 md:p-10 lg:p-14", CTA_ANCHOR[activeSlide.ctaPosition])}>
+            <BlurFade delay={0.55} inView>
+              <Link
+                className="hero-cta inline-flex items-center gap-2 uppercase tracking-[0.14em] transition-opacity duration-200 hover:opacity-80"
+                href={activeSlide.linkUrl}
+                style={{
+                  background: activeSlide.ctaBgColor ?? "transparent",
+                  color: activeSlide.ctaTextColor ?? "#ffffff",
+                  border: activeSlide.ctaBorderColor ? `1px solid ${activeSlide.ctaBorderColor}` : "none",
+                  borderRadius: "var(--radius-xl)",
+                }}
+              >
+                {activeSlide.ctaText}
+                <svg
+                  fill="none"
+                  height="16"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width="16"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </BlurFade>
           </div>
         ) : null}
 

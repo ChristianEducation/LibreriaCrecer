@@ -1,7 +1,21 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import { cx } from "class-variance-authority";
 
+import type { HeroCtaPosition } from "@/shared/config/landing";
 import type { HeroViewModel } from "../../view-models/hero-view-model";
+
+const CTA_ANCHOR: Record<HeroCtaPosition, string> = {
+  "top-left": "items-start justify-start",
+  "top-center": "items-start justify-center",
+  "top-right": "items-start justify-end",
+  "middle-left": "items-center justify-start",
+  "middle-center": "items-center justify-center",
+  "middle-right": "items-center justify-end",
+  "bottom-left": "items-end justify-start",
+  "bottom-center": "items-end justify-center",
+  "bottom-right": "items-end justify-end",
+};
 
 export type HeroPreviewProps = {
   data: HeroViewModel;
@@ -132,24 +146,36 @@ export function HeroPreview({ data, viewMode = "desktop" }: HeroPreviewProps) {
 
             {slide.subtitle ? <p className="hero-preview-subtitle">{slide.subtitle}</p> : null}
 
-            {slide.ctaText && slide.linkUrl ? (
-              <Link className="hero-preview-cta" href={slide.linkUrl}>
-                {slide.ctaText}
-                <svg
-                  aria-hidden="true"
-                  fill="none"
-                  height="13"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 20 20"
-                  width="13"
-                >
-                  <path d="M4 10h12M12 6l4 4-4 4" />
-                </svg>
-              </Link>
-            ) : null}
+            </div>
+        ) : null}
+
+        {slide.ctaText && slide.linkUrl ? (
+          <div className={cx("absolute inset-0 z-[2] flex p-4 md:p-6", CTA_ANCHOR[slide.ctaPosition])}>
+            <Link 
+              className="hero-preview-cta" 
+              href={slide.linkUrl}
+              style={{
+                background: slide.ctaBgColor ?? "transparent",
+                color: slide.ctaTextColor ?? "#ffffff",
+                border: slide.ctaBorderColor ? `1px solid ${slide.ctaBorderColor}` : "none",
+                borderRadius: "var(--radius-xl)",
+              }}
+            >
+              {slide.ctaText}
+              <svg
+                aria-hidden="true"
+                fill="none"
+                height="13"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 20 20"
+                width="13"
+              >
+                <path d="M4 10h12M12 6l4 4-4 4" />
+              </svg>
+            </Link>
           </div>
         ) : null}
       </div>

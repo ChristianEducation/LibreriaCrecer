@@ -20,10 +20,14 @@ import {
   HERO_OVERLAY_VARIANT_DEFAULT,
   HERO_TEXT_ALIGN_DEFAULT,
   HERO_TEXT_POSITION_DEFAULT,
+  HERO_CTA_POSITION_DEFAULT,
+  HERO_CTA_BG_COLOR_DEFAULT,
+  HERO_CTA_TEXT_COLOR_DEFAULT,
   type HeroContentTheme,
   type HeroOverlayVariant,
   type HeroTextAlign,
   type HeroTextPosition,
+  type HeroCtaPosition,
 } from "@/shared/config/landing";
 
 type HeroSlide = {
@@ -33,6 +37,10 @@ type HeroSlide = {
   imageUrl: string;
   linkUrl: string | null;
   ctaText: string | null;
+  ctaPosition: HeroCtaPosition;
+  ctaBgColor: string | null;
+  ctaTextColor: string | null;
+  ctaBorderColor: string | null;
   showContent: boolean;
   textPosition: HeroTextPosition;
   textAlign: HeroTextAlign;
@@ -49,6 +57,10 @@ type HeroFormState = {
   title: string;
   subtitle: string;
   cta_text: string;
+  cta_position: HeroCtaPosition;
+  cta_bg_color: string | null;
+  cta_text_color: string | null;
+  cta_border_color: string | null;
   link_url: string;
   show_content: boolean;
   text_position: HeroTextPosition;
@@ -66,6 +78,10 @@ const initialForm: HeroFormState = {
   title: "",
   subtitle: "",
   cta_text: "",
+  cta_position: HERO_CTA_POSITION_DEFAULT,
+  cta_bg_color: HERO_CTA_BG_COLOR_DEFAULT,
+  cta_text_color: HERO_CTA_TEXT_COLOR_DEFAULT,
+  cta_border_color: null,
   link_url: "",
   show_content: true,
   text_position: HERO_TEXT_POSITION_DEFAULT,
@@ -146,6 +162,82 @@ function Segmented<T extends string>({
   );
 }
 
+const CTA_POSITIONS: HeroCtaPosition[] = [
+  "top-left", "top-center", "top-right",
+  "middle-left", "middle-center", "middle-right",
+  "bottom-left", "bottom-center", "bottom-right",
+];
+
+function CtaPositionGrid({ value, onChange }: { value: HeroCtaPosition; onChange: (v: HeroCtaPosition) => void }) {
+  return (
+    <div className="grid grid-cols-3 gap-1 rounded-[6px] border border-border bg-[#faf9f6] p-1 w-[160px]">
+      {CTA_POSITIONS.map((pos) => {
+        const isActive = pos === value;
+        return (
+          <button
+            key={pos}
+            type="button"
+            role="radio"
+            aria-checked={isActive}
+            onClick={() => onChange(pos)}
+            title={pos}
+            className={`admin-segmented-option${isActive ? " admin-segmented-option--active" : ""}`}
+            style={{ height: "36px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+          >
+            <div className={`h-2.5 w-2.5 rounded-full ${isActive ? "bg-moss" : "bg-border-strong"}`} />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ColorControl({
+  label,
+  value,
+  onChange,
+  allowNull = true,
+}: {
+  label: string;
+  value: string | null;
+  onChange: (v: string | null) => void;
+  allowNull?: boolean;
+}) {
+  return (
+    <div>
+      <label className="admin-field-label">{label}</label>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={value ?? "#ffffff"}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={value === null}
+          className="h-8 w-10 cursor-pointer rounded border border-border bg-[#faf9f6] p-0.5"
+        />
+        <input
+          type="text"
+          value={value ?? ""}
+          onChange={(e) => {
+            const val = e.target.value.trim();
+            onChange(val === "" ? null : val);
+          }}
+          placeholder={allowNull ? "Transparente" : "#000000"}
+          className="admin-input !w-24 !py-1 text-sm"
+        />
+        {allowNull && (
+          <button
+            type="button"
+            onClick={() => onChange(value === null ? "#000000" : null)}
+            className="text-[12px] text-text-light hover:text-text transition-colors"
+          >
+            {value === null ? "Asignar color" : "Quitar color"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 type HeroAdminEditorProps = {
   initialData?: HeroViewModel;
 };
@@ -181,10 +273,10 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         overlayVariant: mapOverlayVariant(form.overlay_variant),
         overlayOpacity: form.overlay_opacity,
         contentTheme: form.content_theme,
-        ctaPosition: "bottom-left",
-        ctaBgColor: "#c8a830",
-        ctaTextColor: "#ffffff",
-        ctaBorderColor: null,
+        ctaPosition: form.cta_position,
+        ctaBgColor: form.cta_bg_color,
+        ctaTextColor: form.cta_text_color,
+        ctaBorderColor: form.cta_border_color,
       };
       return {
         eyebrow: initialData?.eyebrow ?? null,
@@ -237,6 +329,10 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
           subtitle: form.subtitle || undefined,
           link_url: form.link_url || undefined,
           cta_text: form.cta_text || undefined,
+          cta_position: form.cta_position,
+          cta_bg_color: form.cta_bg_color,
+          cta_text_color: form.cta_text_color,
+          cta_border_color: form.cta_border_color,
           show_content: form.show_content,
           text_position: form.text_position,
           text_align: form.text_align,
@@ -281,6 +377,10 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         createData.append("subtitle", form.subtitle);
         createData.append("link_url", form.link_url);
         createData.append("cta_text", form.cta_text);
+        createData.append("cta_position", form.cta_position);
+        if (form.cta_bg_color) createData.append("cta_bg_color", form.cta_bg_color);
+        if (form.cta_text_color) createData.append("cta_text_color", form.cta_text_color);
+        if (form.cta_border_color) createData.append("cta_border_color", form.cta_border_color);
         createData.append("show_content", String(form.show_content));
         createData.append("text_position", form.text_position);
         createData.append("text_align", form.text_align);
@@ -322,6 +422,10 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
       title: slide.title ?? "",
       subtitle: slide.subtitle ?? "",
       cta_text: slide.ctaText ?? "",
+      cta_position: slide.ctaPosition ?? HERO_CTA_POSITION_DEFAULT,
+      cta_bg_color: slide.ctaBgColor ?? null,
+      cta_text_color: slide.ctaTextColor ?? null,
+      cta_border_color: slide.ctaBorderColor ?? null,
       link_url: slide.linkUrl ?? "",
       show_content: slide.showContent,
       text_position: slide.textPosition,
@@ -490,9 +594,37 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
                 />
               </div>
             </div>
-            <p className="admin-field-help">
+            <p className="admin-field-help mt-2">
               El botón solo aparece si completas <strong>texto</strong> y <strong>URL</strong>.
             </p>
+
+            <div className="mt-6 grid gap-6 md:grid-cols-2">
+              <div>
+                <label className="admin-field-label">Posición del botón</label>
+                <CtaPositionGrid
+                  value={form.cta_position}
+                  onChange={(value) => setForm((prev) => ({ ...prev, cta_position: value }))}
+                />
+              </div>
+              <div className="flex flex-col gap-4">
+                <ColorControl
+                  label="Color de fondo del botón"
+                  value={form.cta_bg_color}
+                  onChange={(val) => setForm((prev) => ({ ...prev, cta_bg_color: val }))}
+                />
+                <ColorControl
+                  label="Color del texto del botón"
+                  value={form.cta_text_color}
+                  onChange={(val) => setForm((prev) => ({ ...prev, cta_text_color: val }))}
+                  allowNull={false}
+                />
+                <ColorControl
+                  label="Color del borde"
+                  value={form.cta_border_color}
+                  onChange={(val) => setForm((prev) => ({ ...prev, cta_border_color: val }))}
+                />
+              </div>
+            </div>
           </section>
 
           {/* ─── Imagen ─── */}
