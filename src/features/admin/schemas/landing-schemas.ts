@@ -4,6 +4,8 @@ import {
   BANNER_POSITIONS,
   HERO_CONTENT_THEMES,
   HERO_CONTENT_THEME_DEFAULT,
+  HERO_CTA_POSITIONS,
+  HERO_CTA_POSITION_DEFAULT,
   HERO_OVERLAY_OPACITY_DEFAULT,
   HERO_OVERLAY_OPACITY_MAX,
   HERO_OVERLAY_OPACITY_MIN,
@@ -33,6 +35,13 @@ const optionalUrl = z
     message: "Invalid URL",
   });
 
+const optionalHex = z
+  .string()
+  .trim()
+  .regex(/^#([0-9a-fA-F]{6})$/, { message: "Formato hex inválido" })
+  .optional()
+  .nullable();
+
 const FooterBannerMetadataSchema = z.object({
   opacity: z.number().min(0).max(1),
   fadeStart: z.number().int().min(0).max(100),
@@ -48,6 +57,10 @@ export const HeroSlideSchema = z.object({
   link_url: optionalUrl,
   cta_text: optionalString,
   show_content: z.boolean().default(true),
+  cta_position: z.enum(HERO_CTA_POSITIONS).default(HERO_CTA_POSITION_DEFAULT),
+  cta_bg_color: optionalHex,
+  cta_text_color: optionalHex,
+  cta_border_color: optionalHex,
   text_position: z.enum(HERO_TEXT_POSITIONS).default(HERO_TEXT_POSITION_DEFAULT),
   text_align: z.enum(HERO_TEXT_ALIGNS).default(HERO_TEXT_ALIGN_DEFAULT),
   overlay_variant: z.enum(HERO_OVERLAY_VARIANTS).default(HERO_OVERLAY_VARIANT_DEFAULT),

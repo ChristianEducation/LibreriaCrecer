@@ -21,6 +21,17 @@ export function normalizeCuratedSection(section?: string) {
   return isMonthlySelectionAlias(section) ? MONTHLY_SELECTION_SECTION : section;
 }
 
+export const HERO_CTA_POSITIONS = [
+  "top-left", "top-center", "top-right",
+  "middle-left", "middle-center", "middle-right",
+  "bottom-left", "bottom-center", "bottom-right",
+] as const;
+export type HeroCtaPosition = (typeof HERO_CTA_POSITIONS)[number];
+export const HERO_CTA_POSITION_DEFAULT: HeroCtaPosition = "bottom-left";
+
+export const HERO_CTA_BG_COLOR_DEFAULT = "#c8a830";
+export const HERO_CTA_TEXT_COLOR_DEFAULT = "#ffffff";
+
 export const HERO_TEXT_POSITIONS = ["left", "center", "right"] as const;
 export type HeroTextPosition = (typeof HERO_TEXT_POSITIONS)[number];
 export const HERO_TEXT_POSITION_DEFAULT: HeroTextPosition = "left";

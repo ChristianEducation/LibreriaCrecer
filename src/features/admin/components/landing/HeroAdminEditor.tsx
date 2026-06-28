@@ -181,6 +181,10 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         overlayVariant: mapOverlayVariant(form.overlay_variant),
         overlayOpacity: form.overlay_opacity,
         contentTheme: form.content_theme,
+        ctaPosition: "bottom-left",
+        ctaBgColor: "#c8a830",
+        ctaTextColor: "#ffffff",
+        ctaBorderColor: null,
       };
       return {
         eyebrow: initialData?.eyebrow ?? null,

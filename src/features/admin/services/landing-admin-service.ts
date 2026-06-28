@@ -74,6 +74,10 @@ export async function createHeroSlide(data: HeroSlideInput & { imageUrl: string 
       linkUrl: data.link_url ?? null,
       ctaText: data.cta_text ?? null,
       showContent: data.show_content,
+      ctaPosition: data.cta_position,
+      ctaBgColor: data.cta_bg_color ?? null,
+      ctaTextColor: data.cta_text_color ?? null,
+      ctaBorderColor: data.cta_border_color ?? null,
       textPosition: data.text_position,
       textAlign: data.text_align,
       overlayVariant: data.overlay_variant,
@@ -96,6 +100,11 @@ export async function updateHeroSlide(id: string, data: UpdateHeroSlideInput & {
   if ("cta_text" in data) updateData.ctaText = data.cta_text ?? null;
   if ("show_content" in data && typeof data.show_content === "boolean")
     updateData.showContent = data.show_content;
+  if ("cta_position" in data && typeof data.cta_position === "string")
+    updateData.ctaPosition = data.cta_position;
+  if ("cta_bg_color" in data) updateData.ctaBgColor = data.cta_bg_color ?? null;
+  if ("cta_text_color" in data) updateData.ctaTextColor = data.cta_text_color ?? null;
+  if ("cta_border_color" in data) updateData.ctaBorderColor = data.cta_border_color ?? null;
   if ("text_position" in data && typeof data.text_position === "string")
     updateData.textPosition = data.text_position;
   if ("text_align" in data && typeof data.text_align === "string")
