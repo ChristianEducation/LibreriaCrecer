@@ -133,18 +133,15 @@ export default async function EncounterPage({ params }: EncounterPageProps) {
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {encounter.images.map((img) => (
                 <div key={img.id} style={{ position: "relative", width: "100%", aspectRatio: "1/1", overflow: "hidden", borderRadius: "8px", background: "var(--beige-warm)" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.url}
-                    alt={img.altText ?? "Foto del encuentro"}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    className="transition-transform duration-500 hover:scale-105 cursor-pointer"
-                    onClick={() => {
-                      // Basic popup/modal for image viewing could go here in a real app,
-                      // For now, we open in new tab or just let it be a nice grid.
-                      window.open(img.url, "_blank");
-                    }}
-                  />
+                  <a href={img.url} target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", height: "100%" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img.url}
+                      alt={img.altText ?? "Foto del encuentro"}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      className="transition-transform duration-500 hover:scale-105"
+                    />
+                  </a>
                 </div>
               ))}
             </div>

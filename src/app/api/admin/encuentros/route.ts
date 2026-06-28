@@ -40,8 +40,11 @@ export async function POST(request: Request) {
       is_active: formData.has("is_active") ? formData.get("is_active") === "true" : true,
     };
 
+    console.error("DEBUG - payload:", payload);
     const parsed = EncounterSchema.safeParse(payload);
+    console.error("DEBUG - safeParse success:", parsed.success);
     if (!parsed.success) {
+      console.error("DEBUG - safeParse error:", parsed.error.flatten());
       return NextResponse.json(
         {
           error: "validation_error",
@@ -53,6 +56,7 @@ export async function POST(request: Request) {
     }
 
     const upload = await uploadEncounterImage(file, "portadas");
+    console.error("DEBUG - upload result:", upload);
     if (!upload.success) {
       return NextResponse.json(
         { error: "upload_failed", message: upload.error.message },
@@ -61,6 +65,7 @@ export async function POST(request: Request) {
     }
 
     const created = await createEncounter({ ...parsed.data, coverImageUrl: upload.publicUrl });
+    console.error("DEBUG - created encounter:", created);
     return NextResponse.json({ data: created }, { status: 201 });
   } catch (error) {
     console.error("POST /api/admin/encuentros failed", error);
