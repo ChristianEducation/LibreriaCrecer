@@ -1,7 +1,7 @@
 import { and, eq, ne } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
-import { categories, products } from "@/integrations/drizzle/schema";
+import { categories, encounters, products } from "@/integrations/drizzle/schema";
 
 function baseSlug(value: string): string {
   const normalized = value
@@ -52,6 +52,31 @@ export async function generateUniqueCategorySlug(name: string, excludeId?: strin
         excludeId
           ? and(eq(categories.slug, candidate), ne(categories.id, excludeId))
           : eq(categories.slug, candidate),
+      )
+      .limit(1);
+
+    if (!existing) {
+      return candidate;
+    }
+
+    candidate = `${root}-${suffix}`;
+    suffix += 1;
+  }
+}
+
+export async function generateUniqueEncounterSlug(title: string, excludeId?: string): Promise<string> {
+  const root = baseSlug(title);
+  let candidate = root;
+  let suffix = 1;
+
+  while (true) {
+    const [existing] = await db
+      .select({ id: encounters.id })
+      .from(encounters)
+      .where(
+        excludeId
+          ? and(eq(encounters.slug, candidate), ne(encounters.id, excludeId))
+          : eq(encounters.slug, candidate),
       )
       .limit(1);
 

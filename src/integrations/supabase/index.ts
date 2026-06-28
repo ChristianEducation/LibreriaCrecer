@@ -5,6 +5,7 @@ export {
   listImages,
   uploadBannerImage,
   uploadCategoryImage,
+  uploadEncounterImage,
   uploadImage,
   uploadProductImage,
 } from "./storage";

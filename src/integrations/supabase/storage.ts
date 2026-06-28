@@ -19,6 +19,7 @@ const BUCKET_MAX_SIZE: Record<StorageBucket, number> = {
   [STORAGE_BUCKETS.PRODUCTS]: FIVE_MB_IN_BYTES,
   [STORAGE_BUCKETS.CATEGORIES]: FIVE_MB_IN_BYTES,
   [STORAGE_BUCKETS.BANNERS]: TEN_MB_IN_BYTES,
+  [STORAGE_BUCKETS.ENCOUNTERS]: TEN_MB_IN_BYTES,
 };
 
 function createStorageError(message: string, cause?: unknown) {
@@ -208,3 +209,20 @@ export async function uploadCategoryImage(
 
   return uploadImage(STORAGE_BUCKETS.CATEGORIES, file, path);
 }
+
+export async function uploadEncounterImage(
+  file: File,
+  path: string,
+): Promise<StorageUploadResult> {
+  const validation = ensureValidImage(file, STORAGE_BUCKETS.ENCOUNTERS);
+  if (!validation.ok) {
+    return createStorageError(validation.error);
+  }
+
+  const safePath = sanitizeFileNameSegment(path);
+  const fileName = buildUniqueName("encounter", validation.extension);
+  const finalPath = `${safePath}/${fileName}`;
+
+  return uploadImage(STORAGE_BUCKETS.ENCOUNTERS, file, finalPath);
+}
+

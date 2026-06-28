@@ -5,3 +5,4 @@ export * from "./landing";
 export * from "./orders";
 export * from "./products";
 export * from "./shipping";
+export * from "./encounters";
