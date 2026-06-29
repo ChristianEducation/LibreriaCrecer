@@ -162,14 +162,19 @@ export function HeroSlider({ data }: HeroSliderProps) {
     <section className="hero-full">
       <div className="relative flex h-full w-full items-center justify-center bg-moss text-center">
         {activeSlide.imageUrl ? (
-          <Image
-            alt={activeSlide.title ?? "Hero principal"}
-            className="object-cover transition-transform duration-[8000ms] ease-out"
-            fill
-            priority
-            sizes="100vw"
-            src={activeSlide.imageUrl}
-          />
+          <picture>
+            {activeSlide.mobileImageUrl ? (
+              <source media="(max-width: 768px)" srcSet={activeSlide.mobileImageUrl} />
+            ) : null}
+            <Image
+              alt={activeSlide.title ?? "Hero principal"}
+              className="object-cover transition-transform duration-[8000ms] ease-out"
+              fill
+              priority
+              sizes="100vw"
+              src={activeSlide.imageUrl}
+            />
+          </picture>
         ) : null}
 
         {overlayStyle ? <div className="absolute inset-0" style={overlayStyle} /> : null}

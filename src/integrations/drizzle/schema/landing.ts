@@ -33,6 +33,7 @@ export const heroSlides = pgTable("hero_slides", {
   title: text("title"),
   subtitle: text("subtitle"),
   imageUrl: text("image_url").notNull(),
+  mobileImageUrl: text("mobile_image_url"),
   linkUrl: text("link_url"),
   ctaText: text("cta_text"),
   showContent: boolean("show_content").default(true).notNull(),

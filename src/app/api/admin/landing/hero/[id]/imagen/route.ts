@@ -8,6 +8,7 @@ export async function POST(request: Request, context: { params: Promise<Params> 
   try {
     const { id } = await context.params;
     const formData = await request.formData();
+    const type = formData.get("type");
     const file = formData.get("file");
 
     if (!(file instanceof File)) {
@@ -21,7 +22,13 @@ export async function POST(request: Request, context: { params: Promise<Params> 
     }
 
     const upload = await uploadHeroImage(file);
-    await updateHeroSlide(id, { imageUrl: upload.url });
+    
+    if (type === "mobile") {
+      await updateHeroSlide(id, { mobile_image_url: upload.url });
+    } else {
+      await updateHeroSlide(id, { imageUrl: upload.url });
+    }
+
     return NextResponse.json({ data: { url: upload.url } });
   } catch (error) {
     console.error("POST /api/admin/landing/hero/[id]/imagen failed", error);

@@ -55,6 +55,7 @@ export const HeroSlideSchema = z.object({
   title: optionalString.nullable(),
   subtitle: optionalString.nullable(),
   link_url: optionalUrl.nullable(),
+  mobile_image_url: optionalUrl.nullable(),
   cta_text: optionalString.nullable(),
   show_content: z.boolean().default(true),
   cta_position: z.enum(HERO_CTA_POSITIONS).default(HERO_CTA_POSITION_DEFAULT),

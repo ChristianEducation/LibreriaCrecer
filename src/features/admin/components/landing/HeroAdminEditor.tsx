@@ -35,6 +35,7 @@ type HeroSlide = {
   title: string | null;
   subtitle: string | null;
   imageUrl: string;
+  mobileImageUrl: string | null;
   linkUrl: string | null;
   ctaText: string | null;
   ctaPosition: HeroCtaPosition;
@@ -54,6 +55,7 @@ type HeroSlide = {
 type HeroFormState = {
   id?: string;
   existingImageUrl: string | null;
+  existingMobileImageUrl: string | null;
   title: string;
   subtitle: string;
   cta_text: string;
@@ -71,10 +73,12 @@ type HeroFormState = {
   display_order: number;
   is_active: boolean;
   imageFile: File | null;
+  mobileImageFile: File | null;
 };
 
 const initialForm: HeroFormState = {
   existingImageUrl: null,
+  existingMobileImageUrl: null,
   title: "",
   subtitle: "",
   cta_text: "",
@@ -92,6 +96,7 @@ const initialForm: HeroFormState = {
   display_order: 0,
   is_active: true,
   imageFile: null,
+  mobileImageFile: null,
 };
 
 type SegmentedOption<T extends string> = {
@@ -256,13 +261,16 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
   const [form, setForm] = useState<HeroFormState>(initialForm);
 
   const previewUrl = useMemo(() => (form.imageFile ? URL.createObjectURL(form.imageFile) : null), [form.imageFile]);
+  const previewMobileUrl = useMemo(() => (form.mobileImageFile ? URL.createObjectURL(form.mobileImageFile) : null), [form.mobileImageFile]);
 
   const liveViewModel = useMemo((): HeroViewModel => {
     const imageUrl = previewUrl ?? form.existingImageUrl ?? "";
+    const mobileImageUrl = previewMobileUrl ?? form.existingMobileImageUrl;
     if (imageUrl) {
       const liveSlide: HeroSlideViewModel = {
         id: form.id ?? "preview",
         imageUrl,
+        mobileImageUrl,
         title: form.title || null,
         subtitle: form.subtitle || null,
         ctaText: form.cta_text || null,
@@ -286,13 +294,14 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
       };
     }
     return initialData ?? { eyebrow: null, title: null, body: null, slides: [] };
-  }, [form, previewUrl, initialData]);
+  }, [form, previewUrl, previewMobileUrl, initialData]);
 
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (previewMobileUrl) URL.revokeObjectURL(previewMobileUrl);
     };
-  }, [previewUrl]);
+  }, [previewUrl, previewMobileUrl]);
 
   async function fetchSlides() {
     setLoading(true);
@@ -324,7 +333,7 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
 
     try {
       if (form.id) {
-        const updatePayload = {
+        const updatePayload: Record<string, unknown> = {
           title: form.title || null,
           subtitle: form.subtitle || null,
           link_url: form.link_url || null,
@@ -342,6 +351,10 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
           display_order: Number(form.display_order || 0),
           is_active: form.is_active,
         };
+
+        if (!form.mobileImageFile && form.existingMobileImageUrl === null) {
+          updatePayload.mobile_image_url = null;
+        }
 
         const response = await fetch(`/api/admin/landing/hero/${form.id}`, {
           method: "PUT",
@@ -362,6 +375,12 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
           const uploadData = new FormData();
           uploadData.append("file", form.imageFile);
           await fetch(`/api/admin/landing/hero/${form.id}/imagen`, { method: "POST", body: uploadData });
+        }
+        if (form.mobileImageFile) {
+          const mobileUploadData = new FormData();
+          mobileUploadData.append("file", form.mobileImageFile);
+          mobileUploadData.append("type", "mobile");
+          await fetch(`/api/admin/landing/hero/${form.id}/imagen`, { method: "POST", body: mobileUploadData });
         }
       } else {
         if (!form.imageFile) {
@@ -390,6 +409,9 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         createData.append("display_order", String(form.display_order ?? 0));
         createData.append("is_active", String(form.is_active));
         createData.append("file", form.imageFile);
+        if (form.mobileImageFile) {
+          createData.append("mobileFile", form.mobileImageFile);
+        }
 
         const response = await fetch("/api/admin/landing/hero", {
           method: "POST",
@@ -419,6 +441,7 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
     setForm({
       id: slide.id,
       existingImageUrl: slide.imageUrl,
+      existingMobileImageUrl: slide.mobileImageUrl ?? null,
       title: slide.title ?? "",
       subtitle: slide.subtitle ?? "",
       cta_text: slide.ctaText ?? "",
@@ -436,6 +459,7 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
       display_order: slide.displayOrder,
       is_active: slide.isActive,
       imageFile: null,
+      mobileImageFile: null,
     });
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -639,6 +663,30 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
               <p className="admin-field-help">
                 Imagen actual del slide. Sube una nueva para reemplazarla.
               </p>
+            ) : null}
+          </section>
+
+          <section className="admin-fieldset">
+            <p className="admin-section-label">Imagen Mobile (Opcional)</p>
+            <p className="admin-field-help mb-4">
+              Versión vertical para móviles (formato 9:16 recomendado). Si no subes una, se usa la imagen principal.
+            </p>
+            <AdminUploadZone
+              hint="Recomendado: 1080×1920 px. JPG o PNG."
+              onFileSelect={(file) => setForm((prev) => ({ ...prev, mobileImageFile: file, existingMobileImageUrl: null }))}
+              previewUrl={previewMobileUrl ?? form.existingMobileImageUrl}
+            />
+            {form.existingMobileImageUrl && !form.mobileImageFile ? (
+              <div className="mt-4 flex items-center justify-between rounded-[6px] border border-border bg-[#faf9f6] px-3 py-2">
+                <span className="text-sm text-text-mid">Ya existe una imagen mobile guardada.</span>
+                <button
+                  type="button"
+                  onClick={() => setForm((prev) => ({ ...prev, existingMobileImageUrl: null, mobileImageFile: null }))}
+                  className="text-sm text-[var(--color-gold)] hover:underline"
+                >
+                  Quitar imagen mobile
+                </button>
+              </div>
             ) : null}
           </section>
 

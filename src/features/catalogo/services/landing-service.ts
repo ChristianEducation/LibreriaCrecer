@@ -26,6 +26,7 @@ export async function getHeroSlides() {
       title: heroSlides.title,
       subtitle: heroSlides.subtitle,
       imageUrl: heroSlides.imageUrl,
+      mobileImageUrl: heroSlides.mobileImageUrl,
       linkUrl: heroSlides.linkUrl,
       ctaText: heroSlides.ctaText,
       ctaPosition: heroSlides.ctaPosition,

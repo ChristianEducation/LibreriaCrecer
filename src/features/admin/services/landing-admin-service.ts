@@ -47,6 +47,7 @@ export async function getHeroSlidesAdmin() {
       title: heroSlides.title,
       subtitle: heroSlides.subtitle,
       imageUrl: heroSlides.imageUrl,
+      mobileImageUrl: heroSlides.mobileImageUrl,
       linkUrl: heroSlides.linkUrl,
       ctaText: heroSlides.ctaText,
       showContent: heroSlides.showContent,
@@ -71,6 +72,7 @@ export async function createHeroSlide(data: HeroSlideInput & { imageUrl: string 
       title: data.title ?? null,
       subtitle: data.subtitle ?? null,
       imageUrl: data.imageUrl,
+      mobileImageUrl: data.mobile_image_url ?? null,
       linkUrl: data.link_url ?? null,
       ctaText: data.cta_text ?? null,
       showContent: data.show_content,
@@ -96,6 +98,7 @@ export async function updateHeroSlide(id: string, data: UpdateHeroSlideInput & {
 
   if ("title" in data) updateData.title = data.title ?? null;
   if ("subtitle" in data) updateData.subtitle = data.subtitle ?? null;
+  if ("mobile_image_url" in data) updateData.mobileImageUrl = data.mobile_image_url ?? null;
   if ("link_url" in data) updateData.linkUrl = data.link_url ?? null;
   if ("cta_text" in data) updateData.ctaText = data.cta_text ?? null;
   if ("show_content" in data && typeof data.show_content === "boolean")
@@ -125,12 +128,17 @@ export async function updateHeroSlide(id: string, data: UpdateHeroSlideInput & {
 }
 
 export async function deleteHeroSlide(id: string) {
-  const [row] = await db.select({ imageUrl: heroSlides.imageUrl }).from(heroSlides).where(eq(heroSlides.id, id)).limit(1);
+  const [row] = await db.select({ imageUrl: heroSlides.imageUrl, mobileImageUrl: heroSlides.mobileImageUrl }).from(heroSlides).where(eq(heroSlides.id, id)).limit(1);
   if (!row) return false;
 
   const path = extractStoragePathFromPublicUrl(row.imageUrl);
   if (path) {
     await deleteImage(STORAGE_BUCKETS.BANNERS, path);
+  }
+
+  const mobilePath = extractStoragePathFromPublicUrl(row.mobileImageUrl);
+  if (mobilePath) {
+    await deleteImage(STORAGE_BUCKETS.BANNERS, mobilePath);
   }
 
   await db.delete(heroSlides).where(eq(heroSlides.id, id));

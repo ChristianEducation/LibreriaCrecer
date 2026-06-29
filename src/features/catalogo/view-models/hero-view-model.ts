@@ -13,6 +13,7 @@ export type HeroOverlayVariantViewModel = "none" | "gradient" | "dark";
 export type HeroSlideViewModel = {
   id: string;
   imageUrl: string;
+  mobileImageUrl: string | null;
   title: string | null;
   subtitle: string | null;
   ctaText: string | null;
@@ -56,6 +57,7 @@ export async function getHeroViewModel(): Promise<HeroViewModel> {
   const slides: HeroSlideViewModel[] = slidesRows.map((slide) => ({
     id: slide.id,
     imageUrl: slide.imageUrl,
+    mobileImageUrl: slide.mobileImageUrl,
     title: slide.title,
     subtitle: slide.subtitle,
     ctaText: slide.ctaText,

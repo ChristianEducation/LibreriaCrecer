@@ -76,6 +76,7 @@ export async function POST(request: Request) {
     }
 
     let imageUrl = !isMultipart && typeof body.image_url === "string" ? body.image_url.trim() : "";
+    let mobileImageUrl = !isMultipart && typeof body.mobile_image_url === "string" ? body.mobile_image_url.trim() : null;
     if (isMultipart) {
       const file = body.get("file");
       if (!(file instanceof File)) {
@@ -83,6 +84,12 @@ export async function POST(request: Request) {
       }
       const uploaded = await uploadHeroImage(file);
       imageUrl = uploaded.url;
+
+      const mobileFile = body.get("mobileFile");
+      if (mobileFile instanceof File) {
+        const uploadedMobile = await uploadHeroImage(mobileFile);
+        mobileImageUrl = uploadedMobile.url;
+      }
     }
 
     if (!imageUrl) {
@@ -95,7 +102,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const created = await createHeroSlide({ ...parsed.data, imageUrl });
+    const created = await createHeroSlide({ ...parsed.data, imageUrl, mobile_image_url: mobileImageUrl });
     return NextResponse.json({ data: created }, { status: 201 });
   } catch (error) {
     console.error("POST /api/admin/landing/hero failed", error);
