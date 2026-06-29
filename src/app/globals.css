@@ -548,9 +548,7 @@ body {
 
 /* Nosotros — página editorial pública */
 .about-hero {
-  background:
-    linear-gradient(135deg, rgba(58, 48, 1, 0.98), rgba(73, 60, 2, 0.94)),
-    var(--moss);
+  background: var(--beige-warm);
 }
 
 .about-breadcrumb {
@@ -561,21 +559,21 @@ body {
   margin-bottom: clamp(2.25rem, 5vw, 4.25rem);
   font-family: var(--font-inter), system-ui, sans-serif;
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.38);
+  color: var(--text-light);
 }
 
 .about-breadcrumb a {
-  color: rgba(255, 255, 255, 0.38);
+  color: var(--text-light);
   text-decoration: none;
   transition: color 200ms ease;
 }
 
 .about-breadcrumb a:hover {
-  color: var(--gold-light);
+  color: var(--moss);
 }
 
 .about-breadcrumb span:last-child {
-  color: var(--gold-light);
+  color: var(--moss);
 }
 
 .about-hero-copy {
@@ -615,13 +613,13 @@ body {
   font-weight: 400;
   line-height: 0.98;
   letter-spacing: -0.045em;
-  color: var(--white);
+  color: var(--text);
 }
 
 .about-hero-title em {
   font-style: italic;
   font-weight: 400;
-  color: rgba(232, 210, 140, 0.92);
+  color: var(--moss);
 }
 
 .about-hero-description {
@@ -630,7 +628,7 @@ body {
   font-size: clamp(0.95rem, 1.4vw, 1.06rem);
   font-weight: 300;
   line-height: 1.8;
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--text-mid);
 }
 
 .about-manifesto-section {
