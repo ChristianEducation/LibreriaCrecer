@@ -3,6 +3,7 @@ import { asc, count } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
 import { aboutSections } from "@/integrations/drizzle/schema";
+import { ABOUT_OFFERING_ICONS } from "@/shared/config/about";
 
 export async function GET() {
   try {
@@ -27,6 +28,10 @@ export async function POST(request: Request) {
       content?: string;
       imagePosition?: string;
       isActive?: boolean;
+      sectionType?: string;
+      icon?: string;
+      linkUrl?: string;
+      linkLabel?: string;
     };
 
     if (!body.title?.trim() || !body.content?.trim()) {
@@ -34,6 +39,17 @@ export async function POST(request: Request) {
         { error: "validation_error", message: "title and content are required." },
         { status: 400 },
       );
+    }
+
+    const sectionType = body.sectionType === "offering" ? "offering" : "story";
+
+    if (sectionType === "offering") {
+      if (!body.icon || !(ABOUT_OFFERING_ICONS as readonly string[]).includes(body.icon)) {
+        return NextResponse.json(
+          { error: "validation_error", message: "Invalid icon for offering." },
+          { status: 400 },
+        );
+      }
     }
 
     const [{ maxOrder }] = await db
@@ -48,6 +64,10 @@ export async function POST(request: Request) {
         imagePosition: body.imagePosition ?? "right",
         displayOrder: Number(maxOrder),
         isActive: body.isActive ?? true,
+        sectionType,
+        icon: sectionType === "offering" ? body.icon : null,
+        linkUrl: sectionType === "offering" ? (body.linkUrl || null) : null,
+        linkLabel: sectionType === "offering" ? (body.linkLabel || null) : null,
       })
       .returning();
 

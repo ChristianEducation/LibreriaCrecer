@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
 import { aboutSections } from "@/integrations/drizzle/schema";
+import { ABOUT_OFFERING_ICONS } from "@/shared/config/about";
 
 type Params = { id: string };
 
@@ -15,7 +16,20 @@ export async function PUT(request: Request, context: { params: Promise<Params> }
       imagePosition?: string;
       displayOrder?: number;
       isActive?: boolean;
+      sectionType?: string;
+      icon?: string;
+      linkUrl?: string;
+      linkLabel?: string;
     };
+
+    if (body.sectionType === "offering" && body.icon) {
+      if (!(ABOUT_OFFERING_ICONS as readonly string[]).includes(body.icon)) {
+        return NextResponse.json(
+          { error: "validation_error", message: "Invalid icon for offering." },
+          { status: 400 },
+        );
+      }
+    }
 
     const [row] = await db
       .update(aboutSections)
