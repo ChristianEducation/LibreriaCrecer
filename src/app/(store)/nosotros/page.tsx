@@ -5,6 +5,8 @@ import { asc, eq } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
 import { aboutSections } from "@/integrations/drizzle/schema";
+import { AboutIcon } from "@/shared/ui/AboutIcon";
+import type { AboutOfferingIcon } from "@/shared/config/about";
 
 type AboutSection = typeof aboutSections.$inferSelect;
 
@@ -30,7 +32,9 @@ async function getAboutSections(): Promise<AboutSection[]> {
 }
 
 export default async function NosotrosPage() {
-  const sections = await getAboutSections();
+  const allSections = await getAboutSections();
+  const stories = allSections.filter((s) => s.sectionType === "story");
+  const offerings = allSections.filter((s) => s.sectionType === "offering");
 
   return (
     <main className="bg-beige">
@@ -57,12 +61,10 @@ export default async function NosotrosPage() {
               Librería Católica · Antofagasta
             </p>
             <h1 className="about-hero-title">
-              Una librería para crecer en la{" "}
-              <em>fe y la lectura</em>
+              Un llamado que se transformó en un <em>Sí</em>
             </h1>
             <p className="about-hero-description">
-              Acompañamos a familias, comunidades y lectores con una selección cuidada de libros,
-              biblias y artículos religiosos para la vida espiritual cotidiana.
+              Librería Crecer nace en Antofagasta como respuesta al cierre del principal referente católico de la ciudad, y a la necesidad que seguía viva: la búsqueda de sentido, el deseo de profundizar la fe, la formación y el anhelo de crecer que habita en toda persona.
             </p>
           </div>
         </div>
@@ -78,18 +80,51 @@ export default async function NosotrosPage() {
             Nuestro propósito
           </p>
           <p className="about-manifesto-lead">
-            Creemos que una buena librería no solo vende libros: orienta, recomienda y abre un
-            espacio tranquilo para encontrar palabras que acompañen el camino.
+            Nos inspira el deseo de colaborar con la misión evangelizadora, promoviendo una fe madura, abierta y dialogante que anuncie a Jesucristo en nuestro tiempo.
           </p>
           <p className="about-manifesto-copy">
-            Desde Antofagasta, Librería Crecer reúne títulos para la oración, la formación, la
-            catequesis y la lectura personal, con una mirada cercana y una curaduría pensada para
-            servir a cada lector.
+            Creemos que cada persona posee una dignidad única e irrepetible y está llamada a crecer a través de la reflexión, el aprendizaje y la búsqueda de aquellas preguntas que dan sentido y profundidad a la vida.
           </p>
         </div>
       </section>
 
-      {sections.length === 0 ? (
+      {/* BLOQUE NUEVO: Tarjetas de oferta */}
+      {offerings.length > 0 && (
+        <section
+          className="page-px bg-beige"
+          style={{ paddingTop: "5rem", paddingBottom: "5rem" }}
+        >
+          <div style={{ maxWidth: "1120px", marginInline: "auto", marginBottom: "3rem" }}>
+            <p className="about-eyebrow about-eyebrow--dark" style={{ justifyContent: "center" }}>
+              <span aria-hidden="true" />
+              Lo que hacemos
+            </p>
+            <h2 className="text-center font-serif text-[2.5rem] text-moss mb-2">Queremos ofrecer</h2>
+          </div>
+          
+          <div className="about-offerings-grid">
+            {offerings.map((offering) => (
+              <div key={offering.id} className="about-offering-card">
+                <div className="about-offering-icon-box">
+                  <AboutIcon name={(offering.icon as AboutOfferingIcon) || "books"} size={24} />
+                </div>
+                <h3>{offering.title}</h3>
+                <p>{offering.content}</p>
+                {offering.linkUrl && (
+                  <Link href={offering.linkUrl} className="about-offering-link mt-auto">
+                    {offering.linkLabel || "Conoce más"}
+                    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" width="16" height="16">
+                      <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                    </svg>
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {stories.length === 0 ? (
         <section
           className="page-px bg-beige"
           style={{ paddingTop: "5rem", paddingBottom: "5rem" }}
@@ -107,7 +142,7 @@ export default async function NosotrosPage() {
           </div>
         </section>
       ) : (
-        sections.map((section, index) => {
+        stories.map((section, index) => {
           const isEven = index % 2 === 0;
           const imageOnRight = section.imagePosition === "right";
           const chapterNumber = String(index + 1).padStart(2, "0");
@@ -160,7 +195,7 @@ export default async function NosotrosPage() {
         style={{
           paddingTop: "5rem",
           paddingBottom: "5.5rem",
-          background: (sections.length === 0 || sections.length % 2 !== 0) ? "var(--white)" : "var(--beige)"
+          background: (stories.length === 0 || stories.length % 2 !== 0) ? "var(--white)" : "var(--beige)"
         }}
       >
         <div className="about-cta">

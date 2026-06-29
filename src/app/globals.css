@@ -1800,3 +1800,68 @@ body {
     top: 24px;
   }
 }
+
+/* Tarjetas de Oferta - Nosotros */
+.about-offerings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  max-width: 1120px;
+  margin-inline: auto;
+}
+
+.about-offering-card {
+  background: var(--white);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.about-offering-icon-box {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--beige);
+  color: var(--moss);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+.about-offering-card h3 {
+  font-family: var(--font-castoro), Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--moss);
+  margin-bottom: 0.75rem;
+}
+
+.about-offering-card p {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text-mid);
+  margin-bottom: 1.25rem;
+  flex: 1;
+}
+
+.about-offering-link {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gold);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 200ms ease;
+}
+
+.about-offering-link:hover {
+  color: var(--moss);
+}

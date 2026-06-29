@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { AdminToggle, AdminUploadZone } from "@/features/admin/components";
 import { useToast } from "@/shared/hooks";
+import { ABOUT_OFFERING_ICONS, type AboutOfferingIcon } from "@/shared/config/about";
+import { AboutIcon } from "@/shared/ui/AboutIcon";
 
 type AboutSection = {
   id: string;
@@ -14,6 +16,10 @@ type AboutSection = {
   imagePosition: string;
   displayOrder: number;
   isActive: boolean;
+  sectionType: "story" | "offering";
+  icon: string | null;
+  linkUrl: string | null;
+  linkLabel: string | null;
 };
 
 type FormState = {
@@ -21,14 +27,24 @@ type FormState = {
   title: string;
   content: string;
   imagePosition: string;
+  displayOrder: number;
   isActive: boolean;
+  sectionType: "story" | "offering";
+  icon: string;
+  linkUrl: string;
+  linkLabel: string;
 };
 
 const initialForm: FormState = {
   title: "",
   content: "",
   imagePosition: "right",
+  displayOrder: 0,
   isActive: true,
+  sectionType: "story",
+  icon: "books",
+  linkUrl: "",
+  linkLabel: "",
 };
 
 export default function AdminNosotrosPage() {
@@ -39,6 +55,7 @@ export default function AdminNosotrosPage() {
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(initialForm);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const previewUrl = useMemo(
     () => (imageFile ? URL.createObjectURL(imageFile) : (form.id ? sections.find((s) => s.id === form.id)?.imageUrl ?? null : null)),
@@ -90,15 +107,29 @@ export default function AdminNosotrosPage() {
       const endpoint = form.id ? `/api/admin/nosotros/${form.id}` : "/api/admin/nosotros";
       const method = form.id ? "PUT" : "POST";
 
+      const bodyData: Record<string, unknown> = {
+        title: form.title,
+        content: form.content,
+        isActive: form.isActive,
+        sectionType: form.sectionType,
+      };
+
+      if (form.id) {
+        bodyData.displayOrder = Number(form.displayOrder);
+      }
+
+      if (form.sectionType === "story") {
+        bodyData.imagePosition = form.imagePosition;
+      } else {
+        bodyData.icon = form.icon;
+        bodyData.linkUrl = form.linkUrl || null;
+        bodyData.linkLabel = form.linkLabel || null;
+      }
+
       const response = await fetch(endpoint, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: form.title,
-          content: form.content,
-          imagePosition: form.imagePosition,
-          isActive: form.isActive,
-        }),
+        body: JSON.stringify(bodyData),
       });
 
       if (!response.ok) {
@@ -112,7 +143,7 @@ export default function AdminNosotrosPage() {
 
       const saved = ((await response.json()) as { data?: AboutSection }).data;
 
-      if (imageFile && saved?.id) {
+      if (form.sectionType === "story" && imageFile && saved?.id) {
         const uploadData = new FormData();
         uploadData.append("file", imageFile);
         await fetch(`/api/admin/nosotros/${saved.id}/imagen`, { method: "POST", body: uploadData });
@@ -121,6 +152,7 @@ export default function AdminNosotrosPage() {
       toast({ message: form.id ? "Sección actualizada." : "Sección creada." });
       setForm(initialForm);
       setImageFile(null);
+      setIsEditing(false);
       await fetchSections();
     } finally {
       setSaving(false);
@@ -152,20 +184,36 @@ export default function AdminNosotrosPage() {
       id: section.id,
       title: section.title,
       content: section.content,
-      imagePosition: section.imagePosition,
+      imagePosition: section.imagePosition || "right",
+      displayOrder: section.displayOrder,
       isActive: section.isActive,
+      sectionType: section.sectionType || "story",
+      icon: section.icon || "books",
+      linkUrl: section.linkUrl || "",
+      linkLabel: section.linkLabel || "",
     });
     setImageFile(null);
+    setIsEditing(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function handleNew(type: "story" | "offering") {
+    setForm({ ...initialForm, sectionType: type });
+    setImageFile(null);
+    setIsEditing(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  const stories = sections.filter((s) => s.sectionType === "story");
+  const offerings = sections.filter((s) => s.sectionType === "offering");
+
   return (
-    <section className="space-y-6">
+    <section className="space-y-10">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-serif text-[2rem] leading-none text-text">Página Conócenos</h1>
           <p className="mt-2 text-sm font-light text-text-light">
-            Secciones de texto e imagen que componen la página /nosotros.
+            Secciones de texto e imagen, y tarjetas de oferta.
           </p>
         </div>
         <Link
@@ -176,138 +224,280 @@ export default function AdminNosotrosPage() {
         </Link>
       </div>
 
-      {/* Formulario crear / editar */}
-      <form className="space-y-6 rounded-[2px] border border-border bg-white p-6" onSubmit={(e) => { void handleSubmit(e); }}>
-        <h2 className="text-[0.82rem] font-semibold text-text">
-          {form.id ? "Editar sección" : "Nueva sección"}
-        </h2>
-
-        <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-          <div className="space-y-4">
-            <label className="block space-y-1">
-              <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Título</span>
-              <input
-                className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-                value={form.title}
-              />
-            </label>
-            <label className="block space-y-1">
-              <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Contenido</span>
-              <textarea
-                className="min-h-[160px] w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                onChange={(e) => setForm((prev) => ({ ...prev, content: e.target.value }))}
-                value={form.content}
-              />
-            </label>
-            <label className="block space-y-1">
-              <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Posición de imagen</span>
-              <select
-                className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
-                onChange={(e) => setForm((prev) => ({ ...prev, imagePosition: e.target.value }))}
-                value={form.imagePosition}
-              >
-                <option value="right">Imagen a la derecha</option>
-                <option value="left">Imagen a la izquierda</option>
-              </select>
-            </label>
-            <AdminToggle
-              checked={form.isActive}
-              label="Sección activa"
-              onChange={(checked) => setForm((prev) => ({ ...prev, isActive: checked }))}
-            />
-          </div>
-
-          <div>
-            <span className="mb-2 block text-[11px] uppercase tracking-[0.12em] text-text-light">Imagen (opcional)</span>
-            <AdminUploadZone
-              hint="Recomendado: imagen 4:3, mínimo 800×600px."
-              onFileSelect={setImageFile}
-              previewUrl={previewUrl}
-            />
-          </div>
-        </div>
-
-        {error ? <p className="text-sm text-error">{error}</p> : null}
-
-        <div className="flex gap-3">
-          <button
-            className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-            disabled={saving}
-            type="submit"
-          >
-            {saving ? "Guardando..." : form.id ? "Actualizar sección" : "Crear sección"}
-          </button>
-          {form.id ? (
+      {isEditing && (
+        <form className="space-y-6 rounded-[2px] border border-border bg-white p-6 shadow-sm" onSubmit={(e) => { void handleSubmit(e); }}>
+          <div className="flex items-center justify-between border-b border-border pb-4">
+            <h2 className="text-[0.82rem] font-semibold text-text">
+              {form.id ? `Editar ${form.sectionType === "story" ? "historia" : "tarjeta"}` : `Nueva ${form.sectionType === "story" ? "historia" : "tarjeta"}`}
+            </h2>
             <button
-              className="rounded-[8px] border border-border px-4 py-2 text-sm text-text-mid"
-              onClick={() => { setForm(initialForm); setImageFile(null); }}
+              className="text-xs text-text-light hover:text-text"
+              onClick={() => { setIsEditing(false); setForm(initialForm); }}
               type="button"
             >
-              Cancelar edición
+              Cerrar
             </button>
-          ) : null}
-        </div>
-      </form>
+          </div>
 
-      {/* Listado */}
-      {loading ? <p className="text-sm text-text-light">Cargando secciones...</p> : null}
-      {!loading && sections.length === 0 ? (
-        <p className="text-sm text-text-light">No hay secciones creadas aún.</p>
-      ) : null}
-      {!loading && sections.length > 0 ? (
-        <div className="space-y-3">
-          {sections.map((section) => (
-            <article
-              key={section.id}
-              className="flex flex-wrap items-start justify-between gap-4 rounded-[2px] border border-border bg-white p-4"
-            >
-              <div className="flex items-start gap-4">
-                {section.imageUrl ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    alt={section.title}
-                    className="h-16 w-24 rounded-[2px] object-cover"
-                    src={section.imageUrl}
+          <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+            <div className="space-y-4">
+              <label className="block space-y-1">
+                <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Título</span>
+                <input
+                  className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                  onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                  value={form.title}
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Contenido</span>
+                <textarea
+                  className="min-h-[160px] w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                  onChange={(e) => setForm((prev) => ({ ...prev, content: e.target.value }))}
+                  value={form.content}
+                />
+              </label>
+
+              {form.sectionType === "story" && (
+                <label className="block space-y-1">
+                  <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Posición de imagen</span>
+                  <select
+                    className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                    onChange={(e) => setForm((prev) => ({ ...prev, imagePosition: e.target.value }))}
+                    value={form.imagePosition}
+                  >
+                    <option value="right">Imagen a la derecha</option>
+                    <option value="left">Imagen a la izquierda</option>
+                  </select>
+                </label>
+              )}
+
+              {form.id && (
+                <label className="block space-y-1">
+                  <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Orden (menor es primero)</span>
+                  <input
+                    className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                    onChange={(e) => setForm((prev) => ({ ...prev, displayOrder: Number(e.target.value) }))}
+                    type="number"
+                    value={form.displayOrder}
                   />
-                ) : (
-                  <div className="flex h-16 w-24 items-center justify-center rounded-[2px] bg-beige-warm text-[10px] text-text-light">
-                    Sin imagen
+                </label>
+              )}
+
+              <AdminToggle
+                checked={form.isActive}
+                label="Sección activa"
+                onChange={(checked) => setForm((prev) => ({ ...prev, isActive: checked }))}
+              />
+            </div>
+
+            {form.sectionType === "story" ? (
+              <div>
+                <span className="mb-2 block text-[11px] uppercase tracking-[0.12em] text-text-light">Imagen (opcional)</span>
+                <AdminUploadZone
+                  hint="Recomendado: imagen 4:3, mínimo 800×600px."
+                  onFileSelect={setImageFile}
+                  previewUrl={previewUrl}
+                />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <label className="block space-y-1">
+                  <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Ícono</span>
+                  <div className="flex gap-3 items-center">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] border border-border bg-beige text-moss">
+                      <AboutIcon name={form.icon as AboutOfferingIcon} size={20} />
+                    </div>
+                    <select
+                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                      onChange={(e) => setForm((prev) => ({ ...prev, icon: e.target.value }))}
+                      value={form.icon}
+                    >
+                      {ABOUT_OFFERING_ICONS.map((icon) => (
+                        <option key={icon} value={icon}>{icon}</option>
+                      ))}
+                    </select>
                   </div>
-                )}
-                <div>
-                  <p className="font-medium text-text">{section.title}</p>
-                  <p className="mt-1 text-xs text-text-light">
-                    Imagen: {section.imagePosition === "right" ? "derecha" : "izquierda"} · Orden: {section.displayOrder}
-                  </p>
-                  <p className="mt-1 line-clamp-2 text-xs text-text-light">{section.content}</p>
+                </label>
+                <div className="grid grid-cols-2 gap-4">
+                  <label className="block space-y-1">
+                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">URL de Enlace (Opcional)</span>
+                    <input
+                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                      onChange={(e) => setForm((prev) => ({ ...prev, linkUrl: e.target.value }))}
+                      placeholder="/encuentros"
+                      value={form.linkUrl}
+                    />
+                  </label>
+                  <label className="block space-y-1">
+                    <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Texto del Enlace (Opcional)</span>
+                    <input
+                      className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none"
+                      onChange={(e) => setForm((prev) => ({ ...prev, linkLabel: e.target.value }))}
+                      placeholder="Conoce más"
+                      value={form.linkLabel}
+                    />
+                  </label>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <AdminToggle
-                  checked={section.isActive}
-                  label=""
-                  onChange={() => { void toggleActive(section.id, section.isActive); }}
-                />
-                <button
-                  className="rounded-[8px] border border-border px-3 py-1.5 text-xs text-text-mid"
-                  onClick={() => startEdit(section)}
-                  type="button"
-                >
-                  Editar
-                </button>
-                <button
-                  className="rounded-[8px] border border-error/30 px-3 py-1.5 text-xs text-error"
-                  onClick={() => { void softDelete(section.id); }}
-                  type="button"
-                >
-                  Eliminar
-                </button>
+            )}
+          </div>
+
+          {error ? <p className="text-sm text-error">{error}</p> : null}
+
+          <div className="flex gap-3 pt-4">
+            <button
+              className="rounded-[8px] bg-moss px-5 py-2 text-sm font-medium text-white disabled:opacity-60"
+              disabled={saving}
+              type="submit"
+            >
+              {saving ? "Guardando..." : form.id ? "Guardar cambios" : "Crear"}
+            </button>
+            <button
+              className="rounded-[8px] border border-border px-5 py-2 text-sm text-text-mid hover:bg-black/5"
+              onClick={() => { setIsEditing(false); setForm(initialForm); }}
+              type="button"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      )}
+
+      {loading ? <p className="text-sm text-text-light">Cargando secciones...</p> : (
+        <div className="space-y-10">
+          
+          {/* Bloque Historias */}
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-serif text-[1.4rem] text-text">Historias</h3>
+              <button
+                className="rounded-[8px] bg-gold px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:brightness-105"
+                onClick={() => handleNew("story")}
+                type="button"
+              >
+                Nueva historia
+              </button>
+            </div>
+            {stories.length === 0 ? (
+              <p className="text-sm text-text-light">No hay historias creadas.</p>
+            ) : (
+              <div className="space-y-3">
+                {stories.map((section) => (
+                  <article
+                    key={section.id}
+                    className="flex flex-wrap items-start justify-between gap-4 rounded-[2px] border border-border bg-white p-4"
+                  >
+                    <div className="flex items-start gap-4">
+                      {section.imageUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          alt={section.title}
+                          className="h-16 w-24 rounded-[2px] object-cover"
+                          src={section.imageUrl}
+                        />
+                      ) : (
+                        <div className="flex h-16 w-24 items-center justify-center rounded-[2px] bg-beige-warm text-[10px] text-text-light">
+                          Sin imagen
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-medium text-text">{section.title}</p>
+                        <p className="mt-1 text-xs text-text-light">
+                          Imagen: {section.imagePosition === "right" ? "derecha" : "izquierda"} · Orden: {section.displayOrder}
+                        </p>
+                        <p className="mt-1 line-clamp-2 text-xs text-text-light max-w-xl">{section.content}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <AdminToggle
+                        checked={section.isActive}
+                        label=""
+                        onChange={() => { void toggleActive(section.id, section.isActive); }}
+                      />
+                      <button
+                        className="rounded-[8px] border border-border px-3 py-1.5 text-xs text-text-mid hover:bg-black/5"
+                        onClick={() => startEdit(section)}
+                        type="button"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="rounded-[8px] border border-error/30 px-3 py-1.5 text-xs text-error hover:bg-error/5"
+                        onClick={() => { void softDelete(section.id); }}
+                        type="button"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </article>
+                ))}
               </div>
-            </article>
-          ))}
+            )}
+          </div>
+
+          {/* Bloque Offerings */}
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-serif text-[1.4rem] text-text">Tarjetas de oferta</h3>
+              <button
+                className="rounded-[8px] bg-gold px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:brightness-105"
+                onClick={() => handleNew("offering")}
+                type="button"
+              >
+                Nueva tarjeta
+              </button>
+            </div>
+            {offerings.length === 0 ? (
+              <p className="text-sm text-text-light">No hay tarjetas creadas.</p>
+            ) : (
+              <div className="space-y-3">
+                {offerings.map((section) => (
+                  <article
+                    key={section.id}
+                    className="flex flex-wrap items-start justify-between gap-4 rounded-[2px] border border-border bg-white p-4"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-[8px] bg-beige text-moss shrink-0 border border-border">
+                        <AboutIcon name={(section.icon as AboutOfferingIcon) || "books"} size={28} />
+                      </div>
+                      <div>
+                        <p className="font-medium text-text">{section.title}</p>
+                        <p className="mt-1 text-xs text-text-light">
+                          Orden: {section.displayOrder} {section.linkUrl ? `· Enlace: ${section.linkUrl}` : ""}
+                        </p>
+                        <p className="mt-1 line-clamp-2 text-xs text-text-light max-w-xl">{section.content}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <AdminToggle
+                        checked={section.isActive}
+                        label=""
+                        onChange={() => { void toggleActive(section.id, section.isActive); }}
+                      />
+                      <button
+                        className="rounded-[8px] border border-border px-3 py-1.5 text-xs text-text-mid hover:bg-black/5"
+                        onClick={() => startEdit(section)}
+                        type="button"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="rounded-[8px] border border-error/30 px-3 py-1.5 text-xs text-error hover:bg-error/5"
+                        onClick={() => { void softDelete(section.id); }}
+                        type="button"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+
         </div>
-      ) : null}
+      )}
     </section>
   );
 }
