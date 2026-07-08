@@ -173,7 +173,7 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
                 </button>
               </div>
             )}
-            <Link className="font-sans text-text-mid transition-colors hover:text-moss" href="/productos" style={{ fontSize: "13px", borderBottom: "1px solid transparent", paddingBottom: "1px", flexShrink: 0 }}>
+            <Link className="font-sans text-text-mid transition-colors hover:text-moss" href="/productos?filter=nuevo" style={{ fontSize: "13px", borderBottom: "1px solid transparent", paddingBottom: "1px", flexShrink: 0 }}>
               Ver todos →
             </Link>
           </div>
