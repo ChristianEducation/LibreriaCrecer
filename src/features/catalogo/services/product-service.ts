@@ -155,8 +155,22 @@ function buildProductConditions({
   onlyOnSale = false,
   isFeatured = false,
   onlySeleccion = false,
-}: Pick<ProductQueryParams, "categorySlug" | "search" | "onlyInStock" | "onlyActive" | "onlyOnSale" | "isFeatured" | "onlySeleccion">) {
+  onlyNewArrivals = false,
+}: Pick<ProductQueryParams, "categorySlug" | "search" | "onlyInStock" | "onlyActive" | "onlyOnSale" | "isFeatured" | "onlySeleccion" | "onlyNewArrivals">) {
   const conditions: SQL[] = [];
+
+  if (onlyNewArrivals) {
+    // Si queremos estrictamente los últimos 15 agregados globales,
+    // buscamos en un subquery limit 15
+    const latest15Subquery = db
+      .select({ id: products.id })
+      .from(products)
+      .where(eq(products.isActive, true))
+      .orderBy(desc(products.createdAt))
+      .limit(15);
+    
+    conditions.push(inArray(products.id, latest15Subquery));
+  }
 
   if (onlyActive) {
     conditions.push(eq(products.isActive, true));
