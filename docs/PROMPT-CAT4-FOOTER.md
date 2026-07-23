@@ -1,5 +1,5 @@
 # PROMPT CATEGORÍA 4 — FOOTER
-**Proyecto:** Crecer Librería Cristiana  
+**Proyecto:** Crecer Librería Católica  
 **Fecha:** 15 Abril 2026  
 **Tarea:** Fix de imagen + estilizar footer alineado al diseñador + info editable desde admin
 
@@ -148,7 +148,7 @@ Define el tipo de retorno con los mismos campos del schema. Si la llamada falla 
 
 ```typescript
 const defaultFooterContent = {
-  brandDescription: "Una libreria cristiana pensada para acompanar el estudio, la devocion y la vida diaria con una seleccion curada de titulos.",
+  brandDescription: "Una libreria catolica pensada para acompanar el estudio, la devocion y la vida diaria con una seleccion curada de titulos.",
   catalogLinks: "Coleccion completa::/productos|||Novedades::/productos?filter=nuevo|||Ofertas::/productos?filter=oferta",
   infoLinks: "Mi carrito::/carrito|||Checkout::/checkout",
   address: "Arturo Prat 470 / Antofagasta, Chile",

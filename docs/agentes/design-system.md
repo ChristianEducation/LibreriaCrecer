@@ -388,4 +388,4 @@ strokeLinejoin="round"
 
 ---
 
-*Agente design system — Crecer Librería Cristiana — Abril 2026*
+*Agente design system — Crecer Librería Católica — Abril 2026*

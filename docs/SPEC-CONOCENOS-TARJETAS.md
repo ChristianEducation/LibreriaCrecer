@@ -1,5 +1,5 @@
 # SPEC — CONÓCENOS: REDISEÑO + TARJETAS EDITABLES
-**Proyecto:** Crecer Librería Cristiana
+**Proyecto:** Crecer Librería Católica
 **Fecha:** 29 Junio 2026
 **Tarea:** Rediseñar la página Conócenos con el texto real de la clienta, y agregar un bloque de "tarjetas de oferta" editables desde el admin (ícono + título + descripción + enlace opcional).
 **Migración:** `0009_about_offerings.sql`

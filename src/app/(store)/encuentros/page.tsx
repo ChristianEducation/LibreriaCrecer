@@ -5,7 +5,7 @@ import { SectionHeader } from "@/shared/ui/SectionHeader";
 
 export const metadata: Metadata = {
   title: "Encuentros Crecer",
-  description: "Galería de eventos, talleres y encuentros organizados por Crecer Librería Cristiana.",
+  description: "Galería de eventos, talleres y encuentros organizados por Crecer Librería Católica.",
   alternates: {
     canonical: "/encuentros",
   },

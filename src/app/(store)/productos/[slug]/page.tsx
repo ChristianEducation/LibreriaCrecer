@@ -25,7 +25,7 @@ export async function generateMetadata({
 
   const description = product.description
     ? product.description.slice(0, 155)
-    : `${product.title}${product.author ? ` de ${product.author}` : ""} — disponible en Crecer Librería Cristiana, Antofagasta.`;
+    : `${product.title}${product.author ? ` de ${product.author}` : ""} — disponible en Crecer Librería Católica, Antofagasta.`;
 
   return {
     title: product.title,
@@ -84,7 +84,7 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
                     : "https://schema.org/OutOfStock",
                   seller: {
                     "@type": "Organization",
-                    name: "Crecer Librería Cristiana",
+                    name: "Crecer Librería Católica",
                   },
                 },
               },

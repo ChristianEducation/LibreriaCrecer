@@ -232,4 +232,4 @@ await db.update(...).set({ imageUrl: result.publicUrl }); // puede ser undefined
 
 ---
 
-*Agente Supabase Storage — Crecer Librería Cristiana — Abril 2026*
+*Agente Supabase Storage — Crecer Librería Católica — Abril 2026*

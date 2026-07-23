@@ -7,7 +7,7 @@ import { getCategories } from "@/features/catalogo/services/category-service";
 export const metadata: Metadata = {
   title: "Categorías",
   description:
-    "Navega por categorías: Biblia, espiritualidad, formación, liturgia y más. Librería cristiana en Antofagasta con despacho a todo Chile.",
+    "Navega por categorías: Biblia, espiritualidad, formación, liturgia y más. Librería católica en Antofagasta con despacho a todo Chile.",
   alternates: {
     canonical: "/categorias",
   },

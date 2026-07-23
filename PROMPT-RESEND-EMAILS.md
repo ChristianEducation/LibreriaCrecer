@@ -35,7 +35,7 @@ npm install resend
 
 ## Paso 2 — Cliente de Resend (`src/integrations/email/config.ts`)
 Mismo patrón que `chilexpress/config.ts`: leer `RESEND_API_KEY` de env, exportar config con
-default `fromAddress: "pedidos@libreriacrecer.cl"` y `fromName: "Crecer Librería Cristiana"`.
+default `fromAddress: "pedidos@libreriacrecer.cl"` y `fromName: "Crecer Librería Católica"`.
 
 ## Paso 3 — Templates HTML (`src/integrations/email/templates/`)
 Crear dos funciones que reciben datos tipados y devuelven un string HTML completo (inline

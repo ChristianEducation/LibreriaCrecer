@@ -1,5 +1,5 @@
 # SPEC — HERO: IMAGEN MOBILE (DOBLE IMAGEN / ART DIRECTION)
-**Proyecto:** Crecer Librería Cristiana
+**Proyecto:** Crecer Librería Católica
 **Fecha:** 28 Junio 2026
 **Tarea:** Permitir subir una imagen vertical opcional por slide del hero, usada en mobile. Si no se sube, usa la imagen principal como fallback.
 **Migración:** `0008_hero_mobile_image.sql`

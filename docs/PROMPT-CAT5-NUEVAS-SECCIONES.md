@@ -1,5 +1,5 @@
 # PROMPT CATEGORÍA 5 — NUEVAS SECCIONES
-**Proyecto:** Crecer Librería Cristiana  
+**Proyecto:** Crecer Librería Católica  
 **Fecha:** 15 Abril 2026  
 **Tarea:** Filtros "Selección del mes" y "Recién llegados" + página /nosotros
 

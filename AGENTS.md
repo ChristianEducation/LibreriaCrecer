@@ -1,4 +1,4 @@
-# Crecer Librería Cristiana — Guía para Codex
+# Crecer Librería Católica — Guía para Codex
 
 ## Qué es este proyecto
 

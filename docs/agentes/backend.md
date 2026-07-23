@@ -307,4 +307,4 @@ await db.insert(orderItems).values(...)  // si esto falla, la orden queda huérf
 
 ---
 
-*Agente backend — Crecer Librería Cristiana — Abril 2026*
+*Agente backend — Crecer Librería Católica — Abril 2026*

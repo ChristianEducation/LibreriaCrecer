@@ -350,4 +350,4 @@ npm run db:migrate   # aplica en la BD
 
 ---
 
-*Agente schema — Crecer Librería Cristiana — Abril 2026*
+*Agente schema — Crecer Librería Católica — Abril 2026*

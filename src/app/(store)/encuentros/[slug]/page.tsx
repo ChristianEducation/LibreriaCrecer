@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: EncounterPageProps): Promise<
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://crecerlibreria.cl";
-  const description = encounter.excerpt ?? encounter.description?.slice(0, 155) ?? "Encuentro Crecer Librería Cristiana";
+  const description = encounter.excerpt ?? encounter.description?.slice(0, 155) ?? "Encuentro Crecer Librería Católica";
 
   return {
     title: `${encounter.title} | Encuentros Crecer`,

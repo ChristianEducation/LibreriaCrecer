@@ -13,7 +13,7 @@ type AboutSection = typeof aboutSections.$inferSelect;
 export const metadata: Metadata = {
   title: "Conócenos",
   description:
-    "Somos Crecer Librería Cristiana, una librería católica en Antofagasta dedicada a acompañar el camino de fe con una selección curada de libros y recursos espirituales.",
+    "Somos Crecer Librería Católica, una librería católica en Antofagasta dedicada a acompañar el camino de fe con una selección curada de libros y recursos espirituales.",
   alternates: {
     canonical: "/nosotros",
   },

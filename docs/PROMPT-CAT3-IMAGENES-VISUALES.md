@@ -1,5 +1,5 @@
 # PROMPT CATEGORÍA 3 — IMÁGENES & VISUALES
-**Proyecto:** Crecer Librería Cristiana  
+**Proyecto:** Crecer Librería Católica  
 **Fecha:** 15 Abril 2026  
 **Tarea:** Imagen panorámica en categorías, imagen de categoría en header de /productos, y fix de imagen en footer
 

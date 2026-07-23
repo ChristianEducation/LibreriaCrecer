@@ -420,7 +420,7 @@ Aquí tienes un **resumen para Claude** que puede usar como contexto:
 
 ## De qué va el proyecto
 
-- **Proyecto:** Crecer Librería Cristiana — e-commerce (Next.js, App Router, Drizzle, Zustand, Getnet, etc.).
+- **Proyecto:** Crecer Librería Católica — e-commerce (Next.js, App Router, Drizzle, Zustand, Getnet, etc.).
 - **Fases:** 1–3 ya hechas (backend, APIs, admin, carrito, checkout atómico). **Fase 4** es el frontend público + design system y aún **no está hecha**.
 - **Objetivo de la conversación:** No adaptar el código a los prompts, sino **adaptar los documentos de los prompts** (en `docs/`) para que describan usar **lo que el proyecto ya tiene** (rutas, Tailwind v4, imports, store, schema, etc.).
 
@@ -816,7 +816,7 @@ No hay referencias a rutas sin `(panel)` ni a utilidades en otra ruta. El prompt
 
 Tarea 4.1 — Tokens de diseño y componentes base (shared/ui)
 Contexto
-Este es el primer paso de la Fase 4 del proyecto Crecer Librería Cristiana. Las Fases 1–3 están completamente implementadas y validadas — el backend está funcional con APIs, auth admin, CRUD, checkout atómico y Getnet. Ahora comenzamos el frontend público.
+Este es el primer paso de la Fase 4 del proyecto Crecer Librería Católica. Las Fases 1–3 están completamente implementadas y validadas — el backend está funcional con APIs, auth admin, CRUD, checkout atómico y Getnet. Ahora comenzamos el frontend público.
 Esta tarea es la fundación visual de todo el proyecto. Sin ella no se puede construir ningún componente ni página. El objetivo es crear el sistema de diseño completo — tokens, estilos globales y componentes atómicos — que todas las demás tareas de la Fase 4 consumirán.
 Decisiones de diseño ya tomadas
 El sistema visual fue revisado y aprobado con el diseñador. Los valores que se listan a continuación son definitivos — NO usar los valores originales del HTML del diseñador que difieren de estos.
@@ -1192,7 +1192,7 @@ Siguiente paso natural: continuar con la **Tarea 4.2** (`Navbar`, `CartPanel`, `
 
 Tarea 4.2 — Navbar, Footer y Layouts
 Contexto
-Este es el segundo paso de la Fase 4 del proyecto Crecer Librería Cristiana. La Tarea 4.1 configuró los tokens de diseño en globals.css (Tailwind v4 con @theme), y creó los componentes atómicos en shared/ui/ (Button, Badge, Input, SectionHeader, Separator) y el hook useScrollReveal.
+Este es el segundo paso de la Fase 4 del proyecto Crecer Librería Católica. La Tarea 4.1 configuró los tokens de diseño en globals.css (Tailwind v4 con @theme), y creó los componentes atómicos en shared/ui/ (Button, Badge, Input, SectionHeader, Separator) y el hook useScrollReveal.
 Ahora construimos los componentes que envuelven todas las páginas — Navbar, CartPanel, Footer — y los layouts base de la tienda pública y del panel admin. Al terminar esta tarea, cualquier página que se cree heredará automáticamente el layout correcto.
 Prerequisitos
 

@@ -1,4 +1,4 @@
-# Crecer Librería Cristiana — Guía para Claude Code
+# Crecer Librería Católica — Guía para Claude Code
 
 ## Qué es este proyecto
 

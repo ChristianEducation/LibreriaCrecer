@@ -424,4 +424,4 @@ price.toFixed(2)  // los precios CLP son enteros
 
 ---
 
-*Agente frontend — Crecer Librería Cristiana — Abril 2026*
+*Agente frontend — Crecer Librería Católica — Abril 2026*

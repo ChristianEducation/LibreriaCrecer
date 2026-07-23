@@ -1,5 +1,5 @@
 # PROMPT CATEGORÍA 1 — IDENTIDAD & CARGA
-**Proyecto:** Crecer Librería Cristiana  
+**Proyecto:** Crecer Librería Católica  
 **Fecha:** 15 Abril 2026  
 **Tarea:** Logo real + Loader de marca (splash screen + confirmación de pago)
 
@@ -18,7 +18,7 @@ Confirma con: *"Contexto absorbido. Stack: Next.js 15 + Drizzle + Supabase + Tai
 
 ## CONTEXTO
 
-El proyecto usa actualmente un componente `BrandMark()` hardcodeado (una cruz de oro dibujada en código) como logotipo. Se reemplazará por el logo real de Crecer Librería Cristiana.
+El proyecto usa actualmente un componente `BrandMark()` hardcodeado (una cruz de oro dibujada en código) como logotipo. Se reemplazará por el logo real de Crecer Librería Católica.
 
 Adicionalmente, se creará un **loader de marca** (`BrandLoader`) que reemplaza todos los estados de carga genéricos del sitio. Este loader mostrará el logo animado y se usará en dos lugares:
 1. **Splash screen** al entrar al sitio (`/`)
@@ -188,7 +188,7 @@ La página `(store)/page.tsx` envuelve su contenido con `<LandingWithSplash>`.
 ### Consideraciones
 - El contenido del landing **se monta inmediatamente** (para no retrasar la carga real) pero está visualmente oculto durante el splash
 - Usar `aria-hidden` en el contenido mientras el splash está activo
-- El BrandLoader tiene `aria-label="Cargando Crecer Librería Cristiana"`
+- El BrandLoader tiene `aria-label="Cargando Crecer Librería Católica"`
 
 ---
 

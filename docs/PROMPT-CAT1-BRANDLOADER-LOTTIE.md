@@ -1,5 +1,5 @@
 # PROMPT — CAMBIO DE ANIMACIÓN EN BRANDLOADER (Lottie + Logo centrado)
-**Proyecto:** Crecer Librería Cristiana  
+**Proyecto:** Crecer Librería Católica  
 **Fecha:** 17 Abril 2026  
 **Tarea:** Reemplazar animación placeholder en BrandLoader por Lottie con logo centrado
 

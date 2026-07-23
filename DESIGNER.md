@@ -1,4 +1,4 @@
-# GUÍA DEL DISEÑADOR — Crecer Librería Cristiana
+# GUÍA DEL DISEÑADOR — Crecer Librería Católica
 
 > Lee este archivo completo antes de tocar cualquier cosa.
 > Tu Claude Code también debe leerlo al inicio de cada sesión.
@@ -276,4 +276,4 @@ El proyecto no usa librerías de íconos. Siempre SVG inline con estas convencio
 
 ---
 
-*Guía del diseñador — Crecer Librería Cristiana — Abril 2026*
+*Guía del diseñador — Crecer Librería Católica — Abril 2026*

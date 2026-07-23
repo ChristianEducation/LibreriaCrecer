@@ -1,5 +1,5 @@
 # SPEC — HERO CTA: POSICIÓN (ANCLAS 3×3) + COLORES
-**Proyecto:** Crecer Librería Cristiana
+**Proyecto:** Crecer Librería Católica
 **Fecha:** 25 Junio 2026
 **Tarea:** Separar el botón (CTA) del bloque de texto del Hero, darle 9 posiciones de ancla independientes y control de colores (fondo, texto, borde) editable desde admin.
 **Enfoque elegido:** Opción B — anclas 3×3 (robusto en responsive). NO posición absoluta libre por X/Y.

@@ -1,7 +1,7 @@
 # PROMPT — Auditoría general del proyecto (UI/UX + consistencia)
 
 ## Objetivo
-Hacer un repaso completo del proyecto Crecer Librería Cristiana: UI/UX, consistencia visual,
+Hacer un repaso completo del proyecto Crecer Librería Católica: UI/UX, consistencia visual,
 inconsistencias de datos/contenido tras los cambios recientes en el catálogo, y cualquier
 problema técnico o de experiencia que valga la pena corregir.
 

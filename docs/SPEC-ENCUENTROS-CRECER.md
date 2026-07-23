@@ -1,5 +1,5 @@
 # SPEC — ENCUENTROS CRECER
-**Proyecto:** Crecer Librería Cristiana
+**Proyecto:** Crecer Librería Católica
 **Fecha:** 25 Junio 2026
 **Tarea:** Nueva sección "Encuentros Crecer" — galería de eventos pasados (frontstore + admin)
 **Tipo:** Feature completa (DB → Admin → Frontstore). Spec dividido en FASES secuenciales con gate de verificación entre cada una.

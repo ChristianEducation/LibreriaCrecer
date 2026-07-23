@@ -1,4 +1,4 @@
-# PROMPT: SEO Completo para Producción — Crecer Librería Cristiana
+# PROMPT: SEO Completo para Producción — Crecer Librería Católica
 
 ## Instrucción de inicio
 
@@ -17,7 +17,7 @@ No escribas ninguna línea de código hasta haber leído todos los archivos ante
 
 ## Contexto
 
-Proyecto: Crecer Librería Cristiana — e-commerce de librería católica en Antofagasta, Chile.
+Proyecto: Crecer Librería Católica — e-commerce de librería católica en Antofagasta, Chile.
 Stack: Next.js 15 App Router, TypeScript strict, Tailwind v4.
 Objetivo: implementar SEO completo y profesional para producción.
 Esta tarea es solo de SEO — no tocar estilos, lógica de negocio, APIs ni base de datos.
@@ -48,13 +48,13 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL ?? "https://crecerlibreria.cl"
   ),
   title: {
-    default: "Crecer Librería Cristiana — Antofagasta",
-    template: "%s | Crecer Librería Cristiana",
+    default: "Crecer Librería Católica — Antofagasta",
+    template: "%s | Crecer Librería Católica",
   },
   description:
-    "Librería cristiana en Antofagasta, Chile. Libros católicos, recursos espirituales y selección curada para el camino de fe. Compra online con despacho a todo Chile.",
+    "Librería católica en Antofagasta, Chile. Libros católicos, recursos espirituales y selección curada para el camino de fe. Compra online con despacho a todo Chile.",
   keywords: [
-    "librería cristiana",
+    "librería católica",
     "libros católicos",
     "Antofagasta",
     "libros religiosos Chile",
@@ -64,13 +64,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "es_CL",
-    siteName: "Crecer Librería Cristiana",
+    siteName: "Crecer Librería Católica",
     images: [
       {
         url: "/images/og-default.jpg",
         width: 1200,
         height: 630,
-        alt: "Crecer Librería Cristiana — Antofagasta",
+        alt: "Crecer Librería Católica — Antofagasta",
       },
     ],
   },
@@ -99,15 +99,15 @@ Dentro del `<body>`, antes de `{children}`, agregar este bloque:
           "@type": "WebSite",
           "@id": `${process.env.NEXT_PUBLIC_APP_URL ?? "https://crecerlibreria.cl"}/#website`,
           url: process.env.NEXT_PUBLIC_APP_URL ?? "https://crecerlibreria.cl",
-          name: "Crecer Librería Cristiana",
+          name: "Crecer Librería Católica",
           description:
-            "Librería cristiana en Antofagasta, Chile. Libros católicos y recursos espirituales.",
+            "Librería católica en Antofagasta, Chile. Libros católicos y recursos espirituales.",
           inLanguage: "es-CL",
         },
         {
           "@type": "BookStore",
           "@id": `${process.env.NEXT_PUBLIC_APP_URL ?? "https://crecerlibreria.cl"}/#local`,
-          name: "Crecer Librería Cristiana",
+          name: "Crecer Librería Católica",
           url: process.env.NEXT_PUBLIC_APP_URL ?? "https://crecerlibreria.cl",
           address: {
             "@type": "PostalAddress",
@@ -139,7 +139,7 @@ Agregar este export de metadata antes de la función `HomePage`:
 export const metadata: Metadata = {
   title: "Inicio",
   description:
-    "Bienvenido a Crecer Librería Cristiana en Antofagasta. Descubre nuestra selección de libros católicos, Biblias, recursos de espiritualidad y formación con despacho a todo Chile.",
+    "Bienvenido a Crecer Librería Católica en Antofagasta. Descubre nuestra selección de libros católicos, Biblias, recursos de espiritualidad y formación con despacho a todo Chile.",
   alternates: {
     canonical: "/",
   },
@@ -180,7 +180,7 @@ export async function generateMetadata({
 
   const description = product.description
     ? product.description.slice(0, 155)
-    : `${product.title}${product.author ? ` de ${product.author}` : ""} — disponible en Crecer Librería Cristiana, Antofagasta.`;
+    : `${product.title}${product.author ? ` de ${product.author}` : ""} — disponible en Crecer Librería Católica, Antofagasta.`;
 
   return {
     title: product.title,
@@ -232,7 +232,7 @@ Dentro del `return` de `ProductoPage`, inmediatamente después de `<main>` y ant
               : "https://schema.org/OutOfStock",
             seller: {
               "@type": "Organization",
-              name: "Crecer Librería Cristiana",
+              name: "Crecer Librería Católica",
             },
           },
         },
@@ -292,7 +292,7 @@ Agregar este export de metadata antes de la función de la página. Importar `Me
 export const metadata: Metadata = {
   title: "Categorías",
   description:
-    "Navega por categorías: Biblia, espiritualidad, formación, liturgia y más. Librería cristiana en Antofagasta con despacho a todo Chile.",
+    "Navega por categorías: Biblia, espiritualidad, formación, liturgia y más. Librería católica en Antofagasta con despacho a todo Chile.",
   alternates: {
     canonical: "/categorias",
   },
@@ -309,7 +309,7 @@ Agregar este export de metadata antes de la función de la página. Importar `Me
 export const metadata: Metadata = {
   title: "Conócenos",
   description:
-    "Somos Crecer Librería Cristiana, una librería católica en Antofagasta dedicada a acompañar el camino de fe con una selección curada de libros y recursos espirituales.",
+    "Somos Crecer Librería Católica, una librería católica en Antofagasta dedicada a acompañar el camino de fe con una selección curada de libros y recursos espirituales.",
   alternates: {
     canonical: "/nosotros",
   },

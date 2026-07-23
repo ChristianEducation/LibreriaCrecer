@@ -1,4 +1,4 @@
-# Crecer Librería Cristiana — Prompt Maestro
+# Crecer Librería Católica — Prompt Maestro
 **Versión:** 1.0 — Abril 2026  
 **Este archivo no se versiona. Las reglas aquí son inmutables.**
 
@@ -16,7 +16,7 @@ Luego lee `docs/HANDOFF-v01.md` (o la versión más reciente) para conocer el es
 
 ## QUÉ ES ESTE PROYECTO
 
-E-commerce completo para **Crecer Librería Cristiana**, una librería católica en Antofagasta, Chile. Los clientes compran como invitado (sin registro), pagan con Getnet/Webpay. El admin gestiona catálogo, pedidos y contenido del landing desde `/admin`.
+E-commerce completo para **Crecer Librería Católica**, una librería católica en Antofagasta, Chile. Los clientes compran como invitado (sin registro), pagan con Getnet/Webpay. El admin gestiona catálogo, pedidos y contenido del landing desde `/admin`.
 
 **Desarrollador:** Christian Wevar (full-stack — frontend + backend + integraciones)  
 **Diseñador:** Socio colaborador — entrega UI Contract en HTML
@@ -223,5 +223,5 @@ Los tokens completos están en `docs/agentes/design-system.md`. Aquí solo lo es
 
 ---
 
-*Crecer Librería Cristiana — Master Prompt v1.0 — Abril 2026*  
+*Crecer Librería Católica — Master Prompt v1.0 — Abril 2026*  
 *Este archivo no cambia entre versiones del handoff. Para el estado actual del proyecto, ver HANDOFF-v01.md*

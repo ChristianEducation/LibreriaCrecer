@@ -88,7 +88,7 @@ async function run() {
   console.warn("Insertando hero slide...");
   const existingSlide = await db.select({ id: heroSlides.id }).from(heroSlides).limit(1);
   if (existingSlide.length === 0) {
-    await db.insert(heroSlides).values({ title: "Crecer Librería Cristiana", subtitle: "Librería Católica · Antofagasta", imageUrl: "", linkUrl: "/productos", displayOrder: 0, isActive: true });
+    await db.insert(heroSlides).values({ title: "Crecer Librería Católica", subtitle: "Librería Católica · Antofagasta", imageUrl: "", linkUrl: "/productos", displayOrder: 0, isActive: true });
     console.warn("  → Hero slide insertado");
   } else {
     console.warn("  → Hero slide ya existe, omitido");

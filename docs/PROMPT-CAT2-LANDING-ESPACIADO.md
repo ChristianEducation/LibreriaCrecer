@@ -1,5 +1,5 @@
 # PROMPT CATEGORÍA 2 — LANDING: ESPACIADO & DISEÑO
-**Proyecto:** Crecer Librería Cristiana  
+**Proyecto:** Crecer Librería Católica  
 **Fecha:** 15 Abril 2026  
 **Tarea:** Alinear padding de secciones, corregir QuoteSection, y ajustar buscador en Navbar
 

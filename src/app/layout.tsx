@@ -41,13 +41,13 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL ?? "https://crecerlibreria.cl",
   ),
   title: {
-    default: "Crecer Librería Cristiana — Antofagasta",
-    template: "%s | Crecer Librería Cristiana",
+    default: "Crecer Librería Católica — Antofagasta",
+    template: "%s | Crecer Librería Católica",
   },
   description:
-    "Librería cristiana en Antofagasta, Chile. Libros católicos, recursos espirituales y selección curada para el camino de fe. Compra online con despacho a todo Chile.",
+    "Librería católica en Antofagasta, Chile. Libros católicos, recursos espirituales y selección curada para el camino de fe. Compra online con despacho a todo Chile.",
   keywords: [
-    "librería cristiana",
+    "librería católica",
     "libros católicos",
     "Antofagasta",
     "libros religiosos Chile",
@@ -57,11 +57,11 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "es_CL",
-    siteName: "Crecer Librería Cristiana",
+    siteName: "Crecer Librería Católica",
     images: [
       {
         url: "/images/Logo-Crecer.png",
-        alt: "Crecer Librería Cristiana",
+        alt: "Crecer Librería Católica",
       },
     ],
   },
@@ -95,15 +95,15 @@ export default function RootLayout({
                   "@type": "WebSite",
                   "@id": `${baseUrl}/#website`,
                   url: baseUrl,
-                  name: "Crecer Librería Cristiana",
+                  name: "Crecer Librería Católica",
                   description:
-                    "Librería cristiana en Antofagasta, Chile. Libros católicos y recursos espirituales.",
+                    "Librería católica en Antofagasta, Chile. Libros católicos y recursos espirituales.",
                   inLanguage: "es-CL",
                 },
                 {
                   "@type": "BookStore",
                   "@id": `${baseUrl}/#local`,
-                  name: "Crecer Librería Cristiana",
+                  name: "Crecer Librería Católica",
                   url: baseUrl,
                   address: {
                     "@type": "PostalAddress",

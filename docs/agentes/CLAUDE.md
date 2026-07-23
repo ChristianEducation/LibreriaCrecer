@@ -1,4 +1,4 @@
-# AGENTE RAÍZ — Crecer Librería Cristiana
+# AGENTE RAÍZ — Crecer Librería Católica
 
 ## Lectura obligatoria al inicio de cada sesión
 
@@ -90,4 +90,4 @@ Estos errores ya ocurrieron. No repetirlos:
 
 ---
 
-*Agente raíz — Crecer Librería Cristiana — Abril 2026*
+*Agente raíz — Crecer Librería Católica — Abril 2026*
