@@ -46,6 +46,7 @@ export function EncounterAdminForm({ mode, encounterId, initialData }: Encounter
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<EncounterImage[]>(initialData?.images ?? []);
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
 
   const defaultValues = useMemo<SchemaInput>(
     () => ({
@@ -160,138 +161,217 @@ export function EncounterAdminForm({ mode, encounterId, initialData }: Encounter
 
   async function deleteImage(imageId: string) {
     if (!encounterId) return;
+    if (!window.confirm("¿Eliminar esta imagen de la galería? Esta acción no se puede deshacer.")) return;
 
-    const response = await fetch(`/api/admin/encuentros/${encounterId}/imagenes/${imageId}`, {
-      method: "DELETE",
-    });
+    setDeletingImageId(imageId);
+    try {
+      const response = await fetch(`/api/admin/encuentros/${encounterId}/imagenes/${imageId}`, {
+        method: "DELETE",
+      });
 
-    if (!response.ok) {
-      setError("No se pudo eliminar la imagen.");
-      toast({ message: "No se pudo eliminar la imagen.", variant: "error" });
-      return;
+      if (!response.ok) {
+        setError("No se pudo eliminar la imagen.");
+        toast({ message: "No se pudo eliminar la imagen.", variant: "error" });
+        return;
+      }
+
+      setExistingImages((prev) => prev.filter((image) => image.id !== imageId));
+      toast({ message: "Imagen eliminada." });
+    } finally {
+      setDeletingImageId(null);
     }
+  }
 
-    setExistingImages((prev) => prev.filter((image) => image.id !== imageId));
-    toast({ message: "Imagen eliminada." });
+  function removePendingGalleryFile(index: number) {
+    setGalleryFiles((current) => current.filter((_, fileIndex) => fileIndex !== index));
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <div className="space-y-6">
-          <section className="rounded-[2px] border border-border bg-white p-6">
-            <h2 className="mb-4 text-[0.82rem] font-semibold text-text">Información principal</h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="space-y-1">
-                <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Título</span>
-                <input className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none" {...form.register("title")} />
-              </label>
-              <label className="space-y-1">
-                <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Fecha del evento</span>
-                <input type="date" className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none" {...form.register("event_date")} />
-              </label>
-              <label className="space-y-1 md:col-span-2">
-                <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Lugar / Ubicación</span>
-                <input className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none" {...form.register("location")} />
-              </label>
-            </div>
-            
-            <label className="mt-4 block space-y-1">
-              <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Extracto (Resumen corto)</span>
-              <textarea className="min-h-20 w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none" {...form.register("excerpt")} />
-            </label>
-
-            <label className="mt-4 block space-y-1">
-              <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Descripción (Crónica)</span>
-              <textarea className="min-h-32 w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none" {...form.register("description")} />
-            </label>
-            
-            <label className="mt-4 block space-y-1">
-              <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">URL del Video (Youtube/Instagram)</span>
-              <input type="url" placeholder="https://..." className="w-full rounded-[8px] border border-border px-3 py-2.5 text-sm focus:border-gold focus:outline-none" {...form.register("video_url")} />
-            </label>
-          </section>
-
-          <section className="rounded-[2px] border border-border bg-white p-6">
-            <h2 className="mb-4 text-[0.82rem] font-semibold text-text">Estado y Visibilidad</h2>
-            <div className="space-y-1">
-              <AdminToggle
-                checked={isActive}
-                label="Visible en la galería de encuentros"
-                onChange={(checked) => form.setValue("is_active", checked)}
-              />
-            </div>
-          </section>
-        </div>
-
-        <div className="space-y-6">
-          <section className="rounded-[2px] border border-border bg-white p-6">
-            <h2 className="mb-4 text-[0.82rem] font-semibold text-text">Portada (Cover)</h2>
-            <AdminUploadZone
-              hint="PNG o JPG. Recomendado 800x600px."
-              onFileSelect={setCoverImageFile}
-              previewUrl={coverPreview}
-            />
-
-            <div className="mt-5 border-t border-border pt-4">
-              <h3 className="mb-3 text-[0.78rem] font-medium text-text">Galería de fotos</h3>
-              <label className="flex cursor-pointer items-center justify-center rounded-[8px] border border-dashed border-border px-4 py-3 text-sm text-text-mid hover:border-gold/50">
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="sr-only"
-                  onChange={(event) => setGalleryFiles(Array.from(event.target.files ?? []))}
-                />
-                Seleccionar múltiples imágenes
-              </label>
-
-              {galleryPreview.length > 0 ? (
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  {galleryPreview.map((preview) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={preview} alt="Vista previa galeria" className="aspect-square rounded-[8px] object-cover" src={preview} />
-                  ))}
-                </div>
-              ) : null}
-
-              {existingImages.length > 0 ? (
-                <div className="mt-4 space-y-2">
-                  <p className="text-[11px] uppercase tracking-[0.12em] text-text-light">Imágenes actuales</p>
-                  {existingImages.map((image) => (
-                    <div key={image.id} className="flex items-center justify-between rounded-[8px] border border-border px-3 py-2">
-                      <a className="truncate text-sm text-text-mid underline" href={image.url} rel="noreferrer" target="_blank">
-                        {image.url}
-                      </a>
-                      <button
-                        className="rounded-[8px] border border-error/30 px-3 py-[6px] text-[12px] text-error"
-                        onClick={() => deleteImage(image.id)}
-                        type="button"
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </section>
-        </div>
-      </div>
-
-      {error ? <p className="text-sm text-error">{error}</p> : null}
-
-      <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-        >
-          {loading ? "Guardando..." : "Guardar encuentro"}
-        </button>
-        <Link href="/admin/encuentros" className="rounded-[8px] border border-border px-4 py-2 text-sm text-text-mid">
+    <form className="encounter-admin-form" onSubmit={form.handleSubmit(onSubmit)}>
+      <div className="encounter-form-actions encounter-form-actions--top">
+        <Link className="encounter-button encounter-button--secondary" href="/admin/encuentros">
           Cancelar
         </Link>
+        <button className="encounter-button encounter-button--primary" disabled={loading} type="submit">
+          {loading ? "Guardando..." : mode === "create" ? "Crear encuentro" : "Guardar cambios"}
+        </button>
+      </div>
+
+      <section className="editor-card encounter-form-section">
+        <div className="editor-card-header encounter-section-header">
+          <div>
+            <p className="encounter-section-kicker">Contenido</p>
+            <h2>Información principal</h2>
+            <p>Datos que se mostrarán en la crónica pública del encuentro.</p>
+          </div>
+        </div>
+
+        <div className="editor-card-body encounter-information-grid">
+          <label className="encounter-field encounter-field--title">
+            <span>Título</span>
+            <input {...form.register("title")} />
+          </label>
+
+          <label className="encounter-field encounter-field--date">
+            <span>Fecha del evento</span>
+            <input type="date" {...form.register("event_date")} />
+          </label>
+
+          <label className="encounter-field">
+            <span>Lugar / ubicación</span>
+            <input {...form.register("location")} />
+          </label>
+
+          <label className="encounter-field">
+            <span>URL del video</span>
+            <input placeholder="https://youtube.com/..." type="url" {...form.register("video_url")} />
+          </label>
+
+          <label className="encounter-field encounter-field--full">
+            <span>Extracto</span>
+            <textarea className="encounter-textarea--excerpt" {...form.register("excerpt")} />
+            <small>Resumen breve que introduce el encuentro en su tarjeta y página pública.</small>
+          </label>
+
+          <label className="encounter-field encounter-field--full">
+            <span>Descripción / crónica</span>
+            <textarea className="encounter-textarea--description" {...form.register("description")} />
+          </label>
+
+          <label className="encounter-field encounter-field--order">
+            <span>Orden de aparición</span>
+            <input min={0} type="number" {...form.register("display_order", { valueAsNumber: true })} />
+            <small>Los números menores aparecen primero.</small>
+          </label>
+
+          <div className="encounter-visibility-control">
+            <AdminToggle
+              checked={isActive}
+              label="Visible en la galería de encuentros"
+              onChange={(checked) => form.setValue("is_active", checked)}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="editor-card encounter-form-section">
+        <div className="editor-card-header encounter-section-header encounter-media-header">
+          <div>
+            <p className="encounter-section-kicker">Multimedia</p>
+            <h2>Imágenes del encuentro</h2>
+            <p>Administra la portada principal y las fotografías de la galería.</p>
+          </div>
+          <span className="encounter-image-count">
+            {existingImages.length + galleryFiles.length} {existingImages.length + galleryFiles.length === 1 ? "imagen" : "imágenes"}
+          </span>
+        </div>
+
+        <div className="editor-card-body encounter-media-body">
+          <div className="encounter-cover-section">
+            <div>
+              <h3>Portada</h3>
+              <p>Imagen principal de la tarjeta y del encabezado del encuentro.</p>
+            </div>
+
+            <div className="encounter-cover-layout">
+              <div className="encounter-cover-preview">
+                {coverPreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img alt="Portada actual del encuentro" src={coverPreview} />
+                ) : (
+                  <div className="encounter-cover-empty">Sin portada seleccionada</div>
+                )}
+              </div>
+
+              <AdminUploadZone
+                className="encounter-cover-upload"
+                hint="JPG, PNG o WebP. Recomendado 1200 × 800 px."
+                label={coverPreview ? "Reemplazar portada" : "Seleccionar portada"}
+                onFileSelect={setCoverImageFile}
+              />
+            </div>
+          </div>
+
+          <div className="encounter-gallery-section">
+            <div className="encounter-gallery-heading">
+              <div>
+                <h3>Galería de fotos</h3>
+                <p>Selecciona varias imágenes para incorporarlas al encuentro.</p>
+              </div>
+            </div>
+
+            <label className="encounter-gallery-upload">
+              <input
+                accept="image/*"
+                className="sr-only"
+                multiple
+                onChange={(event) => setGalleryFiles(Array.from(event.target.files ?? []))}
+                type="file"
+              />
+              <span className="encounter-gallery-upload-icon" aria-hidden="true">+</span>
+              <span>
+                <strong>Seleccionar múltiples imágenes</strong>
+                <small>JPG, PNG o WebP. Puedes seleccionar varias fotografías a la vez.</small>
+              </span>
+            </label>
+
+            {existingImages.length > 0 || galleryPreview.length > 0 ? (
+              <div className="encounter-gallery-grid">
+                {existingImages.map((image, index) => (
+                  <figure className="encounter-gallery-item" key={image.id}>
+                    <a href={image.url} rel="noreferrer" target="_blank" title="Abrir imagen en tamaño completo">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img alt={`Fotografía ${index + 1} del encuentro`} src={image.url} />
+                    </a>
+                    <span className="encounter-gallery-index">{index + 1}</span>
+                    <button
+                      aria-label={`Eliminar fotografía ${index + 1}`}
+                      className="encounter-gallery-remove"
+                      disabled={deletingImageId === image.id}
+                      onClick={() => deleteImage(image.id)}
+                      title="Eliminar imagen"
+                      type="button"
+                    >
+                      {deletingImageId === image.id ? "…" : "×"}
+                    </button>
+                  </figure>
+                ))}
+
+                {galleryPreview.map((preview, index) => (
+                  <figure className="encounter-gallery-item encounter-gallery-item--pending" key={preview}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img alt={`Nueva fotografía ${index + 1}`} src={preview} />
+                    <span className="encounter-gallery-index">Nueva</span>
+                    <button
+                      aria-label={`Quitar nueva fotografía ${index + 1}`}
+                      className="encounter-gallery-remove"
+                      onClick={() => removePendingGalleryFile(index)}
+                      title="Quitar de la selección"
+                      type="button"
+                    >
+                      ×
+                    </button>
+                  </figure>
+                ))}
+              </div>
+            ) : (
+              <div className="encounter-gallery-empty">
+                La galería está vacía. Selecciona fotografías para comenzar.
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {error ? <p className="encounter-form-error" role="alert">{error}</p> : null}
+
+      <div className="encounter-form-actions encounter-form-actions--bottom">
+        <Link className="encounter-button encounter-button--secondary" href="/admin/encuentros">
+          Cancelar
+        </Link>
+        <button className="encounter-button encounter-button--primary" disabled={loading} type="submit">
+          {loading ? "Guardando..." : mode === "create" ? "Crear encuentro" : "Guardar cambios"}
+        </button>
       </div>
     </form>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -28,7 +28,6 @@ type SidebarItem = {
   label: string;
   icon: SidebarIconName;
   exact?: boolean;
-  badge?: number;
 };
 
 const sections: { label: string; items: SidebarItem[] }[] = [
@@ -115,47 +114,13 @@ export interface AdminSidebarProps {
 
 export function AdminSidebar({ adminName }: AdminSidebarProps) {
   const pathname = usePathname();
-  const [pendingOrders, setPendingOrders] = useState<number>(0);
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function loadStats() {
-      try {
-        const response = await fetch("/api/admin/pedidos/stats", { cache: "no-store" });
-        if (!response.ok) {
-          return;
-        }
-
-        const payload = (await response.json()) as {
-          data?: { byStatus?: { pending?: number } };
-        };
-
-        if (!cancelled) {
-          setPendingOrders(payload.data?.byStatus?.pending ?? 0);
-        }
-      } catch {
-        if (!cancelled) {
-          setPendingOrders(0);
-        }
-      }
+    if (window.matchMedia("(max-width: 700px)").matches) {
+      setCollapsed(true);
     }
-
-    void loadStats();
-    return () => {
-      cancelled = true;
-    };
   }, []);
-
-  const itemsWithBadges = useMemo(() => {
-    return sections.map((section) => ({
-      ...section,
-      items: section.items.map((item) =>
-        item.href === "/admin/pedidos" ? { ...item, badge: pendingOrders || undefined } : item,
-      ),
-    }));
-  }, [pendingOrders]);
 
   const width = collapsed ? 60 : 220;
   const initials = adminName.slice(0, 1).toUpperCase();
@@ -250,7 +215,7 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
           padding: "12px 0",
         }}
       >
-        {itemsWithBadges.filter((section) => section.items.length > 0).map((section) => (
+        {sections.filter((section) => section.items.length > 0).map((section) => (
           <div key={section.label} style={{ marginBottom: 4 }}>
             <p
               style={{
@@ -306,21 +271,6 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
                       }}
                     >
                       <SidebarIcon name={item.icon} size={16} />
-                      {item.badge && collapsed ? (
-                        <span
-                          aria-hidden="true"
-                          style={{
-                            position: "absolute",
-                            top: -3,
-                            right: -4,
-                            width: 7,
-                            height: 7,
-                            borderRadius: 999,
-                            background: "var(--gold)",
-                            border: "1.5px solid #17140f",
-                          }}
-                        />
-                      ) : null}
                     </span>
                     <span
                       style={{
@@ -338,23 +288,6 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
                     >
                       {item.label}
                     </span>
-                    {item.badge && !collapsed ? (
-                      <span
-                        style={{
-                          marginLeft: "auto",
-                          background: "var(--gold)",
-                          color: "var(--moss)",
-                          fontSize: 10.5,
-                          fontWeight: 700,
-                          lineHeight: 1,
-                          padding: "3px 8px",
-                          borderRadius: 999,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {item.badge}
-                      </span>
-                    ) : null}
                   </Link>
                 );
               })}
