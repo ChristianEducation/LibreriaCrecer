@@ -1,12 +1,13 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Encuentros — Público", () => {
-  test("el índice de encuentros carga correctamente", async ({ page }) => {
+  test("el índice redirige al bloque integrado en Conócenos", async ({ page }) => {
     await page.goto("/encuentros");
-    
-    // Debería verse el header de la sección
-    await expect(page.locator("h1")).toContainText(/Encuentros/i);
-    await expect(page.locator("h1").locator("..")).toContainText(/Crecer/i);
+
+    await expect(page).toHaveURL(/\/nosotros#encuentros$/);
+    const section = page.locator("#encuentros");
+    await expect(section.getByRole("heading", { name: "Encuentros Crecer" })).toBeVisible();
+    await expect(section.locator(".encounter-card")).toHaveCount(4);
   });
 
   test("un slug inexistente devuelve 404", async ({ page }) => {

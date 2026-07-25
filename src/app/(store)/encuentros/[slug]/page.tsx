@@ -74,7 +74,7 @@ export default async function EncounterPage({ params }: EncounterPageProps) {
             {encounter.title}
           </h1>
           <Link
-            href="/encuentros"
+            href="/nosotros#encuentros"
             style={{ color: "rgba(255,255,255,0.7)", fontSize: "13px", textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.3)", paddingBottom: "2px" }}
             className="transition-colors hover:text-white"
           >

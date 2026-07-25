@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import type { CatalogProduct } from "@/features/catalogo/types";
 import { ProductCard } from "./ProductCard";
+import { ScrollReveal } from "@/shared/ui/ScrollReveal";
 
 type RecentProductsCarouselProps = {
   products: CatalogProduct[];
@@ -30,12 +32,18 @@ function EmptyPlaceholder() {
 export function RecentProductsCarousel({ products }: RecentProductsCarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prefersReducedMotion = useReducedMotion();
   
   const [isHovered, setIsHovered] = useState(false);
   const isCarousel = products.length >= 6;
 
   // Función de scroll suave personalizada para un deslizamiento más lento y elegante (800ms)
   const customSmoothScroll = useCallback((container: HTMLElement, targetLeft: number, duration: number) => {
+    if (prefersReducedMotion) {
+      container.scrollLeft = targetLeft;
+      return;
+    }
+
     const startLeft = container.scrollLeft;
     const distance = targetLeft - startLeft;
     let startTime: number | null = null;
@@ -58,7 +66,7 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
     }
 
     requestAnimationFrame(animation);
-  }, []);
+  }, [prefersReducedMotion]);
 
   // Rotación automática: avanza 1 ítem a la vez suavemente
   const scrollNextItem = useCallback(() => {
@@ -82,10 +90,10 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
   }, [customSmoothScroll]);
 
   const startAutoRotate = useCallback(() => {
-    if (!isCarousel || isHovered) return;
+    if (!isCarousel || isHovered || prefersReducedMotion) return;
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(scrollNextItem, 3500); // Subimos a 3.5s por la animación larga
-  }, [isCarousel, isHovered, scrollNextItem]);
+  }, [isCarousel, isHovered, prefersReducedMotion, scrollNextItem]);
 
   const stopAutoRotate = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -140,21 +148,25 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
     <section className="page-px bg-white" id="recien-llegados" style={{ paddingTop: "8rem", paddingBottom: "8rem" }}>
       <div className="storefront-container">
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "1.5rem", marginBottom: "3rem" }}>
+        <div className="recent-products-heading" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "1.5rem" }}>
+          <ScrollReveal>
           <div>
             <p className="eyebrow" style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "10px" }}>
-              <span style={{ width: "24px", height: "1px", background: "var(--gold)", flexShrink: 0, display: "inline-block" }} />
+              <span className="motion-line" style={{ width: "24px", height: "1px", background: "var(--gold)", flexShrink: 0, display: "inline-block" }} />
               Recién llegados
             </p>
             <h2 className="heading-xl font-normal" style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", color: "var(--moss)" }}>
               Lo último en tienda
             </h2>
           </div>
+          </ScrollReveal>
 
+          <ScrollReveal delayMs={120}>
           <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
             {/* Controles Desktop (Ocultos en mobile) */}
             {isCarousel && (
-              <div className="hidden lg:flex" style={{ gap: "8px" }}>
+              <div className="hidden lg:flex" style={{ gap: "8px", alignItems: "center" }}>
+                <span aria-hidden="true" className="recent-carousel-progress" />
                 <button 
                   onClick={() => handleManualNav("prev")} 
                   className="carousel-nav-btn" 
@@ -185,6 +197,7 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
               Ver todos →
             </Link>
           </div>
+          </ScrollReveal>
         </div>
 
         {/* Carrusel Unificado: Scroll nativo (táctil en móvil, JS en desktop) */}
@@ -207,6 +220,7 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
               slug={product.slug} 
               title={product.title} 
               variant="clean" 
+              className="recent-product-card"
             />
           ))}
         </div>

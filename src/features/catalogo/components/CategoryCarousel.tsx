@@ -1,4 +1,5 @@
 import type { CatalogCategory } from "@/features/catalogo/types";
+import { ScrollReveal } from "@/shared/ui/ScrollReveal";
 
 import { CategoryCard } from "./CategoryCard";
 
@@ -12,12 +13,12 @@ export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselPr
     <section className="page-px bg-beige-warm" id="categorias" style={{ paddingTop: "8rem", paddingBottom: "8rem" }}>
       <div className="storefront-container">
         {/* Bloque de título (fuera de la grilla) */}
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", marginBottom: "3rem" }}>
+        <ScrollReveal className="landing-section-heading">
           <p
             className="eyebrow"
             style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}
           >
-            <span style={{ width: "20px", height: "1px", background: "var(--gold)", flexShrink: 0, display: "inline-block" }} />
+            <span className="motion-line" style={{ width: "20px", height: "1px", background: "var(--gold)", flexShrink: 0, display: "inline-block" }} />
             Explorar
           </p>
           <h2
@@ -26,7 +27,7 @@ export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselPr
           >
             Categorías
           </h2>
-        </div>
+        </ScrollReveal>
 
         {/* Carrusel móvil / Grilla desktop */}
         <div className="category-carousel-wrapper">
@@ -35,16 +36,22 @@ export function CategoryCarousel({ categories, panoramaUrl }: CategoryCarouselPr
             <p style={{ fontSize: "13px", color: "var(--text-light)", gridColumn: "1 / -1" }}>No hay categorías disponibles.</p>
           ) : (
             categories.map((cat, index) => (
-              <CategoryCard
-                imageUrl={cat.imageUrl}
+              <ScrollReveal
+                className="category-reveal-item"
+                delayMs={Math.min(index, 5) * 65}
                 key={cat.id}
-                name={cat.name}
-                panoramaIndex={index}
-                panoramaTotal={categories.length}
-                panoramaUrl={panoramaUrl ?? null}
-                productCount={cat.productCount}
-                slug={cat.slug}
-              />
+                variant="scale-soft"
+              >
+                <CategoryCard
+                  imageUrl={cat.imageUrl}
+                  name={cat.name}
+                  panoramaIndex={index}
+                  panoramaTotal={categories.length}
+                  panoramaUrl={panoramaUrl ?? null}
+                  productCount={cat.productCount}
+                  slug={cat.slug}
+                />
+              </ScrollReveal>
             ))
           )}
           </div>

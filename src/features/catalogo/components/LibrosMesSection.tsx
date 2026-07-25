@@ -7,6 +7,7 @@ import Link from "next/link";
 import type { CuratedProduct } from "@/features/catalogo/types";
 import type { LibrosMesViewModel } from "@/features/catalogo/view-models/libros-mes-view-model";
 import { useScrollReveal } from "@/shared/hooks";
+import { ScrollReveal } from "@/shared/ui/ScrollReveal";
 import { formatCLP } from "@/shared/utils/formatters";
 
 type LibrosMesSectionProps = {
@@ -43,17 +44,18 @@ function SliderChevron({ direction }: { direction: "prev" | "next" }) {
   );
 }
 
-function BookTile({ item }: { item: CuratedProduct }) {
+function BookTile({ item, revealDelayMs }: { item: CuratedProduct; revealDelayMs: number }) {
   const product = item.product;
   const price = product.salePrice && product.salePrice < product.price ? product.salePrice : product.price;
   const revealRef = useScrollReveal<HTMLAnchorElement>();
 
   return (
     <Link
-      className="libros-mes-card reveal group block shrink-0 cursor-pointer"
+      className="libros-mes-card reveal reveal-depth group block shrink-0 cursor-pointer"
       data-libros-card
       href={`/productos/${product.slug}`}
       ref={revealRef}
+      style={{ transitionDelay: `${revealDelayMs}ms` }}
     >
       <div className="relative aspect-[2/3] overflow-hidden rounded-[2px] bg-[linear-gradient(145deg,var(--beige-warm),var(--beige-mid))] shadow-[4px_6px_24px_rgba(58,48,1,0.12)] transition-[transform,box-shadow] duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1.5 group-hover:shadow-[6px_12px_32px_rgba(58,48,1,0.22)]">
         {product.mainImageUrl ? (
@@ -130,12 +132,12 @@ export function LibrosMesSection({ items, copy }: LibrosMesSectionProps) {
   return (
     <section className="page-px bg-white" id="libros-mes" style={{ paddingTop: "9rem", paddingBottom: "10rem" }}>
         <div className="storefront-container libros-mes-grid">
-          <div>
+          <ScrollReveal>
             <p
               className="eyebrow libros-mes-eyebrow flex items-center gap-2"
               style={{ marginBottom: "0.75rem" }}
             >
-              <span className="libros-mes-eyebrow-line h-px shrink-0" style={{ background: "var(--gold)" }} />
+              <span className="motion-line libros-mes-eyebrow-line h-px shrink-0" style={{ background: "var(--gold)" }} />
               SELECCIÓN ESPECIAL
             </p>
             <h2 className="heading-xl libros-mes-title font-normal" style={{ fontFamily: "var(--font-castoro)", fontSize: "clamp(1.75rem, 3vw, 2.75rem)", fontWeight: 400, color: "var(--moss)" }}>
@@ -149,9 +151,9 @@ export function LibrosMesSection({ items, copy }: LibrosMesSectionProps) {
             <p className="libros-mes-body text-text-light" style={{ fontFamily: "var(--font-inter)" }}>
               {body}
             </p>
-          </div>
+          </ScrollReveal>
 
-          <div className="libros-mes-slider">
+          <ScrollReveal className="libros-mes-slider" delayMs={120}>
             {items.length > 0 && (
               <button
                 aria-label="Anterior"
@@ -170,8 +172,12 @@ export function LibrosMesSection({ items, copy }: LibrosMesSectionProps) {
                   className="libros-mes-track overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                   ref={scrollRef}
                 >
-                  {items.map((item) => (
-                    <BookTile item={item} key={item.id} />
+                  {items.map((item, index) => (
+                    <BookTile
+                      item={item}
+                      key={item.id}
+                      revealDelayMs={Math.min(index, 5) * 65}
+                    />
                   ))}
                 </div>
               )}
@@ -186,7 +192,7 @@ export function LibrosMesSection({ items, copy }: LibrosMesSectionProps) {
                 <SliderChevron direction="next" />
               </button>
             )}
-          </div>
+          </ScrollReveal>
         </div>
     </section>
   );

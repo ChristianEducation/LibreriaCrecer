@@ -5,10 +5,40 @@ import { asc, eq } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
 import { aboutSections } from "@/integrations/drizzle/schema";
+import { EncounterCards } from "@/features/encuentros/components/EncounterCards";
+import { getPublishedEncounters } from "@/features/encuentros/services/encounter-service";
 import { AboutIcon } from "@/shared/ui/AboutIcon";
 import type { AboutOfferingIcon } from "@/shared/config/about";
 
 type AboutSection = typeof aboutSections.$inferSelect;
+
+const encounterPhotos = [
+  {
+    alt: "Persona explorando libros durante un encuentro de Librería Crecer",
+    className: "about-encounter-photo--reading",
+    src: "/images/nosotros/encuentro-lectura.webp",
+  },
+  {
+    alt: "Comunidad compartiendo dentro de Librería Crecer",
+    className: "about-encounter-photo--community",
+    src: "/images/nosotros/encuentro-comunidad.webp",
+  },
+  {
+    alt: "Personas conversando durante un encuentro de Librería Crecer",
+    className: "about-encounter-photo--dialogue",
+    src: "/images/nosotros/encuentro-dialogo.webp",
+  },
+  {
+    alt: "Asistentes reunidos en un encuentro de Librería Crecer",
+    className: "about-encounter-photo--gathering",
+    src: "/images/nosotros/encuentro-reunion.webp",
+  },
+  {
+    alt: "Abrazo entre asistentes de un encuentro de Librería Crecer",
+    className: "about-encounter-photo--embrace",
+    src: "/images/nosotros/encuentro-abrazo.webp",
+  },
+] as const;
 
 export const metadata: Metadata = {
   title: "Conócenos",
@@ -32,7 +62,10 @@ async function getAboutSections(): Promise<AboutSection[]> {
 }
 
 export default async function NosotrosPage() {
-  const allSections = await getAboutSections();
+  const [allSections, encounters] = await Promise.all([
+    getAboutSections(),
+    getPublishedEncounters().catch(() => []),
+  ]);
   const stories = allSections.filter((s) => s.sectionType === "story");
   const offerings = allSections.filter((s) => s.sectionType === "offering");
 
@@ -61,45 +94,93 @@ export default async function NosotrosPage() {
               Librería Católica · Antofagasta
             </p>
             <h1 className="about-hero-title">
-              Un llamado que se transformó en un <em>Sí</em>
+              Promovemos el crecimiento integral de la persona
             </h1>
             <p className="about-hero-description">
-              Librería Crecer nace en Antofagasta como respuesta al cierre del principal referente católico de la ciudad, y a la necesidad que seguía viva: la búsqueda de sentido, el deseo de profundizar la fe, la formación y el anhelo de crecer que habita en toda persona.
+              …ofreciendo libros, experiencias y espacios de encuentro que favorecen el diálogo
+              entre la fe, la cultura, la educación y las distintas dimensiones del saber humano.
             </p>
           </div>
         </div>
       </section>
 
       <section
-        className="page-px about-manifesto-section bg-white"
+        aria-label="Nuestra comunidad"
+        className="page-px about-community-section"
         style={{ paddingTop: "4.5rem", paddingBottom: "4.5rem" }}
       >
-        <div className="about-manifesto">
-          <p className="about-eyebrow about-eyebrow--dark">
-            <span aria-hidden="true" />
-            Nuestro propósito
-          </p>
-          <p className="about-manifesto-lead">
-            Nos inspira el deseo de colaborar con la misión evangelizadora, promoviendo una fe madura, abierta y dialogante que anuncie a Jesucristo en nuestro tiempo.
-          </p>
-          <p className="about-manifesto-copy">
-            Creemos que cada persona posee una dignidad única e irrepetible y está llamada a crecer a través de la reflexión, el aprendizaje y la búsqueda de aquellas preguntas que dan sentido y profundidad a la vida.
-          </p>
+        <div className="about-encounter-gallery">
+          {encounterPhotos.map((photo) => (
+            <figure
+              className={`about-encounter-photo ${photo.className}`}
+              key={photo.src}
+            >
+              <Image
+                alt={photo.alt}
+                fill
+                sizes="(max-width: 767px) 58vw, (max-width: 1100px) 24vw, 320px"
+                src={photo.src}
+              />
+            </figure>
+          ))}
         </div>
       </section>
+
+      <section
+        className="page-px about-purpose-section"
+        style={{ paddingTop: "5rem", paddingBottom: "5rem" }}
+      >
+        <div className="about-purpose-layout">
+          <div className="about-purpose-closing">
+            <p className="about-eyebrow about-eyebrow--dark">
+              <span aria-hidden="true" />
+              Nuestro propósito
+            </p>
+            <p>
+              Queremos ser un lugar donde la fe dialogue con la cultura, la educación y las grandes
+              preguntas del ser humano, promoviendo espacios donde los libros se transformen en
+              encuentros y caminos de crecimiento.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {encounters.length > 0 ? (
+        <section
+          className="page-px about-encounters-section"
+          id="encuentros"
+          style={{ paddingTop: "5rem", paddingBottom: "5.5rem" }}
+        >
+          <div className="about-encounters-heading">
+            <p className="about-eyebrow about-eyebrow--dark">
+              <span aria-hidden="true" />
+              Nuestra comunidad
+            </p>
+            <h2>Encuentros Crecer</h2>
+            <p>
+              Revive las jornadas que han convertido los libros, la conversación y la fe en
+              experiencias compartidas.
+            </p>
+          </div>
+
+          <EncounterCards encounters={encounters} />
+        </section>
+      ) : null}
 
       {/* BLOQUE NUEVO: Tarjetas de oferta */}
       {offerings.length > 0 && (
         <section
-          className="page-px bg-beige"
+          className="page-px about-offerings-section"
           style={{ paddingTop: "5rem", paddingBottom: "5rem" }}
         >
-          <div style={{ maxWidth: "1120px", marginInline: "auto", marginBottom: "3rem" }}>
-            <p className="about-eyebrow about-eyebrow--dark" style={{ justifyContent: "center" }}>
+          <div style={{ maxWidth: "1120px", marginInline: "auto", marginBottom: "2.5rem" }}>
+            <p
+              className="about-eyebrow about-eyebrow--dark about-offerings-eyebrow"
+              style={{ justifyContent: "center" }}
+            >
               <span aria-hidden="true" />
               Lo que hacemos
             </p>
-            <h2 className="text-center font-serif text-[2.5rem] text-moss mb-2">Queremos ofrecer</h2>
           </div>
           
           <div className="about-offerings-grid">
@@ -154,7 +235,7 @@ export default async function NosotrosPage() {
               style={{
                 paddingTop: "5.75rem",
                 paddingBottom: "5.75rem",
-                background: isEven ? "var(--beige)" : "var(--white)",
+                background: isEven ? "var(--white)" : "var(--beige)",
               }}
             >
               <div className={imageOnRight ? "about-story-grid" : "about-story-grid about-story-grid--image-left"}>
@@ -195,7 +276,7 @@ export default async function NosotrosPage() {
         style={{
           paddingTop: "5rem",
           paddingBottom: "5.5rem",
-          background: (stories.length === 0 || stories.length % 2 !== 0) ? "var(--white)" : "var(--beige)"
+          background: stories.length % 2 !== 0 ? "var(--beige)" : "var(--white)"
         }}
       >
         <div className="about-cta">

@@ -53,13 +53,12 @@ export function CategoryCard({
           aspectRatio: "3/2",
           overflow: "hidden",
           borderRadius: "var(--radius-sm)",
-          transition: "transform 0.3s ease",
           textDecoration: "none",
         }}
-        className="hover:scale-[1.02]"
+        className="category-motion-card"
       >
         {/* Background */}
-        <div style={{ position: "absolute", inset: 0 }}>
+        <div className="category-motion-media" style={{ position: "absolute", inset: 0 }}>
           {panoramaUrl ? (
             <div
               className={hasPanorama ? `puzzle-${slug}` : ""}
@@ -89,10 +88,10 @@ export function CategoryCard({
         </div>
 
         {/* Overlay */}
-        <div style={{ position: "absolute", inset: 0, background: "rgba(58,48,1,0.35)" }} />
+        <div className="category-motion-overlay" style={{ position: "absolute", inset: 0, background: "rgba(58,48,1,0.35)" }} />
 
         {/* Content */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px" }}>
+        <div className="category-motion-copy" style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px" }}>
           <p style={{ fontFamily: "var(--font-serif)", fontSize: "16px", fontWeight: 400, color: "white", lineHeight: 1.3, marginBottom: productCount !== undefined ? "4px" : 0 }}>
             {name}
           </p>

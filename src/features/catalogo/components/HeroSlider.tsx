@@ -6,6 +6,7 @@ import Link from "next/link";
 import { cx } from "class-variance-authority";
 
 import { BlurFade } from "@/shared/ui/BlurFade";
+import { useReducedMotion } from "framer-motion";
 import type { HeroCtaPosition, HeroTextAlign, HeroTextPosition } from "@/shared/config/landing";
 import type {
   HeroOverlayVariantViewModel,
@@ -104,9 +105,10 @@ function HeroNavChevron({ direction }: { direction: "left" | "right" }) {
 export function HeroSlider({ data }: HeroSliderProps) {
   const items = useMemo(() => data.slides, [data.slides]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
-    if (items.length <= 1) {
+    if (items.length <= 1 || prefersReducedMotion) {
       return;
     }
 
@@ -115,7 +117,7 @@ export function HeroSlider({ data }: HeroSliderProps) {
     }, 6500);
 
     return () => window.clearInterval(intervalId);
-  }, [items.length]);
+  }, [items.length, prefersReducedMotion]);
 
   useEffect(() => {
     if (activeIndex >= items.length) {
@@ -162,13 +164,13 @@ export function HeroSlider({ data }: HeroSliderProps) {
     <section className="hero-full">
       <div className="relative flex h-full w-full items-center justify-center bg-moss text-center">
         {activeSlide.imageUrl ? (
-          <picture>
+          <picture className="hero-slide-picture" key={activeSlide.id}>
             {activeSlide.mobileImageUrl ? (
               <source media="(max-width: 768px)" srcSet={activeSlide.mobileImageUrl} />
             ) : null}
             <Image
               alt={activeSlide.title ?? "Hero principal"}
-              className="object-cover transition-transform duration-[8000ms] ease-out"
+              className="hero-slide-image object-cover"
               fill
               priority
               sizes="100vw"
@@ -177,13 +179,20 @@ export function HeroSlider({ data }: HeroSliderProps) {
           </picture>
         ) : null}
 
-        {overlayStyle ? <div className="absolute inset-0" style={overlayStyle} /> : null}
+        {overlayStyle ? (
+          <div
+            className="hero-overlay-enter absolute inset-0"
+            key={`overlay-${activeSlide.id}`}
+            style={overlayStyle}
+          />
+        ) : null}
         <div className="absolute inset-x-0 top-0 h-40 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.08),transparent)]" />
 
         {activeSlide.showContent ? (
           <div className={cx("hero-content-shell absolute inset-0 z-[2] flex items-center", justifyClass)}>
             <div
               className={cx("hero-copy flex w-full flex-col", blockAlignClass)}
+              key={activeSlide.id}
               style={{ maxWidth: "560px", color: textColor }}
             >
               {data.eyebrow ? (
@@ -269,9 +278,9 @@ export function HeroSlider({ data }: HeroSliderProps) {
 
         {ctaIsLink && activeSlide.linkUrl ? (
           <div className={cx("absolute inset-0 z-[2] flex p-6 md:p-10 lg:p-14 pointer-events-none", CTA_ANCHOR[activeSlide.ctaPosition])}>
-            <BlurFade delay={0.55}>
+            <BlurFade delay={0.55} key={`cta-${activeSlide.id}`}>
               <Link
-                className="hero-cta pointer-events-auto inline-flex items-center gap-2 uppercase tracking-[0.14em] transition-opacity duration-200 hover:opacity-80"
+                className="hero-cta hero-cta-motion pointer-events-auto inline-flex items-center gap-2 uppercase tracking-[0.14em]"
                 href={activeSlide.linkUrl}
                 style={{
                   background: activeSlide.ctaBgColor ?? "transparent",
@@ -329,7 +338,8 @@ export function HeroSlider({ data }: HeroSliderProps) {
                 <button
                   aria-label={`Ir al slide ${index + 1}`}
                   className={cx(
-                    "h-[10px] w-[10px] rounded-full border transition-all duration-300 md:h-[11px] md:w-[11px]",
+                    "hero-slide-dot h-[10px] w-[10px] rounded-full border md:h-[11px] md:w-[11px]",
+                    index === activeIndex ? "hero-slide-dot--active" : "",
                     index === activeIndex
                       ? "border-gold bg-gold shadow-[0_0_0_4px_rgba(217,186,30,0.18)]"
                       : "border-white/55 bg-white/38 hover:border-white/75 hover:bg-white/58",
