@@ -15,7 +15,8 @@
     "seed:products": "npx tsx src/scripts/seed-products.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:payments": "node --import tsx --test tests-unit/getnet-notification.test.ts tests-unit/getnet-types.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

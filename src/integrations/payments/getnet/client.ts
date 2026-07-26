@@ -1,4 +1,4 @@
-import { getnetConfig } from "./config";
+import { assertGetnetRuntimeConfig, getnetConfig } from "./config";
 import { buildGetnetAuth } from "./auth";
 import type {
   GetnetCreateSessionParams,
@@ -13,7 +13,11 @@ function normalizeEndpoint(path: string) {
   return `${getnetConfig.endpoint}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-async function postGetnet<TResponse>(path: string, body: Record<string, unknown>): Promise<TResponse> {
+async function postGetnet<TResponse>(
+  path: string,
+  body: Record<string, unknown>,
+): Promise<TResponse> {
+  assertGetnetRuntimeConfig();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -31,7 +35,8 @@ async function postGetnet<TResponse>(path: string, body: Record<string, unknown>
     };
 
     if (!response.ok) {
-      const message = payload.status?.message ?? `Getnet request failed with status ${response.status}.`;
+      const message =
+        payload.status?.message ?? `Getnet request failed with status ${response.status}.`;
       throw new Error(message);
     }
 
@@ -71,7 +76,9 @@ export async function getPaymentStatus(requestId: number): Promise<GetnetPayment
   });
 }
 
-export async function reversePayment(internalReference: string): Promise<GetnetReversePaymentResponse> {
+export async function reversePayment(
+  internalReference: string,
+): Promise<GetnetReversePaymentResponse> {
   return postGetnet<GetnetReversePaymentResponse>("/api/reverse", {
     auth: buildGetnetAuth(),
     internalReference,

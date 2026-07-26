@@ -5,18 +5,18 @@ export type GetnetAuthObject = {
   seed: string;
 };
 
-export type GetnetStatusCode = "OK" | "FAILED";
-
 export type GetnetSessionStatus =
+  | "OK"
   | "APPROVED"
   | "REJECTED"
   | "PENDING"
   | "FAILED"
   | "CREATED"
-  | "PARTIAL_EXPIRED";
+  | "PARTIAL_EXPIRED"
+  | "REFUNDED";
 
 export type GetnetApiStatus = {
-  status: GetnetStatusCode;
+  status: GetnetSessionStatus;
   reason?: string;
   message?: string;
   date?: string;
@@ -52,6 +52,7 @@ export type GetnetPaymentEntry = {
     date?: string;
   };
   internalReference?: string;
+  reference?: string;
   paymentMethod?: string;
   franchise?: string;
   authorization?: string;
@@ -67,10 +68,15 @@ export type GetnetPaymentEntry = {
 
 export type GetnetPaymentStatusResponse = {
   requestId: number;
-  status: GetnetApiStatus & { status?: GetnetSessionStatus };
+  status: GetnetApiStatus;
   request?: {
-    status?: { status?: GetnetSessionStatus };
-    payment?: GetnetPaymentEntry;
+    payment?: {
+      reference?: string;
+      amount?: {
+        currency?: string;
+        total?: number;
+      };
+    };
   };
   payment?: GetnetPaymentEntry[];
 };
@@ -82,17 +88,31 @@ export type GetnetReversePaymentResponse = {
 
 export type InternalPaymentStatus = "paid" | "cancelled" | "pending";
 
-export function mapGetnetStatusToInternal(status: GetnetSessionStatus | undefined): InternalPaymentStatus {
+export function mapGetnetStatusToInternal(
+  status: GetnetSessionStatus | undefined,
+): InternalPaymentStatus {
   switch (status) {
     case "APPROVED":
       return "paid";
     case "REJECTED":
     case "FAILED":
+    case "PARTIAL_EXPIRED":
       return "cancelled";
     case "PENDING":
     case "CREATED":
-    case "PARTIAL_EXPIRED":
+    case "OK":
+    case "REFUNDED":
     default:
       return "pending";
   }
+}
+
+export function getGetnetSessionStatus(
+  response: GetnetPaymentStatusResponse,
+): GetnetSessionStatus | undefined {
+  if (response.status?.status && response.status.status !== "OK") {
+    return response.status.status;
+  }
+
+  return response.payment?.[0]?.status?.status ?? response.status?.status;
 }

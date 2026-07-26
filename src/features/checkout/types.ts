@@ -1,12 +1,6 @@
 export type DeliveryMethod = "pickup" | "shipping";
 
-export type OrderStatus =
-  | "pending"
-  | "paid"
-  | "preparing"
-  | "shipped"
-  | "delivered"
-  | "cancelled";
+export type OrderStatus = "pending" | "paid" | "preparing" | "shipped" | "delivered" | "cancelled";
 
 export type CreateOrderItemInput = {
   productId: string;
@@ -71,7 +65,12 @@ export type ServiceErrorCode =
   | "stock_insufficient"
   | "invalid_transition"
   | "order_not_found"
-  | "validation_error";
+  | "validation_error"
+  | "invalid_payload"
+  | "invalid_signature"
+  | "payment_reference_mismatch"
+  | "payment_data_mismatch"
+  | "provider_error";
 
 export type ServiceResult<T> =
   | { success: true; data: T }
