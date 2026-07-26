@@ -6,6 +6,7 @@ import Image from "next/image";
 
 import { useCart, useCartSummary } from "@/features/carrito/hooks";
 import { useIsMobile } from "@/shared/hooks/useIsMobile";
+import { usePurchaseAvailability } from "@/shared/providers/PurchaseAvailabilityProvider";
 import { formatCLP } from "@/shared/utils/formatters";
 
 function BookIcon({ className }: { className?: string }) {
@@ -63,6 +64,7 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
   const { items, updateQuantity, removeItem } = useCart();
   const { total, totalItems, isEmpty } = useCartSummary();
   const isMobile = useIsMobile();
+  const { purchasesEnabled } = usePurchaseAvailability();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -356,7 +358,7 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
 
         <Link
           aria-disabled={isEmpty}
-          href="/checkout"
+          href={purchasesEnabled ? "/checkout" : "/carrito"}
           onClick={() => { if (!isEmpty) onClose(); }}
           style={{
             display: "block",
@@ -364,7 +366,7 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
             paddingTop: "14px",
             paddingBottom: "14px",
             borderRadius: "var(--radius-xl)",
-            background: isEmpty ? "var(--border)" : "var(--gold)",
+            background: isEmpty ? "var(--border)" : purchasesEnabled ? "var(--gold)" : "var(--moss)",
             color: "white",
             fontFamily: "var(--font-inter)",
             fontSize: "12px",
@@ -378,7 +380,7 @@ export function CartPanel({ isOpen, onClose }: CartPanelProps) {
             transition: "background 0.2s, opacity 0.2s",
           }}
         >
-          Ir al checkout
+          {purchasesEnabled ? "Ir al checkout" : "Ver carrito · compras pausadas"}
         </Link>
       </div>
     </div>

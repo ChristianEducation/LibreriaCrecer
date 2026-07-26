@@ -212,19 +212,35 @@ export function EncounterAdminForm({ mode, encounterId, initialData }: Encounter
             <input {...form.register("title")} />
           </label>
 
+          <label className="encounter-field encounter-field--location">
+            <span>Lugar / ubicación</span>
+            <input {...form.register("location")} />
+          </label>
+
           <label className="encounter-field encounter-field--date">
             <span>Fecha del evento</span>
             <input type="date" {...form.register("event_date")} />
           </label>
 
-          <label className="encounter-field">
-            <span>Lugar / ubicación</span>
-            <input {...form.register("location")} />
-          </label>
-
-          <label className="encounter-field">
+          <label className="encounter-field encounter-field--video">
             <span>URL del video</span>
             <input placeholder="https://youtube.com/..." type="url" {...form.register("video_url")} />
+          </label>
+
+          <label className="encounter-field encounter-field--order">
+            <span>Orden de aparición</span>
+            <input min={0} type="number" {...form.register("display_order", { valueAsNumber: true })} />
+          </label>
+
+          <label className="encounter-field encounter-field--visibility">
+            <span>Visible</span>
+            <div className="encounter-switch-control">
+              <AdminToggle
+                ariaLabel="Visible en la galería de encuentros"
+                checked={isActive}
+                onChange={(checked) => form.setValue("is_active", checked)}
+              />
+            </div>
           </label>
 
           <label className="encounter-field encounter-field--full">
@@ -237,20 +253,6 @@ export function EncounterAdminForm({ mode, encounterId, initialData }: Encounter
             <span>Descripción / crónica</span>
             <textarea className="encounter-textarea--description" {...form.register("description")} />
           </label>
-
-          <label className="encounter-field encounter-field--order">
-            <span>Orden de aparición</span>
-            <input min={0} type="number" {...form.register("display_order", { valueAsNumber: true })} />
-            <small>Los números menores aparecen primero.</small>
-          </label>
-
-          <div className="encounter-visibility-control">
-            <AdminToggle
-              checked={isActive}
-              label="Visible en la galería de encuentros"
-              onChange={(checked) => form.setValue("is_active", checked)}
-            />
-          </div>
         </div>
       </section>
 
@@ -287,7 +289,10 @@ export function EncounterAdminForm({ mode, encounterId, initialData }: Encounter
                 className="encounter-cover-upload"
                 hint="JPG, PNG o WebP. Recomendado 1200 × 800 px."
                 label={coverPreview ? "Reemplazar portada" : "Seleccionar portada"}
+                onClearSelection={() => setCoverImageFile(null)}
                 onFileSelect={setCoverImageFile}
+                selectedFileName={coverImageFile?.name ?? null}
+                variant="compact"
               />
             </div>
           </div>

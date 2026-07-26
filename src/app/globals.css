@@ -233,7 +233,21 @@ body {
 
 /* Sistema de layout interno del panel admin */
 .admin-main-canvas {
+  min-height: 100%;
   padding: clamp(16px, 2vw, 28px);
+  padding-bottom: clamp(12px, 1.5vw, 20px);
+}
+
+.admin-panel-layout {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+}
+
+.admin-panel-scroll {
+  min-height: 0;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
 }
 
 .admin-page-shell {
@@ -2496,7 +2510,7 @@ body {
   display: flex;
   width: min(100%, 1440px);
   flex-direction: column;
-  gap: 24px;
+  gap: 18px;
 }
 
 .encounter-form-section {
@@ -2558,7 +2572,7 @@ body {
 }
 
 .encounter-section-header {
-  padding: 20px 24px;
+  padding: 16px 20px;
 }
 
 .encounter-section-kicker {
@@ -2588,8 +2602,8 @@ body {
 .encounter-information-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 20px;
-  padding: 24px;
+  gap: 14px;
+  padding: 20px;
 }
 
 .encounter-field {
@@ -2597,23 +2611,32 @@ body {
   grid-column: span 6;
   min-width: 0;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
 }
 
 .encounter-field--title {
-  grid-column: span 9;
+  grid-column: span 5;
+}
+
+.encounter-field--location {
+  grid-column: span 4;
 }
 
 .encounter-field--date {
   grid-column: span 3;
 }
 
+.encounter-field--video {
+  grid-column: span 8;
+}
+
 .encounter-field--full {
   grid-column: 1 / -1;
 }
 
-.encounter-field--order {
-  grid-column: span 4;
+.encounter-field--order,
+.encounter-field--visibility {
+  grid-column: span 2;
 }
 
 .encounter-field > span {
@@ -2630,7 +2653,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--white);
-  padding: 11px 13px;
+  padding: 10px 12px;
   font: inherit;
   font-size: 14px;
   line-height: 1.5;
@@ -2654,11 +2677,11 @@ body {
 }
 
 .encounter-textarea--excerpt {
-  min-height: 96px;
+  min-height: 72px;
 }
 
 .encounter-textarea--description {
-  min-height: 190px;
+  min-height: 128px;
 }
 
 .encounter-field small {
@@ -2667,16 +2690,11 @@ body {
   color: var(--text-light);
 }
 
-.encounter-visibility-control {
+.encounter-switch-control {
   display: flex;
-  grid-column: span 8;
-  min-height: 68px;
+  min-height: 42px;
   align-items: center;
-  justify-content: flex-end;
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--beige);
+  justify-content: flex-start;
 }
 
 .encounter-media-header {
@@ -2764,13 +2782,95 @@ body {
   color: var(--text-light);
 }
 
-.encounter-cover-upload {
-  display: flex !important;
-  min-height: 100%;
+.admin-upload-compact {
+  display: flex;
+  min-width: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(245, 243, 232, 0.48);
+  gap: 12px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+  text-align: center;
+}
+
+.admin-upload-compact-icon {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-gold);
+  border-radius: 50%;
+  background: rgba(200, 168, 48, 0.08);
+  font-size: 20px;
+  color: var(--moss);
+}
+
+.admin-upload-compact-copy {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.admin-upload-compact-copy p {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.admin-upload-compact-copy small {
+  display: block;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-light);
+}
+
+.admin-upload-compact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.admin-upload-compact-actions button {
+  min-height: 38px;
+  cursor: pointer;
+  padding: 8px 14px;
+  border: 1px solid var(--moss);
+  border-radius: 8px;
+  background: var(--moss);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--white);
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.admin-upload-compact-actions button:hover {
+  border-color: var(--moss-mid);
+  background: var(--moss-mid);
+}
+
+.admin-upload-compact-actions .admin-upload-compact-clear {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-light);
+}
+
+.admin-upload-compact-actions .admin-upload-compact-clear:hover {
+  border-color: var(--border);
+  background: transparent;
+  color: var(--moss);
+}
+
+.encounter-cover-upload {
+  min-height: 100%;
 }
 
 .encounter-gallery-heading {
@@ -2951,12 +3051,22 @@ body {
 }
 
 @media (max-width: 900px) {
-  .encounter-field--title {
-    grid-column: span 8;
+  .encounter-field--title,
+  .encounter-field--location {
+    grid-column: span 6;
   }
 
   .encounter-field--date {
     grid-column: span 4;
+  }
+
+  .encounter-field--video {
+    grid-column: span 8;
+  }
+
+  .encounter-field--order,
+  .encounter-field--visibility {
+    grid-column: span 6;
   }
 
   .encounter-cover-layout {
@@ -2986,15 +3096,13 @@ body {
 
   .encounter-field,
   .encounter-field--title,
+  .encounter-field--location,
   .encounter-field--date,
+  .encounter-field--video,
+  .encounter-field--visibility,
   .encounter-field--full,
-  .encounter-field--order,
-  .encounter-visibility-control {
+  .encounter-field--order {
     grid-column: 1;
-  }
-
-  .encounter-visibility-control {
-    justify-content: flex-start;
   }
 
   .encounter-media-header {

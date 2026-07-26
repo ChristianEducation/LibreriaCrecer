@@ -5,6 +5,7 @@ import { cx } from "class-variance-authority";
 export interface AdminToggleProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
+  ariaLabel?: string;
   label?: string;
   description?: string;
   disabled?: boolean;
@@ -14,6 +15,7 @@ export interface AdminToggleProps {
 export function AdminToggle({
   checked,
   onChange,
+  ariaLabel,
   label,
   description,
   disabled = false,
@@ -21,12 +23,14 @@ export function AdminToggle({
 }: AdminToggleProps) {
   const toggle = (
     <button
+      aria-label={ariaLabel ?? label ?? "Cambiar estado"}
       aria-checked={checked}
       className={cx(
-        "relative h-5 w-9 rounded-full transition-colors duration-200",
+        "relative transition-colors duration-200",
         checked ? "bg-gold" : "bg-beige-mid",
         disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
       )}
+      style={{ width: "36px", height: "20px", borderRadius: "999px" }}
       onClick={() => {
         if (!disabled) {
           onChange(!checked);
@@ -36,10 +40,16 @@ export function AdminToggle({
       type="button"
     >
       <span
-        className={cx(
-          "absolute bottom-[3px] left-[3px] size-3.5 rounded-full transition-transform duration-200",
-          checked ? "translate-x-4 bg-white" : "bg-text-light",
-        )}
+        className="absolute transition-[transform,background-color] duration-200"
+        style={{
+          bottom: "3px",
+          left: "3px",
+          width: "14px",
+          height: "14px",
+          borderRadius: "999px",
+          background: checked ? "var(--white)" : "var(--text-light)",
+          transform: checked ? "translateX(16px)" : "translateX(0)",
+        }}
       />
     </button>
   );

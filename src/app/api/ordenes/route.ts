@@ -3,8 +3,19 @@ import { NextResponse } from "next/server";
 import { CreateOrderSchema } from "@/features/checkout/schemas";
 import { createOrder } from "@/features/checkout/services/order-service";
 import type { CreateOrderInput } from "@/features/checkout/types";
+import { areStorePurchasesEnabled } from "@/shared/config/store-purchases";
 
 export async function POST(request: Request) {
+  if (!areStorePurchasesEnabled()) {
+    return NextResponse.json(
+      {
+        error: "store_paused",
+        message: "Las compras están temporalmente pausadas mientras actualizamos nuestro inventario.",
+      },
+      { status: 503 },
+    );
+  }
+
   try {
     const body = await request.json();
     const parsed = CreateOrderSchema.safeParse(body);

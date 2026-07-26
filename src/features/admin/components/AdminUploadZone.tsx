@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { cx } from "class-variance-authority";
 
 export interface AdminUploadZoneProps {
@@ -8,6 +9,9 @@ export interface AdminUploadZoneProps {
   onFileSelect?: (file: File) => void;
   previewUrl?: string | null;
   className?: string;
+  variant?: "dropzone" | "compact";
+  selectedFileName?: string | null;
+  onClearSelection?: () => void;
 }
 
 export function AdminUploadZone({
@@ -16,7 +20,51 @@ export function AdminUploadZone({
   onFileSelect,
   previewUrl,
   className,
+  variant = "dropzone",
+  selectedFileName,
+  onClearSelection,
 }: AdminUploadZoneProps) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (file) {
+      onFileSelect?.(file);
+    }
+    event.target.value = "";
+    requestAnimationFrame(() => triggerRef.current?.focus({ preventScroll: true }));
+  }
+
+  if (variant === "compact") {
+    return (
+      <div className={cx("admin-upload-compact", className)}>
+        <input
+          accept="image/*"
+          className="sr-only"
+          onChange={handleFileChange}
+          ref={inputRef}
+          type="file"
+        />
+        <span aria-hidden="true" className="admin-upload-compact-icon">+</span>
+        <div className="admin-upload-compact-copy">
+          <p>{selectedFileName ? "Nueva portada seleccionada" : "Selecciona una imagen de portada"}</p>
+          <small>{selectedFileName ?? hint}</small>
+        </div>
+        <div className="admin-upload-compact-actions">
+          <button onClick={() => inputRef.current?.click()} ref={triggerRef} type="button">
+            {label ?? "Seleccionar portada"}
+          </button>
+          {selectedFileName && onClearSelection ? (
+            <button className="admin-upload-compact-clear" onClick={onClearSelection} type="button">
+              Cancelar cambio
+            </button>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <label
       className={cx(
@@ -27,12 +75,8 @@ export function AdminUploadZone({
       <input
         accept="image/*"
         className="sr-only"
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file) {
-            onFileSelect?.(file);
-          }
-        }}
+        onChange={handleFileChange}
+        ref={inputRef}
         type="file"
       />
 

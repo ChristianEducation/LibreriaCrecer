@@ -1,12 +1,35 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useCart } from "@/features/carrito/hooks";
 import { useCartHydration } from "@/features/carrito/useCartHydration";
 import { CheckoutForm } from "@/features/checkout/components";
 import type { CreateOrderSchemaInput } from "@/features/checkout/schemas";
+import { usePurchaseAvailability } from "@/shared/providers/PurchaseAvailabilityProvider";
+
+function PurchasesPausedState() {
+  return (
+    <section className="page-px" style={{ minHeight: "calc(100vh - 64px)", display: "flex", alignItems: "center", justifyContent: "center", paddingTop: "64px", paddingBottom: "64px" }}>
+      <div style={{ maxWidth: "560px", textAlign: "center" }}>
+        <p className="section-eyebrow" style={{ color: "var(--gold)", marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.14em" }}>
+          Inventario en actualización
+        </p>
+        <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(32px, 5vw, 48px)", fontWeight: 400, color: "var(--moss)", lineHeight: 1.12, marginBottom: "18px" }}>
+          Las compras están temporalmente pausadas
+        </h1>
+        <p style={{ fontSize: "14px", lineHeight: 1.8, color: "var(--text-light)", marginBottom: "28px" }}>
+          Estamos confirmando la disponibilidad de nuestros libros para que cada pedido sea preciso. Tu carrito seguirá guardado mientras terminamos esta actualización.
+        </p>
+        <Link href="/productos" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "13px 26px", borderRadius: "var(--radius-xl)", background: "var(--moss)", color: "white", textDecoration: "none", fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+          Seguir explorando
+        </Link>
+      </div>
+    </section>
+  );
+}
 
 function CheckoutSkeleton() {
   return (
@@ -21,14 +44,19 @@ export default function CheckoutPage() {
   const hydrated = useCartHydration();
   const { items, clearCart, couponCode } = useCart();
   const router = useRouter();
+  const { purchasesEnabled } = usePurchaseAvailability();
 
   useEffect(() => {
-    if (hydrated && items.length === 0) {
+    if (purchasesEnabled && hydrated && items.length === 0) {
       router.replace("/carrito");
     }
-  }, [hydrated, items.length, router]);
+  }, [hydrated, items.length, purchasesEnabled, router]);
 
   async function handleSubmit(formData: CreateOrderSchemaInput) {
+    if (!purchasesEnabled) {
+      return "Las compras están temporalmente pausadas mientras actualizamos el inventario.";
+    }
+
     try {
       const orderBody = {
         items: items.map((item) => ({
@@ -102,6 +130,10 @@ export default function CheckoutPage() {
     } catch {
       return "Ocurrio un error inesperado al procesar tu pedido.";
     }
+  }
+
+  if (!purchasesEnabled) {
+    return <PurchasesPausedState />;
   }
 
   if (!hydrated || items.length === 0) {

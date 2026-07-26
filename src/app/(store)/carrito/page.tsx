@@ -7,6 +7,7 @@ import type React from "react";
 
 import { useCart, useCartSummary } from "@/features/carrito/hooks";
 import { useCartHydration } from "@/features/carrito/useCartHydration";
+import { usePurchaseAvailability } from "@/shared/providers/PurchaseAvailabilityProvider";
 import { formatCLP } from "@/shared/utils/formatters";
 
 function BookIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
@@ -69,6 +70,7 @@ export default function CarritoPage() {
     couponDiscount,
   } = useCart();
   const { subtotal, total, isEmpty } = useCartSummary();
+  const { purchasesEnabled } = usePurchaseAvailability();
   const [couponInput, setCouponInput] = useState(couponCode ?? "");
   const [couponError, setCouponError] = useState<string | null>(null);
   const [couponFeedback, setCouponFeedback] = useState<string | null>(null);
@@ -572,8 +574,14 @@ export default function CarritoPage() {
             <div
               style={{ padding: "16px 24px", borderTop: "1px solid var(--color-border)" }}
             >
+              {!purchasesEnabled && (
+                <p style={{ marginBottom: "12px", fontSize: "12px", lineHeight: 1.55, color: "var(--color-text-light)", textAlign: "center" }}>
+                  Estamos actualizando el inventario. Tu carrito seguirá guardado, pero el checkout está temporalmente pausado.
+                </p>
+              )}
               <Link
-                href="/checkout"
+                aria-disabled={isEmpty || !purchasesEnabled}
+                href={purchasesEnabled ? "/checkout" : "/carrito"}
                 style={{
                   width: "100%",
                   padding: "14px",
@@ -590,11 +598,11 @@ export default function CarritoPage() {
                   justifyContent: "center",
                   gap: "10px",
                   textDecoration: "none",
-                  opacity: isEmpty ? 0.4 : 1,
-                  pointerEvents: isEmpty ? "none" : "auto",
+                  opacity: isEmpty || !purchasesEnabled ? 0.5 : 1,
+                  pointerEvents: isEmpty || !purchasesEnabled ? "none" : "auto",
                 }}
               >
-                Ir al checkout
+                {purchasesEnabled ? "Ir al checkout" : "Compras temporalmente pausadas"}
               </Link>
               <div
                 style={{
@@ -608,7 +616,7 @@ export default function CarritoPage() {
                   letterSpacing: "0.04em",
                 }}
               >
-                Compra 100% segura · SSL
+                {purchasesEnabled ? "Compra 100% segura · SSL" : "Puedes seguir explorando nuestra colección"}
               </div>
               <div
                 style={{

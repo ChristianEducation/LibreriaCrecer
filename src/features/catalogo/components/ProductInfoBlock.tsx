@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { CatalogProductDetail } from "@/features/catalogo/types";
 import { useCart } from "@/features/carrito/hooks";
 import { Badge } from "@/shared/ui";
+import { usePurchaseAvailability } from "@/shared/providers/PurchaseAvailabilityProvider";
 import { formatCLP } from "@/shared/utils/formatters";
 
 // Íconos inline SVG
@@ -54,6 +55,7 @@ function CheckIcon() {
 
 export function ProductInfoBlock({ product }: { product: CatalogProductDetail }) {
   const { addItem, updateQuantity } = useCart();
+  const { purchasesEnabled } = usePurchaseAvailability();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
@@ -77,7 +79,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
   }
 
   function handleAddToCart() {
-    if (!product.inStock) return;
+    if (!purchasesEnabled || !product.inStock) return;
     addItem({
       productId: product.id,
       title: product.title,
@@ -240,6 +242,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
         {/* Control de cantidad */}
         <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", flexShrink: 0, overflow: "hidden" }}>
           <button
+            disabled={!purchasesEnabled}
             onClick={decrement}
             style={{ width: "36px", height: "48px", background: "var(--beige-warm)", border: "none", borderRadius: "var(--radius-md) 0 0 var(--radius-md)", fontSize: "18px", color: "var(--text-mid)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
             type="button"
@@ -247,6 +250,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
             −
           </button>
           <input
+            disabled={!purchasesEnabled}
             max={maxQty}
             min={1}
             onChange={handleQtyChange}
@@ -255,6 +259,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
             value={qty}
           />
           <button
+            disabled={!purchasesEnabled}
             onClick={increment}
             style={{ width: "36px", height: "48px", background: "var(--beige-warm)", border: "none", borderRadius: "0 var(--radius-md) var(--radius-md) 0", fontSize: "18px", color: "var(--text-mid)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
             type="button"
@@ -265,7 +270,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
 
         {/* Botón agregar */}
         <button
-          disabled={!product.inStock}
+          disabled={!purchasesEnabled || !product.inStock}
           onClick={handleAddToCart}
           style={{
             flex: 1,
@@ -278,19 +283,25 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
             fontWeight: 500,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            cursor: product.inStock ? "pointer" : "not-allowed",
+            cursor: purchasesEnabled && product.inStock ? "pointer" : "not-allowed",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             gap: "10px",
             transition: "background 0.22s",
-            opacity: product.inStock ? 1 : 0.38,
+            opacity: purchasesEnabled && product.inStock ? 1 : 0.5,
           }}
           type="button"
         >
-          {added ? <><CheckIcon /> Agregado</> : <><CartIcon /> Añadir al carrito</>}
+          {!purchasesEnabled ? "Compras temporalmente pausadas" : added ? <><CheckIcon /> Agregado</> : <><CartIcon /> Añadir al carrito</>}
         </button>
       </div>
+
+      {!purchasesEnabled && (
+        <p style={{ marginBottom: "18px", fontSize: "12px", lineHeight: 1.6, color: "var(--text-light)" }}>
+          Estamos confirmando el inventario. Puedes seguir explorando la colección y volver pronto para comprar.
+        </p>
+      )}
 
       {/* Badges de confianza */}
       <div className="font-editorial" style={{ display: "flex", gap: "20px", flexWrap: "wrap", paddingTop: "20px", marginTop: "4px", borderTop: "1px solid var(--border)" }}>

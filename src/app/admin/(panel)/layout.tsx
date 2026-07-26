@@ -27,9 +27,9 @@ export default async function AdminPanelLayout({ children }: AdminPanelLayoutPro
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f5f4f1]">
+    <div className="admin-panel-layout flex overflow-hidden bg-[#f5f4f1]">
       <AdminSidebar adminName={admin.name} />
-      <main className="min-w-0 flex-1 overflow-y-auto bg-[#f5f4f1]">
+      <main className="admin-panel-scroll min-w-0 flex-1 overflow-y-auto bg-[#f5f4f1]">
         <div className="admin-main-canvas">
           {children}
         </div>

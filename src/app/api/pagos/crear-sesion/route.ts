@@ -2,12 +2,23 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { initializePayment } from "@/features/checkout/services/payment-service";
+import { areStorePurchasesEnabled } from "@/shared/config/store-purchases";
 
 const CreatePaymentSessionSchema = z.object({
   orderId: z.string().uuid(),
 });
 
 export async function POST(request: Request) {
+  if (!areStorePurchasesEnabled()) {
+    return NextResponse.json(
+      {
+        error: "store_paused",
+        message: "Las compras están temporalmente pausadas mientras actualizamos nuestro inventario.",
+      },
+      { status: 503 },
+    );
+  }
+
   try {
     const body = await request.json();
     const parsed = CreatePaymentSessionSchema.safeParse(body);

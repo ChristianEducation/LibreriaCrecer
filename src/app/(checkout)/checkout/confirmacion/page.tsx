@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
+import { usePurchaseAvailability } from "@/shared/providers/PurchaseAvailabilityProvider";
 import { BrandLoader } from "@/shared/ui/BrandLoader";
 
 import { useCart } from "@/features/carrito/hooks";
@@ -45,6 +46,7 @@ function ConfirmacionContent() {
 
   const router = useRouter();
   const { addItem, updateQuantity } = useCart();
+  const { purchasesEnabled } = usePurchaseAvailability();
 
   const [status, setStatus] = useState<OrderStatus>(initialStatus);
   const [timedOut, setTimedOut] = useState(false);
@@ -56,7 +58,7 @@ function ConfirmacionContent() {
   const [retryError, setRetryError] = useState<string | null>(null);
 
   async function handleRetry() {
-    if (!orderNumber || retryLoading) return;
+    if (!purchasesEnabled || !orderNumber || retryLoading) return;
     setRetryLoading(true);
     setRetryError(null);
 
@@ -227,7 +229,7 @@ function ConfirmacionContent() {
               </p>
             )}
             <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-              {orderNumber && (
+              {orderNumber && purchasesEnabled && (
                 <button
                   disabled={retryLoading}
                   onClick={() => { void handleRetry(); }}
@@ -241,6 +243,11 @@ function ConfirmacionContent() {
                 >
                   {retryLoading ? "Cargando..." : "Agregar al carrito y reintentar"}
                 </button>
+              )}
+              {!purchasesEnabled && (
+                <p style={{ width: "100%", fontSize: "12px", lineHeight: 1.6, color: "var(--color-text-light)" }}>
+                  Las compras están temporalmente pausadas. Puedes volver a la colección mientras actualizamos el inventario.
+                </p>
               )}
               <Link href="/productos" style={{
                 display: "inline-flex", alignItems: "center", gap: "8px",

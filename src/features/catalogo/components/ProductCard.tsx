@@ -8,6 +8,7 @@ import { cx } from "class-variance-authority";
 import { useCart } from "@/features/carrito/hooks";
 import { Badge } from "@/shared/ui";
 import { useScrollReveal } from "@/shared/hooks";
+import { usePurchaseAvailability } from "@/shared/providers/PurchaseAvailabilityProvider";
 import { formatCLP } from "@/shared/utils/formatters";
 
 export interface ProductCardProps {
@@ -98,6 +99,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const router = useRouter();
   const { addItem } = useCart();
+  const { purchasesEnabled } = usePurchaseAvailability();
   const revealRef = useScrollReveal<HTMLDivElement>();
   const [isAdded, setIsAdded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -196,6 +198,7 @@ export function ProductCard({
           <button
             onClick={(event) => {
               event.stopPropagation();
+              if (!purchasesEnabled) return;
               addItem({
                 productId: id,
                 title,
@@ -215,20 +218,20 @@ export function ProductCard({
               right: 0,
               paddingTop: "14px",
               paddingBottom: "14px",
-              background: isAdded ? "var(--moss)" : "var(--gold)",
+              background: !purchasesEnabled ? "var(--text-light)" : isAdded ? "var(--moss)" : "var(--gold)",
               color: "white",
               fontSize: "11px",
               letterSpacing: "0.1em",
               fontWeight: 600,
               textTransform: "uppercase",
               border: "none",
-              cursor: "pointer",
+              cursor: purchasesEnabled ? "pointer" : "not-allowed",
               borderRadius: "0 0 var(--radius-md) var(--radius-md)",
               transition: "background 0.2s",
             }}
             type="button"
           >
-            {isAdded ? "Agregado" : "Agregar"}
+            {!purchasesEnabled ? "Compra pausada" : isAdded ? "Agregado" : "Agregar"}
           </button>
         </div>
       </div>

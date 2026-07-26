@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { cx } from "class-variance-authority";
 
 import { useCart } from "@/features/carrito/hooks";
+import { usePurchaseAvailability } from "@/shared/providers/PurchaseAvailabilityProvider";
 
 export interface AddToCartButtonProps {
   product: {
@@ -120,10 +121,11 @@ function clampQuantity(value: number, max: number) {
 
 export function AddToCartButton({ product }: AddToCartButtonProps) {
   const { addItem, updateQuantity } = useCart();
+  const { purchasesEnabled } = usePurchaseAvailability();
   const [qty, setQty] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const maxStock = Math.max(product.stockQuantity, 1);
-  const isDisabled = !product.inStock || product.stockQuantity <= 0;
+  const isDisabled = !purchasesEnabled || !product.inStock || product.stockQuantity <= 0;
 
   useEffect(() => {
     if (!isAdded) {
@@ -229,7 +231,7 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
           type="button"
         >
           <CartIcon />
-          <span>{isAdded ? "✓ Agregado" : "Anadir al carrito"}</span>
+          <span>{!purchasesEnabled ? "Compras pausadas" : isAdded ? "✓ Agregado" : "Anadir al carrito"}</span>
         </button>
 
         <button

@@ -130,7 +130,7 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
       style={{
         width,
         flexShrink: 0,
-        height: "100vh",
+        height: "100%",
         background: "#17140f",
         color: "white",
         display: "flex",
