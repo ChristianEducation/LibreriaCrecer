@@ -1,8 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { AdminSidebar } from "@/features/admin/components/AdminSidebar";
-import { ChangePasswordModal } from "@/features/admin/components/ChangePasswordModal";
+import { AdminPanelShell } from "@/features/admin/components/AdminPanelShell";
 import { ADMIN_SESSION_COOKIE } from "@/features/admin/constants";
 import { getAdminById, verifyToken } from "@/features/admin/services/auth-service";
 
@@ -28,14 +27,8 @@ export default async function AdminPanelLayout({ children }: AdminPanelLayoutPro
   }
 
   return (
-    <div className="admin-panel-layout flex overflow-hidden bg-[#f5f4f1]">
-      <AdminSidebar adminName={admin.name} />
-      <main className="admin-panel-scroll min-w-0 flex-1 overflow-y-auto bg-[#f5f4f1]">
-        <div className="admin-main-canvas">
-          {children}
-        </div>
-      </main>
-      <ChangePasswordModal initiallyOpen={admin.mustChangePassword} />
-    </div>
+    <AdminPanelShell adminName={admin.name} mustChangePassword={admin.mustChangePassword}>
+      {children}
+    </AdminPanelShell>
   );
 }

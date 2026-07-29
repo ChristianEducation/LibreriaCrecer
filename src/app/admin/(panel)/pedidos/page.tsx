@@ -17,6 +17,38 @@ type OrderRow = {
   customerEmail: string;
 };
 
+function OrderMobileCard({ order }: { order: OrderRow }) {
+  return (
+    <Link
+      className="admin-card"
+      href={`/admin/pedidos/${order.id}`}
+      style={{ display: "flex", flexDirection: "column", gap: 10, padding: 16, textDecoration: "none" }}
+    >
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{order.orderNumber}</p>
+          <p style={{ fontSize: 11.5, color: "var(--text-light)", marginTop: 2 }}>{formatDate(order.createdAt)}</p>
+        </div>
+        <AdminStatusPill status={order.status} />
+      </div>
+
+      <div style={{ fontSize: 13, color: "var(--text-mid)" }}>
+        <p style={{ fontWeight: 500, color: "var(--text)" }}>{order.customerName}</p>
+        <p style={{ fontSize: 11.5, color: "var(--text-light)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {order.customerEmail}
+        </p>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, paddingTop: 8, borderTop: "1px solid #f2efe8" }}>
+        <span style={{ fontSize: 12, color: "var(--text-light)" }}>
+          {order.deliveryMethod === "pickup" ? "Retiro en tienda" : "Despacho"}
+        </span>
+        <span style={{ fontSize: 15, fontWeight: 600, color: "var(--gold)" }}>{formatCLP(order.total)}</span>
+      </div>
+    </Link>
+  );
+}
+
 export default function AdminPedidosPage() {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -156,6 +188,8 @@ export default function AdminPedidosPage() {
       {error ? <p className="text-sm text-error">{error}</p> : null}
 
       {!loading ? (
+        <>
+        <div className="admin-desktop-table-wrap">
         <AdminTable
           columns={[
             {
@@ -211,6 +245,18 @@ export default function AdminPedidosPage() {
           rowKey={(order) => order.id}
           title="Pedidos recientes"
         />
+        </div>
+
+        <div className="admin-mobile-cards">
+          {orders.length === 0 ? (
+            <div className="admin-card" style={{ padding: "32px 20px", textAlign: "center", fontSize: 14, fontWeight: 300, color: "var(--text-light)" }}>
+              No se encontraron pedidos con los filtros seleccionados.
+            </div>
+          ) : (
+            orders.map((order) => <OrderMobileCard key={order.id} order={order} />)
+          )}
+        </div>
+        </>
       ) : null}
 
       <div className="flex items-center gap-2">

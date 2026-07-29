@@ -733,6 +733,80 @@ function BulkVentaWebControl({
   );
 }
 
+function ProductMobileCard({
+  product,
+  categories,
+  onlineSaleLoading,
+  onInlineUpdate,
+  onToggleOnlineSale,
+  onEdit,
+  onDelete,
+}: {
+  product: ProductListItem;
+  categories: CategoryOption[];
+  onlineSaleLoading: boolean;
+  onInlineUpdate: (field: string, value: string | number | boolean, displayValue?: string) => void;
+  onToggleOnlineSale: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <article className="admin-card" style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+        <BookCover imageUrl={product.mainImageUrl} title={product.title} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)", lineHeight: 1.3 }}>{product.title}</p>
+          <p style={{ fontSize: 12, color: "var(--text-light)", marginTop: 2 }}>
+            {product.author ?? "Autor no informado"}
+          </p>
+        </div>
+        <ActionMenu onEdit={onEdit} onToggle={onDelete} product={product} />
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <EditablePrice
+          effectivePrice={product.effectivePrice}
+          onSave={(val) => onInlineUpdate("price", val)}
+          value={product.price}
+        />
+        <EditableStock
+          inStock={product.inStock}
+          onSave={(val) => onInlineUpdate("stockQuantity", val)}
+          stock={product.stockQuantity}
+        />
+      </div>
+
+      <EditableCategory
+        allCategories={categories}
+        categories={product.categories}
+        onSave={(id, name) => onInlineUpdate("categoryId", id, name)}
+      />
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          paddingTop: 10,
+          borderTop: "1px solid #f2efe8",
+        }}
+      >
+        <EditableStatus
+          isActive={product.isActive}
+          onToggle={() => onInlineUpdate("isActive", !product.isActive)}
+        />
+        <OnlineSaleToggleCell
+          checked={product.onlineSaleEnabled}
+          loading={onlineSaleLoading}
+          onToggle={onToggleOnlineSale}
+          productTitle={product.title}
+        />
+      </div>
+    </article>
+  );
+}
+
 export default function AdminProductosPage() {
   const { toast } = useToast();
   const [products, setProducts] = useState<ProductListItem[]>([]);
@@ -1322,6 +1396,8 @@ export default function AdminProductosPage() {
             Cargando productos…
           </div>
         ) : (
+          <>
+          <div className="admin-desktop-table-wrap">
           <AdminTable
             columns={[
               {
@@ -1433,6 +1509,34 @@ export default function AdminProductosPage() {
             emptyState="No se encontraron productos con los filtros seleccionados."
             rowKey={(product) => product.id}
           />
+          </div>
+
+          <div className="admin-mobile-cards">
+            {products.length === 0 ? (
+              <div
+                className="admin-card"
+                style={{ padding: "32px 20px", textAlign: "center", fontSize: 14, fontWeight: 300, color: "var(--text-light)" }}
+              >
+                No se encontraron productos con los filtros seleccionados.
+              </div>
+            ) : (
+              products.map((product) => (
+                <ProductMobileCard
+                  categories={categories}
+                  key={product.id}
+                  onDelete={() => handleDelete(product.id)}
+                  onEdit={() => handlePreview(product)}
+                  onInlineUpdate={(field, value, displayValue) =>
+                    handleInlineUpdate(product.id, field, value, displayValue)
+                  }
+                  onToggleOnlineSale={() => handleToggleOnlineSale(product.id, !product.onlineSaleEnabled)}
+                  onlineSaleLoading={rowLoadingIds.has(product.id)}
+                  product={product}
+                />
+              ))
+            )}
+          </div>
+          </>
         )}
 
         <div

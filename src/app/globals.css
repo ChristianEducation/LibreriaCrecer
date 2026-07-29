@@ -234,6 +234,7 @@ body {
 /* Sistema de layout interno del panel admin */
 .admin-main-canvas {
   min-height: 100%;
+  min-width: 0;
   padding: clamp(16px, 2vw, 28px);
   padding-bottom: clamp(12px, 1.5vw, 20px);
 }
@@ -250,17 +251,61 @@ body {
   scrollbar-gutter: stable;
 }
 
+.admin-mobile-topbar {
+  display: none;
+}
+
+/* Alterna entre tabla (desktop/tablet) y tarjetas apiladas (mobile) para listados densos */
+.admin-desktop-table-wrap {
+  display: block;
+}
+
+.admin-mobile-cards {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 767px) {
+  .admin-desktop-table-wrap {
+    display: none;
+  }
+
+  .admin-mobile-cards {
+    display: flex;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 56px;
+    flex-shrink: 0;
+    padding-inline: 16px;
+    border-bottom: 1px solid #ede9e2;
+    background: white;
+  }
+}
+
 .admin-page-shell {
   width: 100%;
+  min-width: 0;
   min-height: 100%;
 }
 
 .admin-page-container {
   width: min(100%, 1440px);
+  min-width: 0;
   margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+.admin-page-container > * {
+  min-width: 0;
 }
 
 .admin-page-header {
@@ -271,6 +316,7 @@ body {
 }
 
 .admin-card {
+  min-width: 0;
   border: 1px solid #ede9e2;
   border-radius: 16px;
   background: #fffdf8;
@@ -296,7 +342,7 @@ body {
   }
 
   .admin-grid-main {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -311,7 +357,7 @@ body {
   }
 
   .admin-grid-kpis {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

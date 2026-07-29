@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { cx } from "class-variance-authority";
 
 export interface AdminTableColumn<T> {
@@ -29,6 +30,29 @@ export function AdminTable<T>({
   rowKey,
 }: AdminTableProps<T>) {
   const hasHeader = Boolean(title || description || actions);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    function updateScrollState() {
+      if (!el) return;
+      setCanScrollRight(el.scrollWidth - el.clientWidth - el.scrollLeft > 1);
+    }
+
+    updateScrollState();
+    el.addEventListener("scroll", updateScrollState);
+
+    const observer = new ResizeObserver(updateScrollState);
+    observer.observe(el);
+
+    return () => {
+      el.removeEventListener("scroll", updateScrollState);
+      observer.disconnect();
+    };
+  }, [data, columns]);
 
   return (
     <div className="admin-card" style={{ overflow: "hidden" }}>
@@ -75,7 +99,8 @@ export function AdminTable<T>({
         </div>
       ) : null}
 
-      <div style={{ overflowX: "auto" }}>
+      <div style={{ position: "relative", minWidth: 0 }}>
+        <div ref={scrollRef} style={{ overflowX: "auto", minWidth: 0 }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ background: "#faf8f4", borderBottom: "1px solid #ede9e2" }}>
@@ -147,6 +172,21 @@ export function AdminTable<T>({
             )}
           </tbody>
         </table>
+        </div>
+        {canScrollRight ? (
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: 28,
+              pointerEvents: "none",
+              background: "linear-gradient(to right, rgba(255,253,248,0), rgba(255,253,248,0.95))",
+            }}
+          />
+        ) : null}
       </div>
     </div>
   );

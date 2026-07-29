@@ -21,7 +21,8 @@ type SidebarIconName =
   | "info"
   | "logout"
   | "chev-left"
-  | "chev-right";
+  | "chev-right"
+  | "close";
 
 type SidebarItem = {
   href: string;
@@ -89,6 +90,7 @@ function SidebarIcon({ name, size = 16, strokeWidth = 1.6 }: { name: SidebarIcon
     logout: "M13 5l5 5-5 5M7 10h11M7 3H3v14h4",
     "chev-left": "M12 4l-6 6 6 6",
     "chev-right": "M8 4l6 6-6 6",
+    close: "M5 5l10 10M15 5L5 15",
   };
 
   return (
@@ -110,36 +112,59 @@ function SidebarIcon({ name, size = 16, strokeWidth = 1.6 }: { name: SidebarIcon
 
 export interface AdminSidebarProps {
   adminName: string;
+  mobileOpen: boolean;
+  onCloseMobile: () => void;
 }
 
-export function AdminSidebar({ adminName }: AdminSidebarProps) {
+export function AdminSidebar({ adminName, mobileOpen, onCloseMobile }: AdminSidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia("(max-width: 700px)").matches) {
-      setCollapsed(true);
+    const mql = window.matchMedia("(max-width: 767px)");
+    function syncIsMobile() {
+      setIsMobile(mql.matches);
     }
+    syncIsMobile();
+    mql.addEventListener("change", syncIsMobile);
+    return () => mql.removeEventListener("change", syncIsMobile);
   }, []);
 
-  const width = collapsed ? 60 : 220;
+  const effectiveCollapsed = isMobile ? false : collapsed;
+  const width = isMobile ? "min(280px, 82vw)" : effectiveCollapsed ? 60 : 220;
   const initials = adminName.slice(0, 1).toUpperCase();
 
   return (
-    <aside
-      style={{
-        width,
-        flexShrink: 0,
-        height: "100%",
-        background: "#17140f",
-        color: "white",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        transition: "width 250ms cubic-bezier(0.4, 0, 0.2, 1)",
-        willChange: "width",
-      }}
-    >
+    <>
+      {isMobile && mobileOpen ? (
+        <div
+          aria-hidden="true"
+          onClick={onCloseMobile}
+          style={{ position: "fixed", inset: 0, zIndex: 205, background: "rgba(23,20,15,0.55)" }}
+        />
+      ) : null}
+      <aside
+        style={{
+          width,
+          flexShrink: 0,
+          height: "100%",
+          background: "#17140f",
+          color: "white",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          transition: "width 250ms cubic-bezier(0.4, 0, 0.2, 1), transform 250ms cubic-bezier(0.4, 0, 0.2, 1)",
+          willChange: "width, transform",
+          position: isMobile ? "fixed" : "relative",
+          top: 0,
+          left: 0,
+          bottom: 0,
+          zIndex: isMobile ? 210 : "auto",
+          transform: isMobile ? (mobileOpen ? "translateX(0)" : "translateX(-100%)") : "none",
+          boxShadow: isMobile && mobileOpen ? "8px 0 32px rgba(0, 0, 0, 0.35)" : "none",
+        }}
+      >
       <div
         aria-hidden="true"
         style={{
@@ -153,11 +178,11 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
       <div
         style={{
           position: "relative",
-          padding: collapsed ? "20px 0 16px" : "22px 20px 16px",
+          padding: effectiveCollapsed ? "20px 0 16px" : "22px 20px 16px",
           display: "flex",
           alignItems: "center",
           gap: 10,
-          justifyContent: collapsed ? "center" : "flex-start",
+          justifyContent: effectiveCollapsed ? "center" : "flex-start",
           borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
         }}
       >
@@ -181,8 +206,10 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
         </div>
         <div
           style={{
-            opacity: collapsed ? 0 : 1,
-            width: collapsed ? 0 : "auto",
+            flex: 1,
+            minWidth: 0,
+            opacity: effectiveCollapsed ? 0 : 1,
+            width: effectiveCollapsed ? 0 : "auto",
             overflow: "hidden",
             transition: "opacity 150ms ease",
             whiteSpace: "nowrap",
@@ -204,6 +231,28 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
             Admin panel
           </p>
         </div>
+        {isMobile ? (
+          <button
+            aria-label="Cerrar menú"
+            onClick={onCloseMobile}
+            style={{
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 30,
+              height: 30,
+              borderRadius: 8,
+              border: "none",
+              background: "rgba(255, 255, 255, 0.06)",
+              color: "rgba(255, 255, 255, 0.65)",
+              cursor: "pointer",
+            }}
+            type="button"
+          >
+            <SidebarIcon name="close" size={14} strokeWidth={1.8} />
+          </button>
+        ) : null}
       </div>
 
       <nav
@@ -225,8 +274,8 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
                 color: "rgba(255, 255, 255, 0.22)",
-                opacity: collapsed ? 0 : 1,
-                height: collapsed ? 0 : "auto",
+                opacity: effectiveCollapsed ? 0 : 1,
+                height: effectiveCollapsed ? 0 : "auto",
                 overflow: "hidden",
                 transition: "opacity 150ms ease",
                 whiteSpace: "nowrap",
@@ -250,15 +299,15 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
                       gap: 12,
                       width: "100%",
                       minHeight: 36,
-                      padding: collapsed ? "9px 0" : "9px 20px",
-                      justifyContent: collapsed ? "center" : "flex-start",
+                      padding: effectiveCollapsed ? "9px 0" : "9px 20px",
+                      justifyContent: effectiveCollapsed ? "center" : "flex-start",
                       background: isActive ? "rgba(255, 255, 255, 0.07)" : "transparent",
                       borderLeft: `2px solid ${isActive ? "var(--gold)" : "transparent"}`,
                       color: isActive ? "#f5f0e8" : "rgba(255, 255, 255, 0.55)",
                       textDecoration: "none",
                       transition: "background-color 150ms ease, color 150ms ease",
                     }}
-                    title={collapsed ? item.label : undefined}
+                    title={effectiveCollapsed ? item.label : undefined}
                   >
                     <span
                       style={{
@@ -278,8 +327,8 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
                         minWidth: 0,
                         fontSize: 13.5,
                         fontWeight: isActive ? 600 : 400,
-                        opacity: collapsed ? 0 : 1,
-                        width: collapsed ? 0 : "auto",
+                        opacity: effectiveCollapsed ? 0 : 1,
+                        width: effectiveCollapsed ? 0 : "auto",
                         overflow: "hidden",
                         whiteSpace: "nowrap",
                         textOverflow: "ellipsis",
@@ -307,8 +356,8 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
             display: "flex",
             alignItems: "center",
             gap: 10,
-            padding: collapsed ? "12px 0" : "12px 20px",
-            justifyContent: collapsed ? "center" : "flex-start",
+            padding: effectiveCollapsed ? "12px 0" : "12px 20px",
+            justifyContent: effectiveCollapsed ? "center" : "flex-start",
           }}
         >
           <div
@@ -325,7 +374,7 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
               fontWeight: 700,
               flexShrink: 0,
             }}
-            title={collapsed ? adminName : undefined}
+            title={effectiveCollapsed ? adminName : undefined}
           >
             {initials}
           </div>
@@ -333,8 +382,8 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
             style={{
               flex: 1,
               minWidth: 0,
-              opacity: collapsed ? 0 : 1,
-              width: collapsed ? 0 : "auto",
+              opacity: effectiveCollapsed ? 0 : 1,
+              width: effectiveCollapsed ? 0 : "auto",
               overflow: "hidden",
               transition: "opacity 150ms ease",
               whiteSpace: "nowrap",
@@ -370,27 +419,29 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
           />
         </div>
 
-        <button
-          aria-label={collapsed ? "Expandir menú" : "Colapsar menú"}
-          onClick={() => setCollapsed((value) => !value)}
-          style={{
-            width: "100%",
-            padding: "10px 0",
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "rgba(255, 255, 255, 0.32)",
-            borderTop: "1px solid rgba(255, 255, 255, 0.04)",
-            transition: "color 150ms ease",
-          }}
-          title={collapsed ? "Expandir menú" : "Colapsar menú"}
-          type="button"
-        >
-          <SidebarIcon name={collapsed ? "chev-right" : "chev-left"} size={16} strokeWidth={1.8} />
-        </button>
+        {isMobile ? null : (
+          <button
+            aria-label={effectiveCollapsed ? "Expandir menú" : "Colapsar menú"}
+            onClick={() => setCollapsed((value) => !value)}
+            style={{
+              width: "100%",
+              padding: "10px 0",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "rgba(255, 255, 255, 0.32)",
+              borderTop: "1px solid rgba(255, 255, 255, 0.04)",
+              transition: "color 150ms ease",
+            }}
+            title={effectiveCollapsed ? "Expandir menú" : "Colapsar menú"}
+            type="button"
+          >
+            <SidebarIcon name={effectiveCollapsed ? "chev-right" : "chev-left"} size={16} strokeWidth={1.8} />
+          </button>
+        )}
       </div>
 
       <style jsx>{`
@@ -416,6 +467,7 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
           background-color: rgba(255, 255, 255, 0.06);
         }
       `}</style>
-    </aside>
+      </aside>
+    </>
   );
 }

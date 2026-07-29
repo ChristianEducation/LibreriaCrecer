@@ -769,6 +769,7 @@ export default function AdminLandingSeleccionPage() {
                       gap: 14,
                       padding: "12px 20px",
                       borderTop: "1px solid var(--border)",
+                      overflowX: "auto",
                     }}
                   >
                     {/* Portada */}
