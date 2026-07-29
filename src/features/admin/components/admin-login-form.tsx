@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 
 import { useToast } from "@/shared/hooks";
 
+import { adminHref, isAdminHostname } from "../routing";
 import { AdminLoginSchema, type AdminLoginInput } from "../schemas";
 
 type AdminLoginFormProps = {
@@ -90,7 +91,8 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
       }
 
       toast({ message: "Acceso verificado. Redirigiendo al panel..." });
-      window.location.href = nextPath ?? "/admin";
+      const onAdminHost = isAdminHostname(window.location.hostname);
+      window.location.href = adminHref(nextPath || "/", onAdminHost);
     } catch {
       const message = "Ocurrió un error de red. Intenta nuevamente.";
       setErrorMessage(message);

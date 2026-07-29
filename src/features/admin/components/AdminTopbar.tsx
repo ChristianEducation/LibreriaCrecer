@@ -3,22 +3,25 @@
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 
+import { toCleanAdminPath } from "../routing";
+
+// Paths "limpios" (sin prefijo /admin) — el mas generico ("") va al final para actuar como catch-all.
 const sectionTitles = [
-  { match: "/admin/productos", title: "Catálogo de libros" },
-  { match: "/admin/categorias", title: "Categorías" },
-  { match: "/admin/pedidos", title: "Gestión de pedidos" },
-  { match: "/admin/envios", title: "Envíos" },
-  { match: "/admin/encuentros", title: "Encuentros" },
-  { match: "/admin/nosotros", title: "Página Conócenos" },
-  { match: "/admin/landing/hero-final", title: "Hero final" },
-  { match: "/admin/landing/hero", title: "Editor del hero" },
-  { match: "/admin/landing/top-banner", title: "Top banner" },
-  { match: "/admin/landing/banners", title: "Banners del landing" },
-  { match: "/admin/landing/seleccion", title: "Selección del mes" },
-  { match: "/admin/landing/categorias", title: "Categorías del landing" },
-  { match: "/admin/landing/footer", title: "Footer del sitio" },
-  { match: "/admin/landing", title: "Página principal" },
-  { match: "/admin", title: "Dashboard" },
+  { match: "/productos", title: "Catálogo de libros" },
+  { match: "/categorias", title: "Categorías" },
+  { match: "/pedidos", title: "Gestión de pedidos" },
+  { match: "/envios", title: "Envíos" },
+  { match: "/encuentros", title: "Encuentros" },
+  { match: "/nosotros", title: "Página Conócenos" },
+  { match: "/landing/hero-final", title: "Hero final" },
+  { match: "/landing/hero", title: "Editor del hero" },
+  { match: "/landing/top-banner", title: "Top banner" },
+  { match: "/landing/banners", title: "Banners del landing" },
+  { match: "/landing/seleccion", title: "Selección del mes" },
+  { match: "/landing/categorias", title: "Categorías del landing" },
+  { match: "/landing/footer", title: "Footer del sitio" },
+  { match: "/landing", title: "Página principal" },
+  { match: "", title: "Dashboard" },
 ] as const;
 
 export interface AdminTopbarProps {
@@ -33,7 +36,8 @@ export function AdminTopbar({ onOpenMenu }: AdminTopbarProps) {
   const pathname = usePathname();
 
   const title = useMemo(() => {
-    return sectionTitles.find((item) => pathname.startsWith(item.match))?.title ?? "Panel admin";
+    const cleanPathname = toCleanAdminPath(pathname);
+    return sectionTitles.find((item) => cleanPathname.startsWith(item.match))?.title ?? "Panel admin";
   }, [pathname]);
 
   return (

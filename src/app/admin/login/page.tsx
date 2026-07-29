@@ -1,9 +1,10 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 
 import { AdminLoginPanel } from "@/features/admin/components/admin-login-panel";
 import { ADMIN_SESSION_COOKIE } from "@/features/admin/constants";
+import { adminHref, hostnameOnly, isAdminHostname } from "@/features/admin/routing";
 import { verifyToken } from "@/features/admin/services/auth-service";
 
 type LoginPageProps = {
@@ -16,11 +17,13 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const nextPath = params.next;
 
+  const onAdminHost = isAdminHostname(hostnameOnly((await headers()).get("host")));
+
   const token = (await cookies()).get(ADMIN_SESSION_COOKIE)?.value;
   if (token) {
     const session = await verifyToken(token);
     if (session) {
-      redirect("/admin");
+      redirect(adminHref("/", onAdminHost));
     }
   }
 

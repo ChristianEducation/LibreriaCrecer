@@ -10,10 +10,11 @@ import { ChangePasswordModal } from "./ChangePasswordModal";
 export interface AdminPanelShellProps {
   adminName: string;
   mustChangePassword: boolean;
+  onAdminHost: boolean;
   children: React.ReactNode;
 }
 
-export function AdminPanelShell({ adminName, mustChangePassword, children }: AdminPanelShellProps) {
+export function AdminPanelShell({ adminName, mustChangePassword, onAdminHost, children }: AdminPanelShellProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -43,6 +44,7 @@ export function AdminPanelShell({ adminName, mustChangePassword, children }: Adm
       <AdminSidebar
         adminName={adminName}
         mobileOpen={mobileMenuOpen}
+        onAdminHost={onAdminHost}
         onCloseMobile={() => setMobileMenuOpen(false)}
       />
       <div className="flex min-w-0 flex-1 flex-col">

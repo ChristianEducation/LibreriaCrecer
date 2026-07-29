@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { adminHref, toCleanAdminPath } from "../routing";
 import { AdminLogoutButton } from "./admin-logout-button";
+
+const STORE_HREF = (process.env.NEXT_PUBLIC_APP_URL || "https://libreriacrecer.cl").replace(/\/$/, "");
+const STORE_LINK_KEY = "__store__";
 
 type SidebarIconName =
   | "grid"
@@ -31,44 +35,47 @@ type SidebarItem = {
   exact?: boolean;
 };
 
+// hrefs "limpios" (sin prefijo /admin): en el subdominio admin son la URL publica tal cual,
+// fuera de el se les antepone /admin via adminHref(). Excepcion: STORE_LINK_KEY, que siempre
+// apunta a la tienda publica (nunca al dashboard admin).
 const sections: { label: string; items: SidebarItem[] }[] = [
   {
     label: "Dashboard",
     items: [
-      { href: "/admin", label: "Panel principal", icon: "grid", exact: true },
+      { href: "/", label: "Panel principal", icon: "grid", exact: true },
     ],
   },
   {
     label: "Catálogo",
     items: [
-      { href: "/admin/productos", label: "Productos", icon: "book" },
-      { href: "/admin/categorias", label: "Categorías", icon: "tag" },
+      { href: "/productos", label: "Productos", icon: "book" },
+      { href: "/categorias", label: "Categorías", icon: "tag" },
     ],
   },
   {
     label: "Pedidos",
     items: [
-      { href: "/admin/pedidos", label: "Pedidos", icon: "box" },
-      { href: "/admin/envios", label: "Envios", icon: "truck" },
+      { href: "/pedidos", label: "Pedidos", icon: "box" },
+      { href: "/envios", label: "Envios", icon: "truck" },
     ],
   },
   {
     label: "Acciones Rápidas",
     items: [
-      { href: "/", label: "Ir a la tienda", icon: "layout", exact: true },
+      { href: STORE_LINK_KEY, label: "Ir a la tienda", icon: "layout", exact: true },
     ],
   },
   {
     label: "Contenido",
     items: [
-      { href: "/admin/landing/top-banner", label: "Top Banner", icon: "banner" },
-      { href: "/admin/landing/hero", label: "Hero principal", icon: "image" },
-      { href: "/admin/landing/seleccion", label: "Selección del mes", icon: "star" },
-      { href: "/admin/landing/categorias", label: "Categorías del landing", icon: "list" },
-      { href: "/admin/landing/hero-final", label: "Hero final", icon: "image" },
-      { href: "/admin/landing/footer", label: "Footer", icon: "footer" },
-      { href: "/admin/nosotros", label: "Página Conócenos", icon: "info" },
-      { href: "/admin/encuentros", label: "Encuentros", icon: "image" },
+      { href: "/landing/top-banner", label: "Top Banner", icon: "banner" },
+      { href: "/landing/hero", label: "Hero principal", icon: "image" },
+      { href: "/landing/seleccion", label: "Selección del mes", icon: "star" },
+      { href: "/landing/categorias", label: "Categorías del landing", icon: "list" },
+      { href: "/landing/hero-final", label: "Hero final", icon: "image" },
+      { href: "/landing/footer", label: "Footer", icon: "footer" },
+      { href: "/nosotros", label: "Página Conócenos", icon: "info" },
+      { href: "/encuentros", label: "Encuentros", icon: "image" },
     ],
   },
 ];
@@ -114,10 +121,12 @@ export interface AdminSidebarProps {
   adminName: string;
   mobileOpen: boolean;
   onCloseMobile: () => void;
+  onAdminHost: boolean;
 }
 
-export function AdminSidebar({ adminName, mobileOpen, onCloseMobile }: AdminSidebarProps) {
+export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost }: AdminSidebarProps) {
   const pathname = usePathname();
+  const currentCleanPath = toCleanAdminPath(pathname);
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -285,12 +294,16 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile }: AdminSide
             </p>
             <div>
               {section.items.map((item) => {
-                const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+                const isStoreLink = item.href === STORE_LINK_KEY;
+                const targetHref = isStoreLink ? STORE_HREF : adminHref(item.href, onAdminHost);
+                const isActive =
+                  !isStoreLink &&
+                  (item.exact ? currentCleanPath === item.href : currentCleanPath.startsWith(item.href));
 
                 return (
                   <Link
                     className="admin-sidebar-link"
-                    href={item.href}
+                    href={targetHref}
                     key={item.href}
                     style={{
                       position: "relative",

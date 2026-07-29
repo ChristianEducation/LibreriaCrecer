@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { cx } from "class-variance-authority";
+
+import { adminHref, isAdminHostname } from "../routing";
 
 export interface AdminLogoutButtonProps {
   className?: string;
@@ -19,7 +20,6 @@ export function AdminLogoutButton({
   showLabel = true,
   title,
 }: AdminLogoutButtonProps) {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function handleLogout() {
@@ -27,9 +27,8 @@ export function AdminLogoutButton({
     try {
       await fetch("/api/admin/auth/logout", { method: "POST" });
     } finally {
-      router.push("/admin/login");
-      router.refresh();
-      setLoading(false);
+      const onAdminHost = isAdminHostname(window.location.hostname);
+      window.location.href = adminHref("/login", onAdminHost);
     }
   }
 
