@@ -248,13 +248,19 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
         </button>
       </form>
 
-      <p style={{ marginTop: "1.5rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "11px", color: "var(--text-light)" }}>
+      <p
+        className="hidden lg:flex"
+        style={{ marginTop: "1.5rem", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "11px", color: "var(--text-light)" }}
+      >
         <span style={{ flex: 1, height: "1px", background: "var(--border)" }} />
         Acceso seguro · SSL
         <span style={{ flex: 1, height: "1px", background: "var(--border)" }} />
       </p>
 
-      <p style={{ marginTop: "12px", textAlign: "center", fontSize: "11px", color: "var(--text-light)" }}>
+      <p
+        className="hidden lg:block"
+        style={{ marginTop: "12px", textAlign: "center", fontSize: "11px", color: "var(--text-light)" }}
+      >
         Si olvidaste tu contraseña, contacta al administrador.
       </p>
     </div>

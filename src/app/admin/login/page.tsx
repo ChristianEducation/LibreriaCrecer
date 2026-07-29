@@ -73,12 +73,12 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
             position: "relative",
             zIndex: 1,
             width: "100%",
-            maxWidth: "400px",
-            background: "rgba(245,243,232,0.97)",
+            maxWidth: "320px",
+            background: "rgba(245,243,232,0.88)",
             backdropFilter: "blur(20px)",
             borderRadius: "var(--radius-lg)",
-            boxShadow: "0 20px 48px rgba(0,0,0,0.2)",
-            padding: "2rem",
+            boxShadow: "0 20px 48px rgba(0,0,0,0.25)",
+            padding: "1.5rem",
           }}
         >
           <AdminLoginPanel nextPath={nextPath} />
