@@ -1,4 +1,5 @@
 export { AdminMetricCard } from "./AdminMetricCard";
+export { ChangePasswordModal } from "./ChangePasswordModal";
 export { AdminSidebar } from "./AdminSidebar";
 export { AdminStatusPill } from "./AdminStatusPill";
 export { AdminTable } from "./AdminTable";

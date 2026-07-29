@@ -64,6 +64,13 @@
       "when": 1785269472594,
       "tag": "0008_add_online_sale_enabled",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1785340253847,
+      "tag": "0009_add_admin_must_change_password",
+      "breakpoints": true
     }
   ]
 }

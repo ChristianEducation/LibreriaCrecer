@@ -1,9 +1,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 
-import { AdminLoginForm } from "@/features/admin/components/admin-login-form";
+import { AdminLoginPanel } from "@/features/admin/components/admin-login-panel";
 import { ADMIN_SESSION_COOKIE } from "@/features/admin/constants";
 import { verifyToken } from "@/features/admin/services/auth-service";
 
@@ -26,21 +25,61 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden p-6" style={{ background: "linear-gradient(135deg, #3a3001 0%, #5a4802 50%, #3a3001 100%)" }}>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_80%,rgba(217,186,30,0.06)_0%,transparent_55%),radial-gradient(ellipse_at_80%_20%,rgba(217,186,30,0.04)_0%,transparent_55%),radial-gradient(ellipse_at_50%_50%,rgba(138,115,2,0.4)_0%,transparent_70%)]" />
-      <div className="absolute left-12 top-12 h-12 w-12 opacity-[0.06] before:absolute before:left-1/2 before:top-0 before:h-full before:w-px before:-translate-x-1/2 before:bg-gold before:content-[''] after:absolute after:left-0 after:top-1/2 after:h-px after:w-full after:-translate-y-1/2 after:bg-gold after:content-['']" />
-      <div className="absolute bottom-12 right-12 h-8 w-8 opacity-[0.06] before:absolute before:left-1/2 before:top-0 before:h-full before:w-px before:-translate-x-1/2 before:bg-gold before:content-[''] after:absolute after:left-0 after:top-1/2 after:h-px after:w-full after:-translate-y-1/2 after:bg-gold after:content-['']" />
+    <main className="relative min-h-screen w-full lg:flex" style={{ background: "var(--beige)" }}>
+      {/* Desktop — 60% foto de la librería */}
+      <div className="relative hidden lg:block lg:w-3/5 lg:shrink-0">
+        <Image
+          alt="Interior de Crecer Librería"
+          fill
+          priority
+          sizes="60vw"
+          src="/images/login-libreria.jpg"
+          style={{ objectFit: "cover", objectPosition: "center" }}
+        />
+      </div>
 
-      <Link
-        className="absolute top-7 text-[11px] tracking-[0.08em] text-white/30 transition-colors hover:text-white/60"
-        href="/"
+      {/* Desktop — 40% panel de acceso, plano, sin tarjeta flotante */}
+      <div
+        className="hidden lg:flex lg:w-2/5 lg:shrink-0 page-px"
+        style={{ minHeight: "100vh", alignItems: "center", justifyContent: "center" }}
       >
-        Volver al sitio
-      </Link>
+        <div style={{ width: "100%", maxWidth: "400px" }}>
+          <AdminLoginPanel nextPath={nextPath} />
+        </div>
+      </div>
 
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: "420px" }}>
-        <Image src="/images/Logo-Crecer.png" alt="Crecer Librería" width={48} height={48} style={{ objectFit: "contain", marginBottom: "1.5rem" }} />
-        <AdminLoginForm nextPath={nextPath} />
+      {/* Mobile — foto de fondo a pantalla completa + tarjeta flotante */}
+      <div className="relative flex min-h-screen items-center justify-center p-6 lg:hidden">
+        <Image
+          alt="Interior de Crecer Librería"
+          fill
+          priority
+          sizes="100vw"
+          src="/images/login-libreria.jpg"
+          style={{ objectFit: "cover" }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(58,48,1,0.35) 0%, rgba(58,48,1,0.55) 55%, rgba(58,48,1,0.8) 100%)",
+          }}
+        />
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            width: "100%",
+            maxWidth: "400px",
+            background: "rgba(245,243,232,0.97)",
+            backdropFilter: "blur(20px)",
+            borderRadius: "var(--radius-lg)",
+            boxShadow: "0 20px 48px rgba(0,0,0,0.2)",
+            padding: "2rem",
+          }}
+        >
+          <AdminLoginPanel nextPath={nextPath} />
+        </div>
       </div>
     </main>
   );

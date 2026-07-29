@@ -19,6 +19,7 @@ export type AuthenticatedAdmin = {
   id: string;
   email: string;
   name: string;
+  mustChangePassword: boolean;
 };
 
 function getJwtSecretKey(): Uint8Array {
@@ -77,6 +78,7 @@ export async function getAdminById(id: string): Promise<AuthenticatedAdmin | nul
       email: adminUsers.email,
       name: adminUsers.name,
       isActive: adminUsers.isActive,
+      mustChangePassword: adminUsers.mustChangePassword,
     })
     .from(adminUsers)
     .where(eq(adminUsers.id, id))
@@ -90,7 +92,37 @@ export async function getAdminById(id: string): Promise<AuthenticatedAdmin | nul
     id: admin.id,
     email: admin.email,
     name: admin.name,
+    mustChangePassword: admin.mustChangePassword,
   };
+}
+
+export async function dismissMustChangePassword(adminId: string): Promise<boolean> {
+  const [updated] = await db
+    .update(adminUsers)
+    .set({
+      mustChangePassword: false,
+      updatedAt: new Date(),
+    })
+    .where(eq(adminUsers.id, adminId))
+    .returning({ id: adminUsers.id });
+
+  return Boolean(updated);
+}
+
+export async function updateAdminPassword(adminId: string, newPassword: string): Promise<boolean> {
+  const passwordHash = await hashPassword(newPassword);
+
+  const [updated] = await db
+    .update(adminUsers)
+    .set({
+      passwordHash,
+      mustChangePassword: false,
+      updatedAt: new Date(),
+    })
+    .where(eq(adminUsers.id, adminId))
+    .returning({ id: adminUsers.id });
+
+  return Boolean(updated);
 }
 
 export async function login(
@@ -106,6 +138,7 @@ export async function login(
       name: adminUsers.name,
       passwordHash: adminUsers.passwordHash,
       isActive: adminUsers.isActive,
+      mustChangePassword: adminUsers.mustChangePassword,
     })
     .from(adminUsers)
     .where(and(eq(adminUsers.email, normalizedEmail), eq(adminUsers.isActive, true)))
@@ -124,6 +157,7 @@ export async function login(
     id: admin.id,
     email: admin.email,
     name: admin.name,
+    mustChangePassword: admin.mustChangePassword,
   };
 
   const token = await signAdminToken({

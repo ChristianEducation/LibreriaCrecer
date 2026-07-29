@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-07-29T15:50:29.309Z",
+  "table": "admin_users",
+  "rowCount": 1,
+  "rows": [
+    {
+      "id": "c4377a5d-f62e-4f98-b555-9227c126f59c",
+      "email": "admin@crecerlibreria.cl",
+      "name": "Administrador",
+      "isActive": true,
+      "createdAt": "2026-03-16T21:38:27.469Z",
+      "updatedAt": "2026-03-16T21:38:27.469Z"
+    }
+  ]
+}

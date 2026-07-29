@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { AdminSidebar } from "@/features/admin/components/AdminSidebar";
+import { ChangePasswordModal } from "@/features/admin/components/ChangePasswordModal";
 import { ADMIN_SESSION_COOKIE } from "@/features/admin/constants";
 import { getAdminById, verifyToken } from "@/features/admin/services/auth-service";
 
@@ -34,6 +35,7 @@ export default async function AdminPanelLayout({ children }: AdminPanelLayoutPro
           {children}
         </div>
       </main>
+      <ChangePasswordModal initiallyOpen={admin.mustChangePassword} />
     </div>
   );
 }
