@@ -70,7 +70,8 @@ export type ServiceErrorCode =
   | "invalid_signature"
   | "payment_reference_mismatch"
   | "payment_data_mismatch"
-  | "provider_error";
+  | "provider_error"
+  | "product_not_available_online";
 
 export type ServiceResult<T> =
   | { success: true; data: T }

@@ -208,18 +208,21 @@ export function RecentProductsCarousel({ products }: RecentProductsCarouselProps
           onMouseLeave={() => setIsHovered(false)}
         >
           {products.map((product) => (
-            <ProductCard 
-              author={product.author} 
-              id={product.id} 
-              isNew 
-              isOnSale={product.hasDiscount} 
-              key={product.id} 
-              mainImageUrl={product.mainImageUrl} 
-              price={product.price} 
-              salePrice={product.salePrice} 
-              slug={product.slug} 
-              title={product.title} 
-              variant="clean" 
+            <ProductCard
+              author={product.author}
+              id={product.id}
+              isNew
+              isOnSale={product.hasDiscount}
+              key={product.id}
+              mainImageUrl={product.mainImageUrl}
+              onlineSaleEnabled={product.onlineSaleEnabled}
+              price={product.price}
+              salePrice={product.salePrice}
+              sku={product.sku}
+              slug={product.slug}
+              stockQuantity={product.stockQuantity}
+              title={product.title}
+              variant="clean"
               className="recent-product-card"
             />
           ))}

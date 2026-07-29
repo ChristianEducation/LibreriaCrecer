@@ -5,4 +5,5 @@ export const BRAND = {
   address: "Arturo Prat 470, Antofagasta",
   email: "contacto@crecerlibreria.cl",
   instagram: "https://instagram.com/crecerlibreria",
+  whatsappNumber: "56992197121",
 } as const;

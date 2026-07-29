@@ -40,7 +40,12 @@ export async function POST(request: Request) {
     });
 
     if (!result.success) {
-      const status = result.code === "order_not_found" ? 404 : 400;
+      const status =
+        result.code === "order_not_found"
+          ? 404
+          : result.code === "product_not_available_online"
+            ? 409
+            : 400;
       return NextResponse.json(
         {
           error: result.code,

@@ -21,10 +21,16 @@ export const CreateProductSchema = z.object({
   stockQuantity: z.number().int().min(0).default(0),
   isFeatured: z.boolean().default(false),
   isActive: z.boolean().default(true),
+  onlineSaleEnabled: z.boolean().default(false),
   categoryIds: z.array(z.string().uuid()).default([]),
 });
 
 export const UpdateProductSchema = CreateProductSchema.partial();
 
+export const SetAllProductsOnlineSaleSchema = z.object({
+  enabled: z.boolean(),
+});
+
 export type CreateProductInput = z.infer<typeof CreateProductSchema>;
 export type UpdateProductInput = z.infer<typeof UpdateProductSchema>;
+export type SetAllProductsOnlineSaleInput = z.infer<typeof SetAllProductsOnlineSaleSchema>;

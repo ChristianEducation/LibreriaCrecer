@@ -40,8 +40,10 @@ export function ProductGrid({ products }: ProductGridProps) {
           isOnSale={product.hasDiscount}
           key={product.id}
           mainImageUrl={product.mainImageUrl}
+          onlineSaleEnabled={product.onlineSaleEnabled}
           price={product.price}
           salePrice={product.salePrice}
+          sku={product.sku}
           slug={product.slug}
           stockQuantity={product.stockQuantity}
           title={product.title}

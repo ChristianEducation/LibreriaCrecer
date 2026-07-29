@@ -24,7 +24,7 @@ import {
 import { sendOrderConfirmationEmail } from "@/integrations/email";
 
 import type { OrderStatus, ServiceResult } from "../types";
-import { decrementStock } from "./stock-service";
+import { checkProductsAvailability, decrementStock } from "./stock-service";
 
 type ProcessPaymentResult = {
   orderNumber: string;
@@ -88,6 +88,30 @@ export async function initializePayment(
         code: "validation_error",
         message: "Only pending orders can initialize payment.",
       };
+    }
+
+    const orderItemRows = await db
+      .select({
+        productId: orderItems.productId,
+        quantity: orderItems.quantity,
+      })
+      .from(orderItems)
+      .where(eq(orderItems.orderId, order.id));
+
+    const validOrderItems = orderItemRows.filter(
+      (row): row is { productId: string; quantity: number } => row.productId !== null,
+    );
+
+    if (validOrderItems.length > 0) {
+      const availability = await checkProductsAvailability(validOrderItems);
+      const unavailable = availability.filter((entry) => !entry.available);
+      if (unavailable.length > 0) {
+        return {
+          success: false,
+          code: "product_not_available_online",
+          message: "One or more products in this order are no longer available for online sale.",
+        };
+      }
     }
 
     const [customer] = await db

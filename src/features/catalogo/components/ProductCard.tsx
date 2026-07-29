@@ -10,6 +10,7 @@ import { Badge } from "@/shared/ui";
 import { useScrollReveal } from "@/shared/hooks";
 import { usePurchaseAvailability } from "@/shared/providers/PurchaseAvailabilityProvider";
 import { formatCLP } from "@/shared/utils/formatters";
+import { buildWhatsAppConsultUrl } from "@/shared/utils/whatsapp";
 
 export interface ProductCardProps {
   id: string;
@@ -22,6 +23,8 @@ export interface ProductCardProps {
   isNew?: boolean;
   isOnSale?: boolean;
   stockQuantity?: number;
+  sku?: string | null;
+  onlineSaleEnabled?: boolean;
   className?: string;
   variant?: "default" | "clean";
 }
@@ -95,6 +98,8 @@ export function ProductCard({
   isNew = false,
   isOnSale = false,
   stockQuantity,
+  sku = null,
+  onlineSaleEnabled = false,
   className,
 }: ProductCardProps) {
   const router = useRouter();
@@ -107,6 +112,9 @@ export function ProductCard({
   const hasDiscount = isOnSale || (salePrice !== null && salePrice !== undefined && salePrice < price);
   const effectivePrice = hasDiscount && salePrice ? salePrice : price;
   const isLowStock = stockQuantity !== undefined && stockQuantity > 0 && stockQuantity <= 3;
+  const hasStock = stockQuantity === undefined || stockQuantity > 0;
+  const showWhatsAppCta = purchasesEnabled && !onlineSaleEnabled;
+  const whatsAppUrl = buildWhatsAppConsultUrl({ title, sku, slug });
 
   const badge = useMemo(() => {
     if (hasDiscount) {
@@ -195,44 +203,75 @@ export function ProductCard({
             pointerEvents: isHovered ? "auto" : "none",
           }}
         >
-          <button
-            onClick={(event) => {
-              event.stopPropagation();
-              if (!purchasesEnabled) return;
-              addItem({
-                productId: id,
-                title,
-                slug,
-                author,
-                price: effectivePrice,
-                originalPrice: hasDiscount ? price : null,
-                imageUrl: mainImageUrl ?? null,
-                sku: null,
-              });
-              setIsAdded(true);
-            }}
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              paddingTop: "14px",
-              paddingBottom: "14px",
-              background: !purchasesEnabled ? "var(--text-light)" : isAdded ? "var(--moss)" : "var(--gold)",
-              color: "white",
-              fontSize: "11px",
-              letterSpacing: "0.1em",
-              fontWeight: 600,
-              textTransform: "uppercase",
-              border: "none",
-              cursor: purchasesEnabled ? "pointer" : "not-allowed",
-              borderRadius: "0 0 var(--radius-md) var(--radius-md)",
-              transition: "background 0.2s",
-            }}
-            type="button"
-          >
-            {!purchasesEnabled ? "Compra pausada" : isAdded ? "Agregado" : "Agregar"}
-          </button>
+          {showWhatsAppCta ? (
+            <a
+              href={whatsAppUrl}
+              onClick={(event) => event.stopPropagation()}
+              rel="noopener noreferrer"
+              target="_blank"
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                paddingTop: "14px",
+                paddingBottom: "14px",
+                background: "var(--moss)",
+                color: "white",
+                fontSize: "11px",
+                letterSpacing: "0.1em",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                textAlign: "center",
+                textDecoration: "none",
+                display: "block",
+                borderRadius: "0 0 var(--radius-md) var(--radius-md)",
+                transition: "background 0.2s",
+              }}
+            >
+              Consultar por WhatsApp
+            </a>
+          ) : (
+            <button
+              disabled={!purchasesEnabled || !hasStock}
+              onClick={(event) => {
+                event.stopPropagation();
+                if (!purchasesEnabled || !hasStock) return;
+                addItem({
+                  productId: id,
+                  title,
+                  slug,
+                  author,
+                  price: effectivePrice,
+                  originalPrice: hasDiscount ? price : null,
+                  imageUrl: mainImageUrl ?? null,
+                  sku,
+                });
+                setIsAdded(true);
+              }}
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                paddingTop: "14px",
+                paddingBottom: "14px",
+                background: !purchasesEnabled || !hasStock ? "var(--text-light)" : isAdded ? "var(--moss)" : "var(--gold)",
+                color: "white",
+                fontSize: "11px",
+                letterSpacing: "0.1em",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                border: "none",
+                cursor: purchasesEnabled && hasStock ? "pointer" : "not-allowed",
+                borderRadius: "0 0 var(--radius-md) var(--radius-md)",
+                transition: "background 0.2s",
+              }}
+              type="button"
+            >
+              {!purchasesEnabled ? "Compra pausada" : !hasStock ? "Sin stock" : isAdded ? "Agregado" : "Agregar"}
+            </button>
+          )}
         </div>
       </div>
 

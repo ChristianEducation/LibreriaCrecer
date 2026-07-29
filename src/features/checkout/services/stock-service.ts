@@ -8,6 +8,20 @@ import type { CreateOrderItemInput, StockValidationError, StockValidationResult 
 type DbTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type DbExecutor = typeof db | DbTx;
 
+export type ProductAvailabilityReason =
+  | "available"
+  | "consultation_only"
+  | "out_of_stock"
+  | "inactive"
+  | "not_found";
+
+export type ProductAvailability = {
+  productId: string;
+  available: boolean;
+  onlineSaleEnabled: boolean;
+  reason: ProductAvailabilityReason;
+};
+
 function normalizeItems(items: CreateOrderItemInput[]): CreateOrderItemInput[] {
   const map = new Map<string, number>();
 
@@ -59,6 +73,78 @@ export async function validateStock(
     valid: errors.length === 0,
     errors,
   };
+}
+
+export async function checkProductsAvailability(
+  items: CreateOrderItemInput[],
+  executor: DbExecutor = db,
+): Promise<ProductAvailability[]> {
+  const normalized = normalizeItems(items).filter((item) => item.quantity > 0);
+  if (normalized.length === 0) {
+    return [];
+  }
+
+  const productIds = normalized.map((item) => item.productId);
+
+  const rows = await executor
+    .select({
+      id: products.id,
+      isActive: products.isActive,
+      inStock: products.inStock,
+      stockQuantity: products.stockQuantity,
+      onlineSaleEnabled: products.onlineSaleEnabled,
+    })
+    .from(products)
+    .where(inArray(products.id, productIds));
+
+  const byId = new Map(rows.map((row) => [row.id, row]));
+
+  return normalized.map((item) => {
+    const product = byId.get(item.productId);
+
+    if (!product) {
+      return {
+        productId: item.productId,
+        available: false,
+        onlineSaleEnabled: false,
+        reason: "not_found" as const,
+      };
+    }
+
+    if (!product.isActive) {
+      return {
+        productId: item.productId,
+        available: false,
+        onlineSaleEnabled: product.onlineSaleEnabled,
+        reason: "inactive" as const,
+      };
+    }
+
+    if (!product.onlineSaleEnabled) {
+      return {
+        productId: item.productId,
+        available: false,
+        onlineSaleEnabled: false,
+        reason: "consultation_only" as const,
+      };
+    }
+
+    if (!product.inStock || product.stockQuantity < item.quantity) {
+      return {
+        productId: item.productId,
+        available: false,
+        onlineSaleEnabled: true,
+        reason: "out_of_stock" as const,
+      };
+    }
+
+    return {
+      productId: item.productId,
+      available: true,
+      onlineSaleEnabled: true,
+      reason: "available" as const,
+    };
+  });
 }
 
 export async function decrementStock(

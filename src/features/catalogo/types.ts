@@ -44,6 +44,7 @@ export type CatalogProduct = {
   sku: string | null;
   inStock: boolean;
   stockQuantity: number;
+  onlineSaleEnabled: boolean;
   createdAt: Date;
   categories: ProductCategoryRef[];
 };

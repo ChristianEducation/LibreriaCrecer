@@ -29,6 +29,7 @@ export const products = pgTable("products", {
   mainImageUrl: text("main_image_url"),
   isFeatured: boolean("is_featured").default(false).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
+  onlineSaleEnabled: boolean("online_sale_enabled").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

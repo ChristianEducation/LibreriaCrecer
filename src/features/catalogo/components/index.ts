@@ -1,4 +1,5 @@
 export { AddToCartButton } from "./AddToCartButton";
+export { CatalogAutoRefresh } from "./CatalogAutoRefresh";
 export { CategoryCard } from "./CategoryCard";
 export { CategoryCarousel } from "./CategoryCarousel";
 export { FilterBar } from "./FilterBar";

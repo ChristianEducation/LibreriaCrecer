@@ -37,6 +37,7 @@ type ProductRow = {
   sku: string | null;
   inStock: boolean;
   stockQuantity: number;
+  onlineSaleEnabled: boolean;
   createdAt: Date;
 };
 
@@ -98,6 +99,7 @@ function mapProduct(row: ProductRow, categoriesForProduct: ProductCategoryRef[])
     sku: row.sku,
     inStock: row.inStock,
     stockQuantity: row.stockQuantity,
+    onlineSaleEnabled: row.onlineSaleEnabled,
     createdAt: row.createdAt,
     categories: categoriesForProduct,
   };
@@ -246,6 +248,7 @@ export async function getProducts(params: ProductQueryParams): Promise<ProductLi
       sku: products.sku,
       inStock: products.inStock,
       stockQuantity: products.stockQuantity,
+      onlineSaleEnabled: products.onlineSaleEnabled,
       createdAt: products.createdAt,
     })
     .from(products)
@@ -285,6 +288,7 @@ export async function getProductBySlug(slug: string): Promise<CatalogProductDeta
       pages: products.pages,
       inStock: products.inStock,
       stockQuantity: products.stockQuantity,
+      onlineSaleEnabled: products.onlineSaleEnabled,
       mainImageUrl: products.mainImageUrl,
       createdAt: products.createdAt,
     })
@@ -339,6 +343,7 @@ async function getSimpleProductCollection(
       sku: products.sku,
       inStock: products.inStock,
       stockQuantity: products.stockQuantity,
+      onlineSaleEnabled: products.onlineSaleEnabled,
       createdAt: products.createdAt,
     })
     .from(products)
@@ -397,6 +402,7 @@ export async function getRelatedProducts(
         sku: products.sku,
         inStock: products.inStock,
         stockQuantity: products.stockQuantity,
+        onlineSaleEnabled: products.onlineSaleEnabled,
         createdAt: products.createdAt,
       })
       .from(products)
@@ -442,6 +448,7 @@ export async function getRelatedProducts(
         sku: products.sku,
         inStock: products.inStock,
         stockQuantity: products.stockQuantity,
+        onlineSaleEnabled: products.onlineSaleEnabled,
         createdAt: products.createdAt,
       })
       .from(products)
@@ -464,4 +471,32 @@ export async function getRelatedProducts(
   }
 
   return allRelated;
+}
+
+/**
+ * Señal liviana para detectar cambios sin recargar la página (polling).
+ * Devuelve solo `updated_at` — cualquier edición del producto (precio, stock,
+ * online_sale_enabled, etc.) lo actualiza, así que alcanza para saber "algo cambió".
+ */
+export async function getProductChangeSignal(slug: string): Promise<string | null> {
+  const [row] = await db
+    .select({ updatedAt: products.updatedAt })
+    .from(products)
+    .where(and(eq(products.slug, slug), eq(products.isActive, true)))
+    .limit(1);
+
+  return row ? row.updatedAt.toISOString() : null;
+}
+
+/**
+ * Señal liviana a nivel de catálogo — el máximo `updated_at` entre productos activos.
+ * Una sola consulta agregada, independiente del tamaño de la grilla o los filtros activos.
+ */
+export async function getCatalogChangeSignal(): Promise<string | null> {
+  const [row] = await db
+    .select({ latest: sql<Date | null>`max(${products.updatedAt})` })
+    .from(products)
+    .where(eq(products.isActive, true));
+
+  return row?.latest ? new Date(row.latest).toISOString() : null;
 }

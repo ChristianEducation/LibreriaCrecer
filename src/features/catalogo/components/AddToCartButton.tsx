@@ -5,6 +5,7 @@ import { cx } from "class-variance-authority";
 
 import { useCart } from "@/features/carrito/hooks";
 import { usePurchaseAvailability } from "@/shared/providers/PurchaseAvailabilityProvider";
+import { buildWhatsAppConsultUrl } from "@/shared/utils/whatsapp";
 
 export interface AddToCartButtonProps {
   product: {
@@ -18,6 +19,7 @@ export interface AddToCartButtonProps {
     sku?: string | null;
     stockQuantity: number;
     inStock: boolean;
+    onlineSaleEnabled: boolean;
   };
 }
 
@@ -111,6 +113,21 @@ function LocationIcon() {
   );
 }
 
+function WhatsAppIcon() {
+  return (
+    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M21 11.5a8.5 8.5 0 0 1-12.36 7.56L3 20l1.06-5.44A8.5 8.5 0 1 1 21 11.5Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.6"
+      />
+      <path d="M8.5 9.5c0 3.5 2.5 6 6 6" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
 function clampQuantity(value: number, max: number) {
   if (!Number.isFinite(value)) {
     return 1;
@@ -125,7 +142,14 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
   const [qty, setQty] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const maxStock = Math.max(product.stockQuantity, 1);
-  const isDisabled = !purchasesEnabled || !product.inStock || product.stockQuantity <= 0;
+  const showWhatsAppCta = purchasesEnabled && !product.onlineSaleEnabled;
+  const isDisabled =
+    !purchasesEnabled || !product.onlineSaleEnabled || !product.inStock || product.stockQuantity <= 0;
+  const whatsAppUrl = buildWhatsAppConsultUrl({
+    title: product.title,
+    sku: product.sku ?? null,
+    slug: product.slug,
+  });
 
   useEffect(() => {
     if (!isAdded) {
@@ -191,48 +215,70 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <div className="flex overflow-hidden rounded-[2px] border border-border">
-          <button
-            className="flex h-12 w-9 items-center justify-center bg-beige-warm text-base text-text-mid transition-colors hover:bg-beige-mid hover:text-moss"
-            disabled={isDisabled}
-            onClick={() => handleSetQuantity(qty - 1)}
-            type="button"
+        {showWhatsAppCta ? (
+          <a
+            className="flex h-12 flex-1 items-center justify-center gap-2.5 rounded-[2px] bg-moss px-5 text-[12px] font-medium uppercase tracking-[0.1em] text-white transition-all duration-200 hover:-translate-y-px hover:bg-moss-mid"
+            href={whatsAppUrl}
+            rel="noopener noreferrer"
+            target="_blank"
           >
-            −
-          </button>
-          <input
-            className="h-12 w-11 border-x border-border bg-white text-center text-sm font-medium text-text outline-none [appearance:textfield]"
-            disabled={isDisabled}
-            inputMode="numeric"
-            max={product.stockQuantity}
-            min={1}
-            onChange={(event) => handleSetQuantity(Number(event.target.value))}
-            type="number"
-            value={qty}
-          />
-          <button
-            className="flex h-12 w-9 items-center justify-center bg-beige-warm text-base text-text-mid transition-colors hover:bg-beige-mid hover:text-moss"
-            disabled={isDisabled}
-            onClick={() => handleSetQuantity(qty + 1)}
-            type="button"
-          >
-            +
-          </button>
-        </div>
+            <WhatsAppIcon />
+            <span>Consultar por WhatsApp</span>
+          </a>
+        ) : (
+          <>
+            <div className="flex overflow-hidden rounded-[2px] border border-border">
+              <button
+                className="flex h-12 w-9 items-center justify-center bg-beige-warm text-base text-text-mid transition-colors hover:bg-beige-mid hover:text-moss"
+                disabled={isDisabled}
+                onClick={() => handleSetQuantity(qty - 1)}
+                type="button"
+              >
+                −
+              </button>
+              <input
+                className="h-12 w-11 border-x border-border bg-white text-center text-sm font-medium text-text outline-none [appearance:textfield]"
+                disabled={isDisabled}
+                inputMode="numeric"
+                max={product.stockQuantity}
+                min={1}
+                onChange={(event) => handleSetQuantity(Number(event.target.value))}
+                type="number"
+                value={qty}
+              />
+              <button
+                className="flex h-12 w-9 items-center justify-center bg-beige-warm text-base text-text-mid transition-colors hover:bg-beige-mid hover:text-moss"
+                disabled={isDisabled}
+                onClick={() => handleSetQuantity(qty + 1)}
+                type="button"
+              >
+                +
+              </button>
+            </div>
 
-        <button
-          className={cx(
-            "flex h-12 flex-1 items-center justify-center gap-2.5 rounded-[2px] bg-moss px-5 text-[12px] font-medium uppercase tracking-[0.1em] text-white transition-all duration-200",
-            isDisabled ? "cursor-not-allowed opacity-50" : "hover:-translate-y-px hover:bg-moss-mid",
-            isAdded ? "bg-moss-mid hover:bg-moss-mid" : "",
-          )}
-          disabled={isDisabled}
-          onClick={handleAddToCart}
-          type="button"
-        >
-          <CartIcon />
-          <span>{!purchasesEnabled ? "Compras pausadas" : isAdded ? "✓ Agregado" : "Anadir al carrito"}</span>
-        </button>
+            <button
+              className={cx(
+                "flex h-12 flex-1 items-center justify-center gap-2.5 rounded-[2px] bg-moss px-5 text-[12px] font-medium uppercase tracking-[0.1em] text-white transition-all duration-200",
+                isDisabled ? "cursor-not-allowed opacity-50" : "hover:-translate-y-px hover:bg-moss-mid",
+                isAdded ? "bg-moss-mid hover:bg-moss-mid" : "",
+              )}
+              disabled={isDisabled}
+              onClick={handleAddToCart}
+              type="button"
+            >
+              <CartIcon />
+              <span>
+                {!purchasesEnabled
+                  ? "Compras pausadas"
+                  : !product.inStock || product.stockQuantity <= 0
+                    ? "Sin stock"
+                    : isAdded
+                      ? "✓ Agregado"
+                      : "Anadir al carrito"}
+              </span>
+            </button>
+          </>
+        )}
 
         <button
           aria-label="Guardar en favoritos"

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { ValidateStockSchema } from "@/features/checkout/schemas";
-import { validateStock } from "@/features/checkout/services/stock-service";
+import { checkProductsAvailability, validateStock } from "@/features/checkout/services/stock-service";
 
 export async function POST(request: Request) {
   try {
@@ -19,12 +19,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await validateStock(parsed.data.items);
+    const [result, items] = await Promise.all([
+      validateStock(parsed.data.items),
+      checkProductsAvailability(parsed.data.items),
+    ]);
 
     return NextResponse.json({
       data: {
-        valid: result.valid,
+        valid: result.valid && items.every((item) => item.available),
         errors: result.errors.length > 0 ? result.errors : undefined,
+        items,
       },
     });
   } catch (error) {

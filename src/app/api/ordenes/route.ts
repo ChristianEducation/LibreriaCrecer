@@ -44,6 +44,17 @@ export async function POST(request: Request) {
         );
       }
 
+      if (result.code === "product_not_available_online") {
+        return NextResponse.json(
+          {
+            error: "product_not_available_online",
+            message: "Uno o más productos no están habilitados para venta web.",
+            details: result.details ?? [],
+          },
+          { status: 409 },
+        );
+      }
+
       if (result.code === "invalid_coupon") {
         return NextResponse.json(
           {

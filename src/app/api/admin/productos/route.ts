@@ -1,7 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { CreateProductSchema } from "@/features/admin/schemas/product-schemas";
-import { createProduct, getProductsAdmin } from "@/features/admin/services/product-admin-service";
+import {
+  createProduct,
+  getProductAdminStats,
+  getProductsAdmin,
+} from "@/features/admin/services/product-admin-service";
 
 function parsePositiveInt(value: string | null, fallback: number) {
   const parsed = Number(value);
@@ -17,17 +21,22 @@ function parseBooleanOptional(value: string | null): boolean | undefined {
 export async function GET(request: NextRequest) {
   try {
     const query = request.nextUrl.searchParams;
-    const result = await getProductsAdmin({
-      page: parsePositiveInt(query.get("page"), 1),
-      limit: parsePositiveInt(query.get("limit"), 20),
-      search: query.get("search") ?? undefined,
-      categoryId: query.get("categoryId") ?? undefined,
-      isActive: parseBooleanOptional(query.get("isActive")),
-    });
+    const [result, stats] = await Promise.all([
+      getProductsAdmin({
+        page: parsePositiveInt(query.get("page"), 1),
+        limit: parsePositiveInt(query.get("limit"), 20),
+        search: query.get("search") ?? undefined,
+        categoryId: query.get("categoryId") ?? undefined,
+        isActive: parseBooleanOptional(query.get("isActive")),
+        onlineSaleEnabled: parseBooleanOptional(query.get("onlineSaleEnabled")),
+      }),
+      getProductAdminStats(),
+    ]);
 
     return NextResponse.json({
       data: result.products,
       pagination: result.pagination,
+      stats,
     });
   } catch (error) {
     console.error("GET /api/admin/productos failed", error);

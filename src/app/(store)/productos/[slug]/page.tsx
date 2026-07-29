@@ -261,9 +261,12 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
                   isOnSale={p.hasDiscount}
                   key={p.id}
                   mainImageUrl={p.mainImageUrl}
+                  onlineSaleEnabled={p.onlineSaleEnabled}
                   price={p.price}
                   salePrice={p.salePrice ?? undefined}
+                  sku={p.sku}
                   slug={p.slug}
+                  stockQuantity={p.stockQuantity}
                   title={p.title}
                 />
               ))}

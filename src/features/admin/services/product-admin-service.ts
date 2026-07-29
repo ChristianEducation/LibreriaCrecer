@@ -26,6 +26,16 @@ type ProductAdminListParams = {
   search?: string;
   categoryId?: string;
   isActive?: boolean;
+  onlineSaleEnabled?: boolean;
+};
+
+export type ProductAdminStats = {
+  totalProducts: number;
+  activeProducts: number;
+  totalStock: number;
+  potentialSalesValue: number;
+  activeCategories: number;
+  onlineSaleEnabledProducts: number;
 };
 
 function extractStoragePathFromPublicUrl(url: string | null): string | null {
@@ -94,6 +104,9 @@ export async function getProductsAdmin(params: ProductAdminListParams) {
   if (typeof params.isActive === "boolean") {
     filters.push(eq(products.isActive, params.isActive));
   }
+  if (typeof params.onlineSaleEnabled === "boolean") {
+    filters.push(eq(products.onlineSaleEnabled, params.onlineSaleEnabled));
+  }
 
   const whereClause = filters.length ? and(...filters) : undefined;
 
@@ -116,6 +129,7 @@ export async function getProductsAdmin(params: ProductAdminListParams) {
       stockQuantity: products.stockQuantity,
       isActive: products.isActive,
       isFeatured: products.isFeatured,
+      onlineSaleEnabled: products.onlineSaleEnabled,
       createdAt: products.createdAt,
     })
     .from(products)
@@ -163,6 +177,7 @@ export async function getProductAdmin(id: string) {
       mainImageUrl: products.mainImageUrl,
       isFeatured: products.isFeatured,
       isActive: products.isActive,
+      onlineSaleEnabled: products.onlineSaleEnabled,
       createdAt: products.createdAt,
       updatedAt: products.updatedAt,
     })
@@ -225,6 +240,7 @@ export async function createProduct(data: CreateProductInput) {
         stockQuantity: data.stockQuantity,
         isFeatured: data.isFeatured,
         isActive: data.isActive,
+        onlineSaleEnabled: data.onlineSaleEnabled,
       })
       .returning({
         id: products.id,
@@ -274,6 +290,8 @@ export async function updateProduct(id: string, data: UpdateProductInput) {
     if ("isFeatured" in data && typeof data.isFeatured === "boolean")
       updateData.isFeatured = data.isFeatured;
     if ("isActive" in data && typeof data.isActive === "boolean") updateData.isActive = data.isActive;
+    if ("onlineSaleEnabled" in data && typeof data.onlineSaleEnabled === "boolean")
+      updateData.onlineSaleEnabled = data.onlineSaleEnabled;
     updateData.updatedAt = new Date();
 
     if (Object.keys(updateData).length > 0) {
@@ -415,6 +433,48 @@ export async function reorderProductImages(productId: string, imageIds: string[]
   });
 
   return true;
+}
+
+export async function setAllProductsOnlineSale(enabled: boolean) {
+  return db.transaction(async (tx) => {
+    const updated = await tx
+      .update(products)
+      .set({
+        onlineSaleEnabled: enabled,
+        updatedAt: new Date(),
+      })
+      .returning({ id: products.id });
+
+    return { enabled, affected: updated.length };
+  });
+}
+
+export async function getProductAdminStats(): Promise<ProductAdminStats> {
+  const [productStats] = await db
+    .select({
+      totalProducts: count(products.id),
+      activeProducts: sql<number>`count(*) filter (where ${products.isActive} = true)`,
+      totalStock: sql<number>`coalesce(sum(greatest(${products.stockQuantity}, 0)), 0)`,
+      potentialSalesValue: sql<number>`coalesce(sum(greatest(${products.stockQuantity}, 0) * ${products.price}), 0)`,
+      onlineSaleEnabledProducts: sql<number>`count(*) filter (where ${products.onlineSaleEnabled} = true)`,
+    })
+    .from(products);
+
+  const [categoryStats] = await db
+    .select({
+      activeCategories: count(categories.id),
+    })
+    .from(categories)
+    .where(eq(categories.isActive, true));
+
+  return {
+    totalProducts: Number(productStats?.totalProducts ?? 0),
+    activeProducts: Number(productStats?.activeProducts ?? 0),
+    totalStock: Number(productStats?.totalStock ?? 0),
+    potentialSalesValue: Number(productStats?.potentialSalesValue ?? 0),
+    activeCategories: Number(categoryStats?.activeCategories ?? 0),
+    onlineSaleEnabledProducts: Number(productStats?.onlineSaleEnabledProducts ?? 0),
+  };
 }
 
 export async function clearProductMainImage(productId: string) {

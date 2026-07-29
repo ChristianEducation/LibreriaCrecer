@@ -26,13 +26,29 @@ test.describe("Detalle de producto", () => {
     await expect(page.locator("main").getByText(/^\$[\d.]+/).first()).toBeVisible();
   });
 
-  test("muestra el botón 'Añadir al carrito'", async ({ page }) => {
+  test("muestra el CTA de compra ('Añadir al carrito') o de consulta ('Consultar por WhatsApp') según disponibilidad", async ({ page }) => {
+    // Un producto es comprable solo si online_sale_enabled=true además de activo/con stock;
+    // en modo consulta el CTA de compra se reemplaza por un link a WhatsApp. Ambos son
+    // estados válidos según el estado real del producto — se verifica cuál corresponde.
     const addBtn = page.getByRole("button", { name: /añadir al carrito/i });
-    await expect(addBtn).toBeVisible();
+    // Se filtra por href, no por accesible role/name: el <article role="link"> de las
+    // tarjetas relacionadas concatena "Consultar por WhatsApp" en su propio nombre accesible.
+    const whatsAppLink = page.locator('a[href^="https://wa.me/"]').first();
+
+    const isPurchasable = await addBtn.isVisible().catch(() => false);
+    if (isPurchasable) {
+      await expect(addBtn).toBeVisible();
+    } else {
+      await expect(whatsAppLink).toBeVisible();
+      await expect(whatsAppLink).toHaveAttribute("href", /^https:\/\/wa\.me\/56992197121\?text=/);
+    }
   });
 
   test("el botón 'Añadir al carrito' muestra confirmación al hacer click", async ({ page }) => {
     const addBtn = page.getByRole("button", { name: /añadir al carrito/i });
+    const isPurchasable = await addBtn.isVisible().catch(() => false);
+    test.skip(!isPurchasable, "Producto en modo consulta — no tiene CTA de compra que confirmar.");
+
     await addBtn.click();
     // El botón cambia texto a "Agregado" — usar locator separado para evitar stale reference
     await expect(page.getByText(/agregado/i).first()).toBeVisible({ timeout: 3000 });

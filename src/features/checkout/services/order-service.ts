@@ -13,7 +13,7 @@ import type {
 } from "../types";
 import { validateCoupon } from "./coupon-service";
 import { calculateShippingCost } from "./shipping-service";
-import { validateStock } from "./stock-service";
+import { checkProductsAvailability, validateStock } from "./stock-service";
 
 const MAX_ORDER_NUMBER_ATTEMPTS = 3;
 type DbTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -29,11 +29,23 @@ const VALID_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 };
 
 class CheckoutServiceError extends Error {
-  code: "invalid_coupon" | "stock_insufficient" | "invalid_transition" | "order_not_found" | "validation_error";
+  code:
+    | "invalid_coupon"
+    | "stock_insufficient"
+    | "invalid_transition"
+    | "order_not_found"
+    | "validation_error"
+    | "product_not_available_online";
   details?: unknown;
 
   constructor(
-    code: "invalid_coupon" | "stock_insufficient" | "invalid_transition" | "order_not_found" | "validation_error",
+    code:
+      | "invalid_coupon"
+      | "stock_insufficient"
+      | "invalid_transition"
+      | "order_not_found"
+      | "validation_error"
+      | "product_not_available_online",
     message: string,
     details?: unknown,
   ) {
@@ -205,6 +217,16 @@ export async function createOrder(data: CreateOrderInput): Promise<ServiceResult
   for (let attempt = 1; attempt <= MAX_ORDER_NUMBER_ATTEMPTS; attempt += 1) {
     try {
       const result = await db.transaction(async (tx) => {
+        const availability = await checkProductsAvailability(normalizedItems, tx);
+        const notAvailableOnline = availability.filter((entry) => entry.reason === "consultation_only");
+        if (notAvailableOnline.length > 0) {
+          throw new CheckoutServiceError(
+            "product_not_available_online",
+            "One or more products are not enabled for online sale.",
+            notAvailableOnline.map((entry) => ({ productId: entry.productId })),
+          );
+        }
+
         const stockValidation = await validateStock(normalizedItems, tx);
         if (!stockValidation.valid) {
           throw new CheckoutServiceError(
@@ -224,12 +246,18 @@ export async function createOrder(data: CreateOrderInput): Promise<ServiceResult
             salePrice: products.salePrice,
           })
           .from(products)
-          .where(and(inArray(products.id, productIds), eq(products.isActive, true)));
+          .where(
+            and(
+              inArray(products.id, productIds),
+              eq(products.isActive, true),
+              eq(products.onlineSaleEnabled, true),
+            ),
+          );
 
         if (productRows.length !== productIds.length) {
           throw new CheckoutServiceError(
             "validation_error",
-            "Some products are missing or inactive.",
+            "Some products are missing, inactive, or not enabled for online sale.",
           );
         }
 

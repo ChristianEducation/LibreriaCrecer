@@ -41,6 +41,7 @@ type ProductData = {
   stockQuantity?: number | null;
   isFeatured?: boolean | null;
   isActive?: boolean | null;
+  onlineSaleEnabled?: boolean | null;
   images?: ProductImage[];
   categories?: Array<{ id: string }>;
   mainImageUrl?: string | null;
@@ -85,6 +86,7 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
       stockQuantity: initialData?.stockQuantity ?? 0,
       isFeatured: initialData?.isFeatured ?? false,
       isActive: initialData?.isActive ?? true,
+      onlineSaleEnabled: initialData?.onlineSaleEnabled ?? false,
       categoryIds: initialData?.categories?.map((category) => category.id) ?? [],
     }),
     [initialData],
@@ -98,6 +100,7 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
   const inStock = form.watch("inStock") ?? false;
   const isFeatured = form.watch("isFeatured") ?? false;
   const isActive = form.watch("isActive") ?? true;
+  const onlineSaleEnabled = form.watch("onlineSaleEnabled") ?? false;
   const optionalNumber = (value: unknown) => {
     if (value === "" || value === null || typeof value === "undefined") {
       return undefined;
@@ -522,6 +525,12 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
                 checked={isActive}
                 label="Visible en la tienda"
                 onChange={(checked) => form.setValue("isActive", checked)}
+              />
+              <AdminToggle
+                checked={onlineSaleEnabled}
+                description="Si está apagado, el producto muestra 'Consultar stock por WhatsApp' en vez del carrito."
+                label="Habilitar venta web"
+                onChange={(checked) => form.setValue("onlineSaleEnabled", checked)}
               />
             </div>
           </section>

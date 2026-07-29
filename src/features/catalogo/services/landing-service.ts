@@ -154,6 +154,7 @@ export async function getCuratedProducts(section?: string): Promise<CuratedProdu
       sku: products.sku,
       inStock: products.inStock,
       stockQuantity: products.stockQuantity,
+      onlineSaleEnabled: products.onlineSaleEnabled,
       createdAt: products.createdAt,
     })
     .from(featuredProducts)
@@ -184,6 +185,7 @@ export async function getCuratedProducts(section?: string): Promise<CuratedProdu
         sku: row.sku,
         inStock: row.inStock,
         stockQuantity: row.stockQuantity,
+        onlineSaleEnabled: row.onlineSaleEnabled,
         createdAt: row.createdAt,
         categories: [] as ProductCategoryRef[],
       },

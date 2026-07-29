@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { MobileFiltersDrawer, CatalogSidebar, PageHeader, Pagination, ProductGrid } from "@/features/catalogo/components";
+import { CatalogAutoRefresh, MobileFiltersDrawer, CatalogSidebar, PageHeader, Pagination, ProductGrid } from "@/features/catalogo/components";
 import { getCategories, getProducts, type ProductSortBy } from "@/features/catalogo";
 import { getCatalogoHeaderBanner } from "@/features/catalogo/services/landing-service";
 
@@ -56,7 +56,7 @@ export default async function ProductosPage({ searchParams }: ProductosPageProps
       sortBy: filter === "nuevo" ? "newest" : sort,
       search: search || undefined,
       onlyActive: true,
-      onlyInStock: filter !== "nuevo",
+      onlyInStock: false,
       onlyOnSale: filter === "oferta",
       isFeatured: filter === "destacado",
       onlySeleccion: filter === "seleccion",
@@ -70,6 +70,7 @@ export default async function ProductosPage({ searchParams }: ProductosPageProps
 
   return (
     <main style={{ background: "var(--beige)" }}>
+      <CatalogAutoRefresh />
       <PageHeader
         activeCategory={activeCategory}
         categories={categories}

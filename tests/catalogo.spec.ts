@@ -13,8 +13,8 @@ test.describe("Catálogo /productos", () => {
   test("carga con header y grilla de productos", async ({ page }) => {
     // PageHeader con "Nuestra colección"
     await expect(page.getByRole("heading", { name: /colecci/i }).first()).toBeVisible();
-    // FilterBar con label FILTRAR
-    await expect(page.getByText("FILTRAR")).toBeVisible();
+    // CatalogSidebar con heading "Filtros Especiales"
+    await expect(page.getByText("Filtros Especiales")).toBeVisible();
     // Al menos un producto en la grilla
     await expect(page.locator('article[role="link"]').first()).toBeVisible();
   });
@@ -29,9 +29,10 @@ test.describe("Catálogo /productos", () => {
     await expect(page).toHaveURL(/filter=nuevo/);
   });
 
-  test("chip 'En oferta' actualiza la URL con filter=oferta", async ({ page }) => {
-    await page.getByRole("button", { name: "En oferta" }).first().click();
-    await expect(page).toHaveURL(/filter=oferta/);
+  test.skip("chip 'En oferta' actualiza la URL con filter=oferta", async () => {
+    // SKIP: El filtro "En oferta" fue retirado de CatalogSidebar en el rediseño
+    // (filterOptions solo contiene Todos/Nuevos/Selección del mes). El backend
+    // sigue soportando ?filter=oferta, pero no hay control de UI para activarlo.
   });
 
   test("chip 'Selección del mes' actualiza la URL con filter=seleccion", async ({ page }) => {
@@ -50,22 +51,39 @@ test.describe("Catálogo /productos", () => {
   });
 
   test("botón de orden 'Precio: menor a mayor' actualiza URL", async ({ page }) => {
-    await page.getByRole("button", { name: /menor a mayor/i }).first().click();
+    // CatalogSidebar renderiza las opciones de orden como <label> + radio oculto, no <button>
+    await page.getByText("Menor a mayor precio").first().click();
     await expect(page).toHaveURL(/sort=price_asc/);
   });
 
   test("búsqueda actualiza la URL con el parámetro search", async ({ page }) => {
-    const searchInput = page.getByPlaceholder("Buscar...").first();
+    // El mismo placeholder existe en el CatalogSidebar (visible en desktop) y en
+    // el MobileFiltersDrawer (oculto fuera de pantalla) — se escopea al landmark
+    // "complementary" (aside) para tomar siempre el input visible en desktop.
+    const searchInput = page.getByRole("complementary").getByPlaceholder("Título, autor...");
     await searchInput.fill("biblia");
     await searchInput.press("Enter");
     await expect(page).toHaveURL(/search=biblia/);
   });
 
   test("buscar un término vacío no agrega search a la URL", async ({ page }) => {
-    const searchInput = page.getByPlaceholder("Buscar...").first();
+    const searchInput = page.getByRole("complementary").getByPlaceholder("Título, autor...");
     await searchInput.fill("  ");
     await searchInput.press("Enter");
     await expect(page).not.toHaveURL(/search=/);
+  });
+
+  test("tarjeta de producto en consulta muestra CTA de WhatsApp con el número correcto", async ({ page }) => {
+    // Con online_sale_enabled=false, ProductCard reemplaza "Agregar" por un link a WhatsApp.
+    // Nota: getByRole("link", { name: /consultar por whatsapp/i }) matchea primero el
+    // <article role="link"> de la tarjeta (su nombre accesible concatena todo el texto
+    // descendiente, incluyendo "Consultar por WhatsApp"), no el <a> real. Se filtra por
+    // href para apuntar siempre al anchor real.
+    const whatsAppLink = page.locator('a[href^="https://wa.me/"]').first();
+    await expect(whatsAppLink).toBeVisible();
+    await expect(whatsAppLink).toHaveAttribute("href", /^https:\/\/wa\.me\/56992197121\?text=/);
+    await expect(whatsAppLink).toHaveAttribute("target", "_blank");
+    await expect(whatsAppLink).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   test("hacer click en un producto navega al detalle", async ({ page }) => {

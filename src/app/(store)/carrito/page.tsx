@@ -9,6 +9,28 @@ import { useCart, useCartSummary } from "@/features/carrito/hooks";
 import { useCartHydration } from "@/features/carrito/useCartHydration";
 import { usePurchaseAvailability } from "@/shared/providers/PurchaseAvailabilityProvider";
 import { formatCLP } from "@/shared/utils/formatters";
+import { buildWhatsAppConsultUrl } from "@/shared/utils/whatsapp";
+
+type CartItemAvailabilityReason =
+  | "available"
+  | "consultation_only"
+  | "out_of_stock"
+  | "inactive"
+  | "not_found";
+
+type CartItemAvailability = {
+  productId: string;
+  available: boolean;
+  onlineSaleEnabled: boolean;
+  reason: CartItemAvailabilityReason;
+};
+
+const AVAILABILITY_MESSAGES: Record<Exclude<CartItemAvailabilityReason, "available">, string> = {
+  consultation_only: "Disponible solo por consulta",
+  out_of_stock: "Sin stock suficiente",
+  inactive: "Ya no está disponible",
+  not_found: "Ya no está disponible",
+};
 
 function BookIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
@@ -75,10 +97,56 @@ export default function CarritoPage() {
   const [couponError, setCouponError] = useState<string | null>(null);
   const [couponFeedback, setCouponFeedback] = useState<string | null>(null);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [availability, setAvailability] = useState<Record<string, CartItemAvailability>>({});
 
   useEffect(() => {
     setCouponInput(couponCode ?? "");
   }, [couponCode]);
+
+  useEffect(() => {
+    if (!hydrated || items.length === 0) {
+      setAvailability({});
+      return;
+    }
+
+    let cancelled = false;
+
+    async function checkAvailability() {
+      try {
+        const response = await fetch("/api/stock/validar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+          }),
+        });
+
+        const payload = (await response.json().catch(() => null)) as
+          | { data?: { items?: CartItemAvailability[] } }
+          | null;
+
+        if (cancelled || !response.ok || !payload?.data?.items) {
+          return;
+        }
+
+        const map: Record<string, CartItemAvailability> = {};
+        for (const entry of payload.data.items) {
+          map[entry.productId] = entry;
+        }
+        setAvailability(map);
+      } catch {
+        // best-effort: si falla la validación, no bloqueamos la visualización del carrito
+      }
+    }
+
+    void checkAvailability();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, items]);
+
+  const hasUnavailableItems = items.some((item) => availability[item.productId]?.available === false);
 
   async function handleApplyCoupon() {
     const normalizedCode = couponInput.trim();
@@ -281,6 +349,54 @@ export default function CarritoPage() {
                           >
                             {item.author}
                           </p>
+                        )}
+
+                        {availability[item.productId]?.available === false && (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              flexWrap: "wrap",
+                              gap: "10px",
+                              marginBottom: "12px",
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                padding: "3px 10px",
+                                borderRadius: "2px",
+                                fontSize: "11px",
+                                fontWeight: 500,
+                                background: "rgba(192,57,43,0.08)",
+                                color: "#C0392B",
+                                border: "1px solid rgba(192,57,43,0.2)",
+                              }}
+                            >
+                              {AVAILABILITY_MESSAGES[availability[item.productId].reason as Exclude<CartItemAvailabilityReason, "available">]}
+                            </span>
+                            {availability[item.productId].reason === "consultation_only" && (
+                              <a
+                                href={buildWhatsAppConsultUrl({
+                                  title: item.title,
+                                  sku: item.sku,
+                                  slug: item.slug,
+                                })}
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                style={{
+                                  fontSize: "11px",
+                                  fontWeight: 500,
+                                  color: "var(--color-moss)",
+                                  textDecoration: "underline",
+                                }}
+                              >
+                                Consultar por WhatsApp
+                              </a>
+                            )}
+                          </div>
                         )}
 
                         {/* Quantity controls */}
@@ -579,9 +695,14 @@ export default function CarritoPage() {
                   Estamos actualizando el inventario. Tu carrito seguirá guardado, pero el checkout está temporalmente pausado.
                 </p>
               )}
+              {purchasesEnabled && hasUnavailableItems && (
+                <p style={{ marginBottom: "12px", fontSize: "12px", lineHeight: 1.55, color: "#C0392B", textAlign: "center" }}>
+                  Tienes productos que no se pueden comprar por ahora. Elimínalos o consulta por WhatsApp para continuar.
+                </p>
+              )}
               <Link
-                aria-disabled={isEmpty || !purchasesEnabled}
-                href={purchasesEnabled ? "/checkout" : "/carrito"}
+                aria-disabled={isEmpty || !purchasesEnabled || hasUnavailableItems}
+                href={purchasesEnabled && !hasUnavailableItems ? "/checkout" : "/carrito"}
                 style={{
                   width: "100%",
                   padding: "14px",
@@ -598,11 +719,15 @@ export default function CarritoPage() {
                   justifyContent: "center",
                   gap: "10px",
                   textDecoration: "none",
-                  opacity: isEmpty || !purchasesEnabled ? 0.5 : 1,
-                  pointerEvents: isEmpty || !purchasesEnabled ? "none" : "auto",
+                  opacity: isEmpty || !purchasesEnabled || hasUnavailableItems ? 0.5 : 1,
+                  pointerEvents: isEmpty || !purchasesEnabled || hasUnavailableItems ? "none" : "auto",
                 }}
               >
-                {purchasesEnabled ? "Ir al checkout" : "Compras temporalmente pausadas"}
+                {!purchasesEnabled
+                  ? "Compras temporalmente pausadas"
+                  : hasUnavailableItems
+                    ? "Revisa tu carrito"
+                    : "Ir al checkout"}
               </Link>
               <div
                 style={{

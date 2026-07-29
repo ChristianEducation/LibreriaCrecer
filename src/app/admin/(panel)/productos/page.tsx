@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { AdminStatusPill, AdminTable } from "@/features/admin/components";
+import { AdminStatusPill, AdminTable, AdminToggle } from "@/features/admin/components";
 import { useToast } from "@/shared/hooks";
 import { formatCLP } from "@/shared/utils";
 
@@ -17,6 +17,7 @@ type ProductListItem = {
   stockQuantity: number;
   inStock: boolean;
   isActive: boolean;
+  onlineSaleEnabled: boolean;
   mainImageUrl: string | null;
   categories: Array<{ id: string; name: string }>;
 };
@@ -24,6 +25,24 @@ type ProductListItem = {
 type CategoryOption = {
   id: string;
   name: string;
+};
+
+type ProductAdminStats = {
+  totalProducts: number;
+  activeProducts: number;
+  totalStock: number;
+  potentialSalesValue: number;
+  activeCategories: number;
+  onlineSaleEnabledProducts: number;
+};
+
+const EMPTY_STATS: ProductAdminStats = {
+  totalProducts: 0,
+  activeProducts: 0,
+  totalStock: 0,
+  potentialSalesValue: 0,
+  activeCategories: 0,
+  onlineSaleEnabledProducts: 0,
 };
 
 type ProductIconName =
@@ -557,17 +576,179 @@ function EditableCategory({
   );
 }
 
+function OnlineSaleToggleCell({
+  productTitle,
+  checked,
+  loading,
+  onToggle,
+}: {
+  productTitle: string;
+  checked: boolean;
+  loading: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <AdminToggle
+        ariaLabel={`Venta web habilitada para ${productTitle}`}
+        checked={checked}
+        disabled={loading}
+        onChange={onToggle}
+      />
+      <span style={{ fontSize: 11, color: "var(--text-light)", whiteSpace: "nowrap" }}>
+        {checked ? "Venta web habilitada" : "Consulta por WhatsApp"}
+      </span>
+    </div>
+  );
+}
+
+function BulkVentaWebControl({
+  stats,
+  loading,
+  onBulkAction,
+}: {
+  stats: ProductAdminStats;
+  loading: boolean;
+  onBulkAction: (enabled: boolean) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handlePointer(event: MouseEvent) {
+      if (!ref.current?.contains(event.target as Node)) setOpen(false);
+    }
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", handlePointer);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handlePointer);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [open]);
+
+  function handleSelect(enabled: boolean) {
+    setOpen(false);
+    const message = enabled
+      ? "¿Habilitar la venta web en todo el catálogo?\n\nLos productos activos y con stock podrán agregarse al carrito."
+      : "¿Poner todo el catálogo en modo consulta?\n\nLos productos seguirán visibles, pero el botón de compra será reemplazado por WhatsApp.";
+    const confirmed = window.confirm(message);
+    if (!confirmed) return;
+    onBulkAction(enabled);
+  }
+
+  const label = `Venta web: ${stats.onlineSaleEnabledProducts.toLocaleString("es-CL")} de ${stats.totalProducts.toLocaleString("es-CL")} habilitados`;
+
+  return (
+    <div ref={ref} style={{ position: "relative", display: "inline-block" }}>
+      <button
+        aria-expanded={open}
+        aria-haspopup="menu"
+        disabled={loading}
+        onClick={() => setOpen((value) => !value)}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          height: 36,
+          padding: "0 14px",
+          borderRadius: 10,
+          border: "1px solid #e8e5df",
+          background: "white",
+          color: "var(--text-mid)",
+          fontSize: 13,
+          fontWeight: 500,
+          cursor: loading ? "not-allowed" : "pointer",
+          opacity: loading ? 0.6 : 1,
+          fontFamily: "inherit",
+          whiteSpace: "nowrap",
+        }}
+        type="button"
+      >
+        {loading ? "Actualizando…" : label}
+        <ProductIcon name="chev" size={12} />
+      </button>
+      {open ? (
+        <div
+          role="menu"
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 40,
+            zIndex: 30,
+            width: 260,
+            background: "white",
+            borderRadius: 10,
+            border: "1px solid #e8e5df",
+            boxShadow: "0 8px 24px rgba(58, 48, 1, 0.12)",
+            padding: 4,
+          }}
+        >
+          <button
+            onClick={() => handleSelect(true)}
+            role="menuitem"
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "10px 14px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: 13,
+              color: "var(--text)",
+              borderRadius: 6,
+              textAlign: "left",
+              fontFamily: "inherit",
+            }}
+            type="button"
+          >
+            Habilitar venta en todos
+          </button>
+          <button
+            onClick={() => handleSelect(false)}
+            role="menuitem"
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "10px 14px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: 13,
+              color: "var(--text)",
+              borderRadius: 6,
+              textAlign: "left",
+              fontFamily: "inherit",
+            }}
+            type="button"
+          >
+            Poner todos en modo consulta
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function AdminProductosPage() {
   const { toast } = useToast();
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [isActive, setIsActive] = useState("true");
+  const [onlineSaleFilter, setOnlineSaleFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<ProductAdminStats>(EMPTY_STATS);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [rowLoadingIds, setRowLoadingIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -597,10 +778,16 @@ export default function AdminProductosPage() {
         if (search.trim()) query.set("search", search.trim());
         if (categoryId) query.set("categoryId", categoryId);
         if (isActive) query.set("isActive", isActive);
+        if (onlineSaleFilter) query.set("onlineSaleEnabled", onlineSaleFilter);
 
         const response = await fetch(`/api/admin/productos?${query.toString()}`, { cache: "no-store" });
         const payload = (await response.json().catch(() => null)) as
-          | { data?: ProductListItem[]; pagination?: { totalPages?: number }; message?: string }
+          | {
+              data?: ProductListItem[];
+              pagination?: { total?: number; totalPages?: number };
+              stats?: ProductAdminStats;
+              message?: string;
+            }
           | null;
 
         if (!response.ok) {
@@ -610,6 +797,10 @@ export default function AdminProductosPage() {
 
         setProducts(payload?.data ?? []);
         setTotalPages(payload?.pagination?.totalPages ?? 1);
+        setTotalResults(payload?.pagination?.total ?? 0);
+        if (payload?.stats) {
+          setStats(payload.stats);
+        }
       } catch {
         setError("Error de red. Intenta nuevamente.");
       } finally {
@@ -618,7 +809,84 @@ export default function AdminProductosPage() {
     };
 
     void fetchProducts();
-  }, [page, search, categoryId, isActive]);
+  }, [page, search, categoryId, isActive, onlineSaleFilter]);
+
+  async function handleBulkOnlineSale(enabled: boolean) {
+    if (bulkLoading) return;
+    setBulkLoading(true);
+
+    try {
+      const response = await fetch("/api/admin/productos/venta-web", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | { data?: { enabled: boolean; affected: number }; message?: string }
+        | null;
+
+      if (!response.ok || !payload?.data) {
+        toast({ message: payload?.message ?? "No se pudo actualizar la venta web.", variant: "error" });
+        return;
+      }
+
+      const { affected } = payload.data;
+
+      setProducts((prev) => prev.map((product) => ({ ...product, onlineSaleEnabled: enabled })));
+      setStats((prev) => ({
+        ...prev,
+        onlineSaleEnabledProducts: enabled ? prev.totalProducts : 0,
+      }));
+      toast({
+        message: enabled
+          ? `Venta web habilitada en ${affected} productos.`
+          : `${affected} productos puestos en modo consulta.`,
+        variant: "success",
+      });
+    } catch {
+      toast({ message: "Error de red. Intenta nuevamente.", variant: "error" });
+    } finally {
+      setBulkLoading(false);
+    }
+  }
+
+  async function handleToggleOnlineSale(productId: string, nextValue: boolean) {
+    if (rowLoadingIds.has(productId)) return;
+
+    const previousProducts = products;
+    setRowLoadingIds((prev) => new Set(prev).add(productId));
+    setProducts((prev) =>
+      prev.map((product) => (product.id === productId ? { ...product, onlineSaleEnabled: nextValue } : product)),
+    );
+
+    try {
+      const response = await fetch(`/api/admin/productos/${productId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ onlineSaleEnabled: nextValue }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update");
+      }
+
+      setStats((prev) => ({
+        ...prev,
+        onlineSaleEnabledProducts: prev.onlineSaleEnabledProducts + (nextValue ? 1 : -1),
+      }));
+      toast({ message: "Guardado", variant: "success" });
+    } catch {
+      setProducts(previousProducts);
+      toast({ message: "No se pudo actualizar la venta web.", variant: "error" });
+    } finally {
+      setRowLoadingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(productId);
+        return next;
+      });
+    }
+  }
 
   async function handleDelete(productId: string) {
     const confirmed = window.confirm("¿Desactivar este producto?");
@@ -694,22 +962,14 @@ export default function AdminProductosPage() {
     toast({ message: `Vista previa de "${product.title}" próximamente.` });
   }
 
-  const activeProducts = products.filter((product) => product.isActive).length;
-  const totalStock = products.reduce((sum, product) => sum + product.stockQuantity, 0);
-  const inventoryValue = products.reduce(
-    (sum, product) => sum + product.effectivePrice * product.stockQuantity,
-    0,
-  );
-  const visibleCategories = new Set(
-    products.flatMap((product) => product.categories.map((category) => category.id)),
-  ).size;
-
-  const hasActiveFilters = search.trim().length > 0 || categoryId !== "" || isActive !== "";
+  const hasActiveFilters =
+    search.trim().length > 0 || categoryId !== "" || isActive !== "" || onlineSaleFilter !== "";
 
   function clearFilters() {
     setSearch("");
     setCategoryId("");
     setIsActive("");
+    setOnlineSaleFilter("");
   }
 
   return (
@@ -736,31 +996,34 @@ export default function AdminProductosPage() {
                 fontWeight: 300,
               }}
             >
-              {products.length} producto{products.length === 1 ? "" : "s"} encontrado{products.length === 1 ? "" : "s"}
+              {totalResults} producto{totalResults === 1 ? "" : "s"} encontrado{totalResults === 1 ? "" : "s"}
             </p>
           </div>
-          <Link
-            href="/admin/productos/nuevo"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 7,
-              padding: "0 16px",
-              height: 36,
-              borderRadius: 10,
-              background: "linear-gradient(135deg, var(--gold-light), var(--gold))",
-              color: "white",
-              fontSize: 13,
-              fontWeight: 600,
-              letterSpacing: "0.01em",
-              boxShadow: "0 2px 8px rgba(200, 168, 48, 0.35)",
-              textDecoration: "none",
-              flexShrink: 0,
-            }}
-          >
-            <ProductIcon name="plus" size={16} />
-            Nuevo producto
-          </Link>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
+            <BulkVentaWebControl loading={bulkLoading} onBulkAction={handleBulkOnlineSale} stats={stats} />
+            <Link
+              href="/admin/productos/nuevo"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                padding: "0 16px",
+                height: 36,
+                borderRadius: 10,
+                background: "linear-gradient(135deg, var(--gold-light), var(--gold))",
+                color: "white",
+                fontSize: 13,
+                fontWeight: 600,
+                letterSpacing: "0.01em",
+                boxShadow: "0 2px 8px rgba(200, 168, 48, 0.35)",
+                textDecoration: "none",
+                flexShrink: 0,
+              }}
+            >
+              <ProductIcon name="plus" size={16} />
+              Nuevo producto
+            </Link>
+          </div>
         </div>
 
         <div className="admin-grid-kpis">
@@ -768,29 +1031,29 @@ export default function AdminProductosPage() {
             {
               key: "total",
               label: "Total productos",
-              value: String(products.length),
-              sub: `${activeProducts} activos`,
+              value: String(stats.totalProducts),
+              sub: `${stats.activeProducts} activos`,
               accent: "var(--success)",
             },
             {
               key: "stock",
               label: "Stock total",
-              value: String(totalStock),
+              value: String(stats.totalStock),
               sub: "unidades",
               accent: "var(--text-light)",
             },
             {
               key: "inventory",
-              label: "Valor en inventario",
-              value: formatCLP(inventoryValue),
-              sub: "CLP estimado",
+              label: "Valor potencial de venta",
+              value: formatCLP(stats.potentialSalesValue),
+              sub: "a precio vigente",
               accent: "var(--gold)",
             },
             {
               key: "categories",
-              label: "Categorías visibles",
-              value: String(visibleCategories),
-              sub: "en esta vista",
+              label: "Categorías activas",
+              value: String(stats.activeCategories),
+              sub: "en el catálogo",
               accent: "var(--moss)",
             },
           ].map((item) => (
@@ -973,6 +1236,44 @@ export default function AdminProductosPage() {
               <ProductIcon name="chev" size={14} />
             </span>
           </div>
+          <div style={{ position: "relative", minWidth: 210 }}>
+            <select
+              onChange={(event) => setOnlineSaleFilter(event.target.value)}
+              style={{
+                appearance: "none",
+                width: "100%",
+                height: 36,
+                borderRadius: 10,
+                border: "1px solid #e8e5df",
+                background: "white",
+                padding: "0 32px 0 14px",
+                fontSize: 13,
+                color: "var(--text)",
+                cursor: "pointer",
+                outline: "none",
+                fontFamily: "inherit",
+              }}
+              value={onlineSaleFilter}
+            >
+              <option value="">Todos los productos</option>
+              <option value="true">Venta web habilitada</option>
+              <option value="false">En consulta por WhatsApp</option>
+            </select>
+            <span
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                right: 10,
+                top: "50%",
+                transform: "translateY(-50%)",
+                pointerEvents: "none",
+                color: "var(--text-light)",
+                display: "inline-flex",
+              }}
+            >
+              <ProductIcon name="chev" size={14} />
+            </span>
+          </div>
           {hasActiveFilters ? (
             <button
               onClick={clearFilters}
@@ -1088,6 +1389,18 @@ export default function AdminProductosPage() {
                     allCategories={categories}
                     categories={product.categories}
                     onSave={(id, name) => handleInlineUpdate(product.id, "categoryId", id, name)}
+                  />
+                ),
+              },
+              {
+                key: "venta-web",
+                header: "Venta web",
+                render: (product) => (
+                  <OnlineSaleToggleCell
+                    checked={product.onlineSaleEnabled}
+                    loading={rowLoadingIds.has(product.id)}
+                    onToggle={() => handleToggleOnlineSale(product.id, !product.onlineSaleEnabled)}
+                    productTitle={product.title}
                   />
                 ),
               },

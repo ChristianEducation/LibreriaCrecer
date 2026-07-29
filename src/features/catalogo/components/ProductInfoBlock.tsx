@@ -5,8 +5,17 @@ import { useEffect, useState } from "react";
 import type { CatalogProductDetail } from "@/features/catalogo/types";
 import { useCart } from "@/features/carrito/hooks";
 import { Badge } from "@/shared/ui";
+import { useAutoRefreshOnChange } from "@/shared/hooks";
 import { usePurchaseAvailability } from "@/shared/providers/PurchaseAvailabilityProvider";
 import { formatCLP } from "@/shared/utils/formatters";
+import { buildWhatsAppConsultUrl } from "@/shared/utils/whatsapp";
+
+async function fetchProductChangeSignal(slug: string): Promise<string | null> {
+  const response = await fetch(`/api/productos/${slug}/estado`, { cache: "no-store" });
+  if (!response.ok) return null;
+  const payload = (await response.json().catch(() => null)) as { data?: { signal: string } } | null;
+  return payload?.data?.signal ?? null;
+}
 
 // Íconos inline SVG
 function TruckIcon() {
@@ -53,11 +62,22 @@ function CheckIcon() {
   );
 }
 
+function WhatsAppIcon() {
+  return (
+    <svg fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" style={{ width: "16px", height: "16px" }} viewBox="0 0 24 24">
+      <path d="M21 11.5a8.5 8.5 0 0 1-12.36 7.56L3 20l1.06-5.44A8.5 8.5 0 1 1 21 11.5Z" />
+      <path d="M8.5 9.5c0 3.5 2.5 6 6 6" />
+    </svg>
+  );
+}
+
 export function ProductInfoBlock({ product }: { product: CatalogProductDetail }) {
   const { addItem, updateQuantity } = useCart();
   const { purchasesEnabled } = usePurchaseAvailability();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+
+  useAutoRefreshOnChange(() => fetchProductChangeSignal(product.slug));
 
   useEffect(() => {
     if (!added) return;
@@ -78,8 +98,15 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
     if (!isNaN(val) && val >= 1 && val <= maxQty) setQty(val);
   }
 
+  const showWhatsAppCta = purchasesEnabled && !product.onlineSaleEnabled;
+  const whatsAppUrl = buildWhatsAppConsultUrl({
+    title: product.title,
+    sku: product.sku,
+    slug: product.slug,
+  });
+
   function handleAddToCart() {
-    if (!purchasesEnabled || !product.inStock) return;
+    if (!purchasesEnabled || !product.onlineSaleEnabled || !product.inStock) return;
     addItem({
       productId: product.id,
       title: product.title,
@@ -238,64 +265,92 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
       <div style={{ width: "100%", height: "1px", background: "var(--border)", margin: "0 0 24px" }} />
 
       {/* Fila agregar al carrito */}
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-        {/* Control de cantidad */}
-        <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", flexShrink: 0, overflow: "hidden" }}>
+      {showWhatsAppCta ? (
+        <div style={{ marginBottom: "16px" }}>
+          <a
+            href={whatsAppUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+            style={{
+              height: "48px",
+              background: "var(--moss)",
+              color: "white",
+              border: "none",
+              borderRadius: "var(--radius-xl)",
+              fontSize: "12px",
+              fontWeight: 500,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "10px",
+              textDecoration: "none",
+            }}
+          >
+            <WhatsAppIcon /> Consultar por WhatsApp
+          </a>
+        </div>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+          {/* Control de cantidad */}
+          <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", flexShrink: 0, overflow: "hidden" }}>
+            <button
+              disabled={!purchasesEnabled}
+              onClick={decrement}
+              style={{ width: "36px", height: "48px", background: "var(--beige-warm)", border: "none", borderRadius: "var(--radius-md) 0 0 var(--radius-md)", fontSize: "18px", color: "var(--text-mid)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+              type="button"
+            >
+              −
+            </button>
+            <input
+              disabled={!purchasesEnabled}
+              max={maxQty}
+              min={1}
+              onChange={handleQtyChange}
+              style={{ width: "44px", height: "48px", border: "none", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", textAlign: "center", fontSize: "14px", fontWeight: 500, background: "white", outline: "none", color: "var(--text)" }}
+              type="number"
+              value={qty}
+            />
+            <button
+              disabled={!purchasesEnabled}
+              onClick={increment}
+              style={{ width: "36px", height: "48px", background: "var(--beige-warm)", border: "none", borderRadius: "0 var(--radius-md) var(--radius-md) 0", fontSize: "18px", color: "var(--text-mid)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+              type="button"
+            >
+              +
+            </button>
+          </div>
+
+          {/* Botón agregar */}
           <button
-            disabled={!purchasesEnabled}
-            onClick={decrement}
-            style={{ width: "36px", height: "48px", background: "var(--beige-warm)", border: "none", borderRadius: "var(--radius-md) 0 0 var(--radius-md)", fontSize: "18px", color: "var(--text-mid)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            disabled={!purchasesEnabled || !product.inStock}
+            onClick={handleAddToCart}
+            style={{
+              flex: 1,
+              height: "48px",
+              background: added ? "var(--moss-mid, #8A7302)" : "var(--moss)",
+              color: "white",
+              border: "none",
+              borderRadius: "var(--radius-xl)",
+              fontSize: "12px",
+              fontWeight: 500,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              cursor: purchasesEnabled && product.inStock ? "pointer" : "not-allowed",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "10px",
+              transition: "background 0.22s",
+              opacity: purchasesEnabled && product.inStock ? 1 : 0.5,
+            }}
             type="button"
           >
-            −
-          </button>
-          <input
-            disabled={!purchasesEnabled}
-            max={maxQty}
-            min={1}
-            onChange={handleQtyChange}
-            style={{ width: "44px", height: "48px", border: "none", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", textAlign: "center", fontSize: "14px", fontWeight: 500, background: "white", outline: "none", color: "var(--text)" }}
-            type="number"
-            value={qty}
-          />
-          <button
-            disabled={!purchasesEnabled}
-            onClick={increment}
-            style={{ width: "36px", height: "48px", background: "var(--beige-warm)", border: "none", borderRadius: "0 var(--radius-md) var(--radius-md) 0", fontSize: "18px", color: "var(--text-mid)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-            type="button"
-          >
-            +
+            {!purchasesEnabled ? "Compras temporalmente pausadas" : !product.inStock ? "Sin stock" : added ? <><CheckIcon /> Agregado</> : <><CartIcon /> Añadir al carrito</>}
           </button>
         </div>
-
-        {/* Botón agregar */}
-        <button
-          disabled={!purchasesEnabled || !product.inStock}
-          onClick={handleAddToCart}
-          style={{
-            flex: 1,
-            height: "48px",
-            background: added ? "var(--moss-mid, #8A7302)" : "var(--moss)",
-            color: "white",
-            border: "none",
-            borderRadius: "var(--radius-xl)",
-            fontSize: "12px",
-            fontWeight: 500,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            cursor: purchasesEnabled && product.inStock ? "pointer" : "not-allowed",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "10px",
-            transition: "background 0.22s",
-            opacity: purchasesEnabled && product.inStock ? 1 : 0.5,
-          }}
-          type="button"
-        >
-          {!purchasesEnabled ? "Compras temporalmente pausadas" : added ? <><CheckIcon /> Agregado</> : <><CartIcon /> Añadir al carrito</>}
-        </button>
-      </div>
+      )}
 
       {!purchasesEnabled && (
         <p style={{ marginBottom: "18px", fontSize: "12px", lineHeight: 1.6, color: "var(--text-light)" }}>
