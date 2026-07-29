@@ -1,7 +1,16 @@
 import Image from "next/image";
-import Link from "next/link";
 
 import { AdminLoginForm } from "./admin-login-form";
+
+const DEFAULT_APP_URL = "https://www.libreriacrecer.cl";
+
+function getAppBaseUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_APP_URL;
+  if (configured?.trim()) {
+    return configured.trim().replace(/\/$/, "");
+  }
+  return DEFAULT_APP_URL;
+}
 
 type AdminLoginPanelProps = {
   nextPath?: string;
@@ -82,8 +91,8 @@ export function AdminLoginPanel({ nextPath }: AdminLoginPanelProps) {
 
       <AdminLoginForm nextPath={nextPath} />
 
-      <Link
-        href="/"
+      <a
+        href={getAppBaseUrl()}
         style={{
           marginTop: "24px",
           display: "block",
@@ -94,7 +103,7 @@ export function AdminLoginPanel({ nextPath }: AdminLoginPanelProps) {
         }}
       >
         ← Volver al sitio
-      </Link>
+      </a>
     </div>
   );
 }
