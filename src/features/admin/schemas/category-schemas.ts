@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { toUpdateSchema } from "./utils";
+
 const nullableString = z
   .string()
   .trim()
@@ -15,7 +17,7 @@ export const CreateCategorySchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export const UpdateCategorySchema = CreateCategorySchema.partial();
+export const UpdateCategorySchema = toUpdateSchema(CreateCategorySchema);
 
 export type CreateCategoryInput = z.infer<typeof CreateCategorySchema>;
 export type UpdateCategoryInput = z.infer<typeof UpdateCategorySchema>;

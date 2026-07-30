@@ -20,6 +20,8 @@ import {
   normalizeCuratedSection,
 } from "@/shared/config/landing";
 
+import { toUpdateSchema } from "./utils";
+
 const optionalString = z
   .string()
   .trim()
@@ -76,7 +78,7 @@ export const HeroSlideSchema = z.object({
   is_active: z.boolean().default(true),
 });
 
-export const UpdateHeroSlideSchema = HeroSlideSchema.partial();
+export const UpdateHeroSlideSchema = toUpdateSchema(HeroSlideSchema);
 
 export const BannerSchema = z.object({
   title: optionalString,
@@ -89,7 +91,7 @@ export const BannerSchema = z.object({
   is_active: z.boolean().default(true),
 });
 
-export const UpdateBannerSchema = BannerSchema.partial();
+export const UpdateBannerSchema = toUpdateSchema(BannerSchema);
 
 export const LandingSectionCopySchema = z.object({
   section_key: z.enum(LANDING_SECTION_KEYS),
@@ -101,17 +103,17 @@ export const LandingSectionCopySchema = z.object({
   is_active: z.boolean().default(true),
 });
 
-export const UpdateLandingSectionCopySchema = LandingSectionCopySchema.partial();
+export const UpdateLandingSectionCopySchema = toUpdateSchema(LandingSectionCopySchema);
 
 export const CuratedProductSchema = z.object({
   product_id: z.string().uuid(),
-  section: z.string().trim().min(1).default(MONTHLY_SELECTION_SECTION).transform(normalizeCuratedSection),
+  section: z.string().trim().min(1).transform(normalizeCuratedSection).default(MONTHLY_SELECTION_SECTION),
   description: optionalString,
   display_order: z.number().int().default(0),
   is_active: z.boolean().default(true),
 });
 
-export const UpdateCuratedProductSchema = CuratedProductSchema.partial();
+export const UpdateCuratedProductSchema = toUpdateSchema(CuratedProductSchema);
 
 export type HeroSlideInput = z.infer<typeof HeroSlideSchema>;
 export type UpdateHeroSlideInput = z.infer<typeof UpdateHeroSlideSchema>;

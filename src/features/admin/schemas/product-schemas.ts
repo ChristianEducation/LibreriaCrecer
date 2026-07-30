@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { toUpdateSchema } from "./utils";
+
 const nullableString = z
   .string()
   .trim()
@@ -25,7 +27,7 @@ export const CreateProductSchema = z.object({
   categoryIds: z.array(z.string().uuid()).default([]),
 });
 
-export const UpdateProductSchema = CreateProductSchema.partial();
+export const UpdateProductSchema = toUpdateSchema(CreateProductSchema);
 
 export const SetAllProductsOnlineSaleSchema = z.object({
   enabled: z.boolean(),

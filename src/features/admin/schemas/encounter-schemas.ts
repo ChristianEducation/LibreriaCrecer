@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { toUpdateSchema } from "./utils";
+
 const optionalString = z
   .string()
   .trim()
@@ -26,7 +28,7 @@ export const EncounterSchema = z.object({
   is_active: z.boolean().default(true),
 });
 
-export const UpdateEncounterSchema = EncounterSchema.partial();
+export const UpdateEncounterSchema = toUpdateSchema(EncounterSchema);
 
 export const ReorderEncountersSchema = z.object({
   ids: z.array(z.string().uuid()),
