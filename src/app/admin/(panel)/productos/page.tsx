@@ -815,6 +815,7 @@ export default function AdminProductosPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [isActive, setIsActive] = useState("true");
   const [onlineSaleFilter, setOnlineSaleFilter] = useState("");
@@ -823,6 +824,7 @@ export default function AdminProductosPage() {
   const [stats, setStats] = useState<ProductAdminStats>(EMPTY_STATS);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [rowLoadingIds, setRowLoadingIds] = useState<Set<string>>(new Set());
+  const hasFetchedStatsRef = useRef(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -839,7 +841,23 @@ export default function AdminProductosPage() {
     void fetchCategories();
   }, []);
 
+  // Espera una pausa breve despues de que deja de escribir antes de buscar,
+  // en vez de disparar una consulta nueva por cada letra tipeada.
   useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Vuelve a la pagina 1 cuando cambia la busqueda o algun filtro (no cuando
+  // cambia solo de pagina).
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, categoryId, isActive, onlineSaleFilter]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const isInitialLoad = !hasFetchedStatsRef.current;
+
     const fetchProducts = async () => {
       setLoading(true);
       setError(null);
@@ -848,13 +866,19 @@ export default function AdminProductosPage() {
         const query = new URLSearchParams({
           page: String(page),
           limit: "20",
+          // Las estadisticas (stock total, productos activos, etc.) son globales y no
+          // dependen de la busqueda/filtros: se piden una sola vez, no en cada consulta.
+          includeStats: isInitialLoad ? "true" : "false",
         });
-        if (search.trim()) query.set("search", search.trim());
+        if (debouncedSearch) query.set("search", debouncedSearch);
         if (categoryId) query.set("categoryId", categoryId);
         if (isActive) query.set("isActive", isActive);
         if (onlineSaleFilter) query.set("onlineSaleEnabled", onlineSaleFilter);
 
-        const response = await fetch(`/api/admin/productos?${query.toString()}`, { cache: "no-store" });
+        const response = await fetch(`/api/admin/productos?${query.toString()}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
         const payload = (await response.json().catch(() => null)) as
           | {
               data?: ProductListItem[];
@@ -874,16 +898,19 @@ export default function AdminProductosPage() {
         setTotalResults(payload?.pagination?.total ?? 0);
         if (payload?.stats) {
           setStats(payload.stats);
+          hasFetchedStatsRef.current = true;
         }
       } catch {
+        if (controller.signal.aborted) return;
         setError("Error de red. Intenta nuevamente.");
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     void fetchProducts();
-  }, [page, search, categoryId, isActive, onlineSaleFilter]);
+    return () => controller.abort();
+  }, [page, debouncedSearch, categoryId, isActive, onlineSaleFilter]);
 
   async function handleBulkOnlineSale(enabled: boolean) {
     if (bulkLoading) return;
@@ -1383,7 +1410,7 @@ export default function AdminProductosPage() {
           </div>
         ) : null}
 
-        {loading ? (
+        {loading && products.length === 0 ? (
           <div
             className="admin-card"
             style={{
@@ -1396,7 +1423,13 @@ export default function AdminProductosPage() {
             Cargando productos…
           </div>
         ) : (
-          <>
+          <div
+            style={{
+              opacity: loading ? 0.55 : 1,
+              transition: "opacity 120ms ease",
+              pointerEvents: loading ? "none" : "auto",
+            }}
+          >
           <div className="admin-desktop-table-wrap">
           <AdminTable
             columns={[
@@ -1536,7 +1569,7 @@ export default function AdminProductosPage() {
               ))
             )}
           </div>
-          </>
+          </div>
         )}
 
         <div

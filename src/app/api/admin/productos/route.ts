@@ -21,6 +21,11 @@ function parseBooleanOptional(value: string | null): boolean | undefined {
 export async function GET(request: NextRequest) {
   try {
     const query = request.nextUrl.searchParams;
+    // Las estadisticas globales (stock total, productos activos, etc.) no dependen
+    // de la busqueda/filtros del listado: solo se calculan cuando el cliente las pide
+    // explicitamente (primera carga), no en cada tecla de una busqueda.
+    const includeStats = query.get("includeStats") !== "false";
+
     const [result, stats] = await Promise.all([
       getProductsAdmin({
         page: parsePositiveInt(query.get("page"), 1),
@@ -30,13 +35,13 @@ export async function GET(request: NextRequest) {
         isActive: parseBooleanOptional(query.get("isActive")),
         onlineSaleEnabled: parseBooleanOptional(query.get("onlineSaleEnabled")),
       }),
-      getProductAdminStats(),
+      includeStats ? getProductAdminStats() : Promise.resolve(undefined),
     ]);
 
     return NextResponse.json({
       data: result.products,
       pagination: result.pagination,
-      stats,
+      ...(stats ? { stats } : {}),
     });
   } catch (error) {
     console.error("GET /api/admin/productos failed", error);
