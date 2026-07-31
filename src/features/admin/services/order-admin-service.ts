@@ -20,14 +20,22 @@ type GetOrdersAdminParams = {
   includePending?: boolean;
 };
 
-const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  pending: ["paid", "cancelled"],
-  paid: ["preparing", "cancelled"],
-  preparing: ["shipped", "delivered"],
-  shipped: ["delivered"],
-  delivered: [],
-  cancelled: [],
-};
+// "preparing" ya no se usa: despacho pasa directo de "paid" a "shipped"
+// (al generar el ticket Chilexpress) y retiro pasa directo de "paid" a
+// "delivered" (al entregar el libro). Se conserva como origen valido solo
+// como red de seguridad por si un pedido historico quedo en ese estado.
+function getAllowedTransitions(status: OrderStatus, deliveryMethod: DeliveryMethod): OrderStatus[] {
+  switch (status) {
+    case "pending":
+      return ["paid", "cancelled"];
+    case "paid":
+      return deliveryMethod === "pickup" ? ["delivered", "cancelled"] : ["shipped", "cancelled"];
+    case "preparing":
+      return ["shipped", "delivered", "cancelled"];
+    default:
+      return [];
+  }
+}
 
 function getOrderBy(sortBy: OrderSortBy | undefined) {
   switch (sortBy) {
@@ -233,7 +241,7 @@ export async function getOrderDetailAdmin(orderId: string) {
         date: order.updatedAt,
       },
     ],
-    allowedTransitions: STATUS_TRANSITIONS[status] ?? [],
+    allowedTransitions: getAllowedTransitions(status, order.deliveryMethod as DeliveryMethod),
   };
 }
 
@@ -285,33 +293,93 @@ export async function getOrderStats() {
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const salesStatuses: OrderStatus[] = ["paid", "preparing", "shipped", "delivered"];
-
+  // Ventas del día: se cuentan por fecha de pago real (paidAt), no por fecha de
+  // creación del pedido. Un pedido creado ayer y pagado hoy debe sumar hoy.
   const [{ salesToday }] = await db
     .select({
       salesToday: sql<number>`coalesce(sum(${orders.total}), 0)`,
     })
     .from(orders)
-    .where(and(inArray(orders.status, salesStatuses), gte(orders.createdAt, startOfDay)));
+    .where(gte(orders.paidAt, startOfDay));
 
   const [{ paidTodayCount }] = await db
     .select({
       paidTodayCount: count(orders.id),
     })
     .from(orders)
-    .where(and(eq(orders.status, "paid"), gte(orders.createdAt, startOfDay)));
+    .where(gte(orders.paidAt, startOfDay));
+
+  // Solo cuenta pedidos que llegaron a pagarse (excluye "pending" — carritos
+  // sin pagar — y "cancelled"). Se incluyen paid/shipped/delivered para que
+  // el numero no baje cuando un pedido avanza de etapa dentro del mismo mes
+  // ("preparing" queda solo por seguridad para pedidos historicos).
+  const PAID_ONWARD_STATUSES: OrderStatus[] = ["paid", "preparing", "shipped", "delivered"];
 
   const [{ ordersThisMonth }] = await db
     .select({
       ordersThisMonth: count(orders.id),
     })
     .from(orders)
-    .where(gte(orders.createdAt, startOfMonth));
+    .where(and(inArray(orders.status, PAID_ONWARD_STATUSES), gte(orders.createdAt, startOfMonth)));
+
+  // "Cerrados del mes": pedidos que llegaron a su recorrido final —
+  // "shipped" o "delivered" son ambos estados terminales desde que
+  // "preparing" quedo obsoleto. Se agrupa por deliveryMethod (no se asume
+  // que shipped = despacho y delivered = retiro): un pedido de despacho
+  // historico marcado "delivered" antes de este cambio de flujo debe seguir
+  // contando como despacho, no como retiro.
+  const CLOSED_STATUSES: OrderStatus[] = ["shipped", "delivered"];
+
+  const [{ closedPickupThisMonth }] = await db
+    .select({
+      closedPickupThisMonth: count(orders.id),
+    })
+    .from(orders)
+    .where(
+      and(
+        inArray(orders.status, CLOSED_STATUSES),
+        eq(orders.deliveryMethod, "pickup"),
+        gte(orders.createdAt, startOfMonth),
+      ),
+    );
+
+  const [{ closedShippingThisMonth }] = await db
+    .select({
+      closedShippingThisMonth: count(orders.id),
+    })
+    .from(orders)
+    .where(
+      and(
+        inArray(orders.status, CLOSED_STATUSES),
+        eq(orders.deliveryMethod, "shipping"),
+        gte(orders.createdAt, startOfMonth),
+      ),
+    );
+
+  // Desglose de "Por preparar": cuantos pagados esperan generar ticket de
+  // despacho vs. cuantos esperan entrega en persona por retiro.
+  const [{ paidShippingCount }] = await db
+    .select({
+      paidShippingCount: count(orders.id),
+    })
+    .from(orders)
+    .where(and(eq(orders.status, "paid"), eq(orders.deliveryMethod, "shipping")));
+
+  const [{ paidPickupCount }] = await db
+    .select({
+      paidPickupCount: count(orders.id),
+    })
+    .from(orders)
+    .where(and(eq(orders.status, "paid"), eq(orders.deliveryMethod, "pickup")));
 
   return {
     byStatus: statusCounts,
     salesToday: Number(salesToday),
     paidTodayCount: Number(paidTodayCount),
     ordersThisMonth: Number(ordersThisMonth),
+    closedPickupThisMonth: Number(closedPickupThisMonth),
+    closedShippingThisMonth: Number(closedShippingThisMonth),
+    paidShippingCount: Number(paidShippingCount),
+    paidPickupCount: Number(paidPickupCount),
   };
 }

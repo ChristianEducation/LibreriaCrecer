@@ -55,7 +55,7 @@ function DashboardIcon({ name, size = 16, strokeWidth = 1.7 }: { name: Dashboard
 }
 
 type OrderStatusRow = {
-  id: "pending" | "paid" | "preparing" | "shipped";
+  id: "pending" | "paid" | "shipped" | "delivered";
   label: string;
   count: number;
   hint: string;
@@ -111,18 +111,18 @@ export default async function AdminPage() {
       tintBg: "rgba(39, 174, 96, 0.12)",
     },
     {
-      id: "preparing",
-      label: "Preparando",
-      count: stats.byStatus.preparing,
-      hint: "En armado y coordinación",
+      id: "shipped",
+      label: "Enviados",
+      count: stats.byStatus.shipped,
+      hint: "En ruta al cliente (despacho)",
       color: "var(--info)",
       tintBg: "rgba(41, 128, 185, 0.12)",
     },
     {
-      id: "shipped",
-      label: "Enviados",
-      count: stats.byStatus.shipped,
-      hint: "En ruta al cliente",
+      id: "delivered",
+      label: "Entregados",
+      count: stats.byStatus.delivered,
+      hint: "Retirados en tienda o recibidos",
       color: "var(--moss)",
       tintBg: "rgba(115, 96, 2, 0.12)",
     },
@@ -149,20 +149,20 @@ export default async function AdminPage() {
       tintBg: "rgba(39, 174, 96, 0.12)",
     },
     {
-      id: "preparing",
-      label: "En preparación",
-      copy: stats.byStatus.preparing > 0 ? "En armado y coordinación logística." : "Sin pedidos en armado.",
-      value: String(stats.byStatus.preparing),
-      icon: "package",
+      id: "shipped",
+      label: "Pedidos enviados",
+      copy: stats.byStatus.shipped > 0 ? "En ruta hacia el cliente (despacho)." : "Sin envíos activos.",
+      value: String(stats.byStatus.shipped),
+      icon: "truck",
       color: "var(--info)",
       tintBg: "rgba(41, 128, 185, 0.12)",
     },
     {
-      id: "shipped",
-      label: "Pedidos enviados",
-      copy: stats.byStatus.shipped > 0 ? "En ruta hacia el cliente." : "Sin envíos activos.",
-      value: String(stats.byStatus.shipped),
-      icon: "truck",
+      id: "delivered",
+      label: "Pedidos entregados",
+      copy: stats.byStatus.delivered > 0 ? "Retirados en tienda o ya recibidos." : "Sin entregas registradas.",
+      value: String(stats.byStatus.delivered),
+      icon: "check",
       color: "var(--moss)",
       tintBg: "rgba(115, 96, 2, 0.12)",
     },
@@ -253,10 +253,10 @@ export default async function AdminPage() {
             variant="gold"
           />
           <AdminMetricCard
-            delta={`${stats.byStatus.pending} requieren atención`}
-            icon={<DashboardIcon name="clock" size={18} strokeWidth={1.8} />}
-            label="Pedidos pendientes"
-            value={String(stats.byStatus.pending)}
+            delta={`${stats.paidShippingCount} despacho, ${stats.paidPickupCount} retiro`}
+            icon={<DashboardIcon name="package" size={18} strokeWidth={1.8} />}
+            label="Por preparar"
+            value={String(stats.byStatus.paid)}
             variant="green"
           />
           <AdminMetricCard
@@ -267,10 +267,10 @@ export default async function AdminPage() {
             variant="blue"
           />
           <AdminMetricCard
-            delta={`${stats.byStatus.delivered} entregados`}
+            delta={`${stats.closedShippingThisMonth} despacho, ${stats.closedPickupThisMonth} retiro`}
             icon={<DashboardIcon name="check" size={18} strokeWidth={1.8} />}
-            label="Pedidos cerrados"
-            value={String(stats.byStatus.delivered)}
+            label="Cerrados del mes"
+            value={String(stats.closedShippingThisMonth + stats.closedPickupThisMonth)}
             variant="purple"
           />
         </div>

@@ -23,6 +23,7 @@ export const orders = pgTable("orders", {
   couponId: uuid("coupon_id").references(() => coupons.id, { onDelete: "set null" }),
   discountAmount: integer("discount_amount").default(0).notNull(),
   adminNotes: text("admin_notes"),
+  paidAt: timestamp("paid_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

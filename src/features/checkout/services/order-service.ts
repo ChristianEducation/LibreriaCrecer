@@ -19,11 +19,16 @@ const MAX_ORDER_NUMBER_ATTEMPTS = 3;
 type DbTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type DbExecutor = typeof db | DbTx;
 
+// "preparing" quedo obsoleto: despacho pasa directo de "paid" a "shipped"
+// (al generar el ticket Chilexpress) y retiro en tienda pasa directo de
+// "paid" a "delivered" (al entregar el libro en persona). Se conserva como
+// origen valido solo como red de seguridad para pedidos historicos que
+// hayan quedado en ese estado.
 const VALID_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   pending: ["paid", "cancelled"],
-  paid: ["preparing", "cancelled"],
-  preparing: ["shipped", "delivered"],
-  shipped: ["delivered"],
+  paid: ["shipped", "delivered", "cancelled"],
+  preparing: ["shipped", "delivered", "cancelled"],
+  shipped: [],
   delivered: [],
   cancelled: [],
 };
@@ -455,19 +460,27 @@ export async function updateOrderStatus(
       };
     }
 
-    if (fromStatus === "preparing" && status === "shipped" && currentOrder.deliveryMethod !== "shipping") {
+    if (
+      (fromStatus === "paid" || fromStatus === "preparing") &&
+      status === "shipped" &&
+      currentOrder.deliveryMethod !== "shipping"
+    ) {
       return {
         success: false,
         code: "invalid_transition",
-        message: "Only shipping orders can transition to shipped.",
+        message: "Solo los pedidos con despacho pueden pasar a enviado.",
       };
     }
 
-    if (fromStatus === "preparing" && status === "delivered" && currentOrder.deliveryMethod !== "pickup") {
+    if (
+      (fromStatus === "paid" || fromStatus === "preparing") &&
+      status === "delivered" &&
+      currentOrder.deliveryMethod !== "pickup"
+    ) {
       return {
         success: false,
         code: "invalid_transition",
-        message: "Shipping orders must transition to shipped before delivered.",
+        message: "Los pedidos con despacho deben pasar por enviado, no directo a entregado.",
       };
     }
 

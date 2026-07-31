@@ -231,8 +231,8 @@ export async function generateChilexpressOtAdmin(orderId: string) {
     return { success: false as const, code: "invalid_delivery", message: "Solo pedidos con despacho pueden generar OT." };
   }
 
-  if (order.status !== "paid" && order.status !== "preparing") {
-    return { success: false as const, code: "invalid_status", message: "Solo pedidos pagados o en preparación pueden generar OT." };
+  if (order.status !== "paid") {
+    return { success: false as const, code: "invalid_status", message: "Solo pedidos pagados pueden generar OT." };
   }
 
   if (order.chilexpressTransportOrderNumber) {
@@ -357,11 +357,15 @@ export async function generateChilexpressOtAdmin(orderId: string) {
         chilexpressOriginCoverageCode: originCoverageCode,
         chilexpressDestinationCoverageCode: destinationCoverageCode,
         shippingCost: selectedRate ? Math.round(selectedRate.serviceValue) : order.shippingCost,
+        // Generar el ticket es el momento en que el paquete sale de la tienda:
+        // el pedido pasa directo a "enviado", sin paso manual intermedio.
+        status: "shipped",
         updatedAt: new Date(),
       })
       .where(eq(orders.id, order.id))
       .returning({
         id: orders.id,
+        status: orders.status,
         chilexpressTransportOrderNumber: orders.chilexpressTransportOrderNumber,
         chilexpressLabelUrl: orders.chilexpressLabelUrl,
         shippingCost: orders.shippingCost,

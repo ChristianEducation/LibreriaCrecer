@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AdminStatusPill, AdminTable } from "@/features/admin/components";
+import { ORDER_STATUS_LABELS } from "@/features/admin/constants";
 import { useToast } from "@/shared/hooks";
 import { formatCLP, formatDate } from "@/shared/utils";
 
@@ -96,7 +97,8 @@ export default function AdminPedidoDetallePage() {
   async function handleStatusUpdate() {
     if (!targetStatus || !order) return;
 
-    const confirmed = window.confirm(`Cambiar estado de ${order.status} a ${targetStatus}?`);
+    const targetLabel = ORDER_STATUS_LABELS[targetStatus as keyof typeof ORDER_STATUS_LABELS] ?? targetStatus;
+    const confirmed = window.confirm(`¿Cambiar estado de ${ORDER_STATUS_LABELS[order.status]} a ${targetLabel}?`);
     if (!confirmed) return;
 
     setSavingStatus(true);
@@ -128,6 +130,40 @@ export default function AdminPedidoDetallePage() {
     router.refresh();
   }
 
+  async function handleMarkDelivered() {
+    if (!order) return;
+
+    const confirmed = window.confirm("¿Marcar este pedido como entregado?");
+    if (!confirmed) return;
+
+    setSavingStatus(true);
+    const response = await fetch(`/api/admin/pedidos/${order.id}/estado`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status: "delivered",
+        adminNotes: notes,
+      }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as
+      | { data?: OrderDetail; message?: string }
+      | null;
+
+    if (!response.ok) {
+      toast({ message: payload?.message ?? "No se pudo marcar como entregado.", variant: "error" });
+      setSavingStatus(false);
+      return;
+    }
+
+    setOrder(payload?.data ?? null);
+    setSavingStatus(false);
+    toast({ message: "Pedido marcado como entregado." });
+    router.refresh();
+  }
+
   async function handleGenerateOt() {
     if (!order) return;
 
@@ -141,6 +177,7 @@ export default function AdminPedidoDetallePage() {
       const payload = (await response.json().catch(() => null)) as
         | {
             data?: {
+              status?: OrderDetail["status"];
               chilexpressTransportOrderNumber: string | null;
               chilexpressLabelUrl: string | null;
               shippingCost: number;
@@ -160,13 +197,15 @@ export default function AdminPedidoDetallePage() {
         current
           ? {
               ...current,
+              status: payload.data?.status ?? current.status,
               chilexpressTransportOrderNumber: payload.data?.chilexpressTransportOrderNumber ?? null,
               chilexpressLabelUrl: payload.data?.chilexpressLabelUrl ?? null,
               shippingCost: payload.data?.shippingCost ?? current.shippingCost,
             }
           : current,
       );
-      toast({ message: "Etiqueta Chilexpress generada." });
+      toast({ message: "Etiqueta Chilexpress generada — pedido marcado como enviado." });
+      router.refresh();
     } catch {
       const message = "Chilexpress no respondió correctamente.";
       setShippingError(message);
@@ -346,14 +385,14 @@ export default function AdminPedidoDetallePage() {
                 <p>Este pedido todavia no tiene etiqueta Chilexpress.</p>
                 <button
                   className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-                  disabled={generatingOt || (order.status !== "paid" && order.status !== "preparing")}
+                  disabled={generatingOt || order.status !== "paid"}
                   onClick={handleGenerateOt}
                   type="button"
                 >
-                  {generatingOt ? "Generando..." : "Generar etiqueta Chilexpress"}
+                  {generatingOt ? "Generando..." : "Generar etiqueta y marcar enviado"}
                 </button>
-                {order.status !== "paid" && order.status !== "preparing" ? (
-                  <p className="text-[12px] text-text-light">Disponible solo para pedidos pagados o en preparacion.</p>
+                {order.status !== "paid" ? (
+                  <p className="text-[12px] text-text-light">Disponible solo para pedidos pagados.</p>
                 ) : null}
               </div>
             )}
@@ -363,6 +402,23 @@ export default function AdminPedidoDetallePage() {
 
         <div className="rounded-[2px] border border-border bg-white p-5 space-y-3">
           <h2 className="text-[0.82rem] font-semibold text-text">Gestion del pedido</h2>
+
+          {order.deliveryMethod === "pickup" && order.status === "paid" ? (
+            <div className="rounded-[8px] border border-border-gold bg-[rgba(232,208,96,0.08)] p-3 space-y-2">
+              <p className="text-sm text-text-mid">
+                Este pedido es retiro en tienda. Marca como entregado cuando el cliente se lleve el libro.
+              </p>
+              <button
+                type="button"
+                disabled={savingStatus}
+                onClick={handleMarkDelivered}
+                className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+              >
+                Marcar como entregado
+              </button>
+            </div>
+          ) : null}
+
         <label className="block text-sm">
           <span className="mb-1 block text-[11px] uppercase tracking-[0.12em] text-text-light">
             Notas del admin
@@ -383,7 +439,7 @@ export default function AdminPedidoDetallePage() {
             <option value="">Seleccionar nuevo estado</option>
             {order.allowedTransitions.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {ORDER_STATUS_LABELS[status]}
               </option>
             ))}
           </select>

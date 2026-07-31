@@ -329,6 +329,7 @@ export async function processPaymentResult(
               receipt,
               existingNotes: currentOrder.adminNotes,
             }),
+            paidAt: new Date(),
             updatedAt: new Date(),
           })
           .where(eq(orders.id, order.id));

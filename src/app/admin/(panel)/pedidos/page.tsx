@@ -4,12 +4,45 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { AdminStatusPill, AdminTable } from "@/features/admin/components";
+import { ORDER_STATUS_LABELS } from "@/features/admin/constants";
+import { useToast } from "@/shared/hooks";
 import { formatCLP, formatDate } from "@/shared/utils";
+
+type OrderStatusValue = "pending" | "paid" | "preparing" | "shipped" | "delivered" | "cancelled";
+
+type RowAction =
+  | { kind: "status"; status: OrderStatusValue; label: string }
+  | { kind: "generar-ticket"; label: string };
+
+function getRowQuickActions(status: OrderStatusValue, deliveryMethod: "pickup" | "shipping"): RowAction[] {
+  if (status === "pending") {
+    return [
+      { kind: "status", status: "paid", label: "Marcar pagado" },
+      { kind: "status", status: "cancelled", label: "Cancelar" },
+    ];
+  }
+
+  if (status === "paid") {
+    if (deliveryMethod === "pickup") {
+      return [
+        { kind: "status", status: "delivered", label: "Marcar entregado" },
+        { kind: "status", status: "cancelled", label: "Cancelar" },
+      ];
+    }
+
+    return [
+      { kind: "generar-ticket", label: "Generar ticket" },
+      { kind: "status", status: "cancelled", label: "Cancelar" },
+    ];
+  }
+
+  return [];
+}
 
 type OrderRow = {
   id: string;
   orderNumber: string;
-  status: "pending" | "paid" | "preparing" | "shipped" | "delivered" | "cancelled";
+  status: OrderStatusValue;
   total: number;
   createdAt: string;
   deliveryMethod: "pickup" | "shipping";
@@ -50,6 +83,7 @@ function OrderMobileCard({ order }: { order: OrderRow }) {
 }
 
 export default function AdminPedidosPage() {
+  const { toast } = useToast();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +96,54 @@ export default function AdminPedidosPage() {
   const [dateTo, setDateTo] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [includePending, setIncludePending] = useState(false);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+
+  async function handleQuickStatusChange(orderId: string, nextStatus: OrderStatusValue, label: string) {
+    const confirmed = window.confirm(`¿${label}?`);
+    if (!confirmed) return;
+
+    setUpdatingOrderId(orderId);
+    const response = await fetch(`/api/admin/pedidos/${orderId}/estado`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: nextStatus }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+
+    if (!response.ok) {
+      toast({ message: payload?.message ?? "No se pudo actualizar el estado.", variant: "error" });
+      setUpdatingOrderId(null);
+      return;
+    }
+
+    setOrders((current) =>
+      current.map((order) => (order.id === orderId ? { ...order, status: nextStatus } : order)),
+    );
+    setUpdatingOrderId(null);
+    toast({ message: "Estado del pedido actualizado." });
+  }
+
+  async function handleGenerateTicket(orderId: string) {
+    const confirmed = window.confirm("¿Generar ticket Chilexpress y marcar este pedido como enviado?");
+    if (!confirmed) return;
+
+    setUpdatingOrderId(orderId);
+    const response = await fetch(`/api/admin/pedidos/${orderId}/generar-ot`, { method: "POST" });
+    const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+
+    if (!response.ok) {
+      toast({ message: payload?.message ?? "No se pudo generar la etiqueta Chilexpress.", variant: "error" });
+      setUpdatingOrderId(null);
+      return;
+    }
+
+    setOrders((current) =>
+      current.map((order) => (order.id === orderId ? { ...order, status: "shipped" } : order)),
+    );
+    setUpdatingOrderId(null);
+    toast({ message: "Etiqueta Chilexpress generada — pedido marcado como enviado." });
+  }
 
   const queryString = useMemo(() => {
     const query = new URLSearchParams({
@@ -130,12 +212,11 @@ export default function AdminPedidosPage() {
           className="rounded-[8px] border border-border bg-white px-3 py-2 text-sm text-text-mid focus:border-gold focus:outline-none"
         >
           <option value="">Estado: todos</option>
-          <option value="pending">Pendiente</option>
-          <option value="paid">Pagado</option>
-          <option value="preparing">Preparando</option>
-          <option value="shipped">Despachado</option>
-          <option value="delivered">Entregado</option>
-          <option value="cancelled">Cancelado</option>
+          <option value="pending">{ORDER_STATUS_LABELS.pending}</option>
+          <option value="paid">{ORDER_STATUS_LABELS.paid}</option>
+          <option value="shipped">{ORDER_STATUS_LABELS.shipped}</option>
+          <option value="delivered">{ORDER_STATUS_LABELS.delivered}</option>
+          <option value="cancelled">{ORDER_STATUS_LABELS.cancelled}</option>
         </select>
         <select
           value={deliveryMethod}
@@ -231,12 +312,37 @@ export default function AdminPedidosPage() {
               key: "acciones",
               header: "Acciones",
               render: (order) => (
-                <Link
-                  className="rounded-[8px] border border-border px-3 py-[6px] text-[12px] text-text-mid transition-colors hover:border-gold hover:text-moss"
-                  href={`/admin/pedidos/${order.id}`}
-                >
-                  Ver detalle
-                </Link>
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+                  <Link
+                    className="rounded-[8px] border border-border px-3 py-[6px] text-[12px] text-text-mid transition-colors hover:border-gold hover:text-moss"
+                    href={`/admin/pedidos/${order.id}`}
+                  >
+                    Ver detalle
+                  </Link>
+                  {getRowQuickActions(order.status, order.deliveryMethod).map((action) =>
+                    action.kind === "generar-ticket" ? (
+                      <button
+                        key="generar-ticket"
+                        type="button"
+                        disabled={updatingOrderId === order.id}
+                        onClick={() => handleGenerateTicket(order.id)}
+                        className="rounded-[8px] border border-border-gold bg-[rgba(232,208,96,0.08)] px-3 py-[6px] text-[12px] text-moss transition-colors hover:bg-[rgba(232,208,96,0.16)] disabled:opacity-50"
+                      >
+                        {updatingOrderId === order.id ? "Generando..." : action.label}
+                      </button>
+                    ) : (
+                      <button
+                        key={action.status}
+                        type="button"
+                        disabled={updatingOrderId === order.id}
+                        onClick={() => handleQuickStatusChange(order.id, action.status, action.label)}
+                        className="rounded-[8px] border border-border-gold bg-[rgba(232,208,96,0.08)] px-3 py-[6px] text-[12px] text-moss transition-colors hover:bg-[rgba(232,208,96,0.16)] disabled:opacity-50"
+                      >
+                        {action.label}
+                      </button>
+                    ),
+                  )}
+                </div>
               ),
             },
           ]}
