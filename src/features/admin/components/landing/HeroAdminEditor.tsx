@@ -435,6 +435,9 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         const fromIndex = prev.findIndex((item) => item.id === draggedId);
         const toIndex = prev.findIndex((item) => item.id === overId);
         if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return prev;
+        // No mezclar activos con inactivos al arrastrar: cada grupo se
+        // reordena solo dentro de si mismo.
+        if (prev[fromIndex].isActive !== prev[toIndex].isActive) return prev;
         const next = [...prev];
         const [moved] = next.splice(fromIndex, 1);
         next.splice(toIndex, 0, moved);
@@ -444,10 +447,17 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
 
     async function handlePointerUp() {
       setDraggedId(null);
+      // Persiste siempre activos primero (en su orden) y luego inactivos,
+      // sin importar como hayan quedado intercalados en el arreglo interno.
+      const current = slidesRef.current;
+      const orderedIds = [
+        ...current.filter((item) => item.isActive).map((item) => item.id),
+        ...current.filter((item) => !item.isActive).map((item) => item.id),
+      ];
       await fetch("/api/admin/landing/hero/reorder", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slideIds: slidesRef.current.map((item) => item.id) }),
+        body: JSON.stringify({ slideIds: orderedIds }),
       });
       router.refresh();
     }
@@ -748,6 +758,119 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
   const overlayDisabled = form.overlay_variant === "none";
   const sliderStyle = { "--value": `${form.overlay_opacity}%` } as CSSProperties;
   const dropzonePreview = previewUrl ?? form.existingImageUrl;
+  const activeSlides = slides.filter((slide) => slide.isActive);
+  const inactiveSlides = slides.filter((slide) => !slide.isActive);
+
+  function renderSlideCard(slide: HeroSlide, positionNumber: number | null) {
+    const isEditing = form.id === slide.id;
+    return (
+      <article
+        key={slide.id}
+        data-slide-id={slide.id}
+        className="admin-slide-grid-card"
+        style={{
+          opacity: draggedId === slide.id ? 0.4 : 1,
+          borderColor: isEditing ? "rgba(200, 168, 48, 0.55)" : undefined,
+          boxShadow: isEditing ? "0 0 0 2px rgba(200, 168, 48, 0.25)" : undefined,
+        }}
+      >
+        <div className="admin-slide-grid-image-wrap">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={slide.imageUrl} alt={slide.title ?? "Hero"} className="admin-slide-grid-image" />
+          <span
+            className={`admin-badge admin-slide-grid-badge ${slide.isActive ? "admin-badge--active" : "admin-badge--inactive"}`}
+          >
+            <span className="admin-badge-dot" />
+            {positionNumber !== null ? `${positionNumber} · Activo` : "Inactivo"}
+          </span>
+          <button
+            type="button"
+            className="admin-slide-grid-handle"
+            onPointerDown={(event) => {
+              event.preventDefault();
+              setDraggedId(slide.id);
+            }}
+            aria-label="Arrastrar para reordenar"
+            title="Arrastrar para reordenar"
+          >
+            <svg aria-hidden="true" fill="currentColor" height="14" viewBox="0 0 20 20" width="14">
+              <circle cx="6" cy="5" r="1.4" />
+              <circle cx="6" cy="10" r="1.4" />
+              <circle cx="6" cy="15" r="1.4" />
+              <circle cx="12" cy="5" r="1.4" />
+              <circle cx="12" cy="10" r="1.4" />
+              <circle cx="12" cy="15" r="1.4" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="admin-slide-grid-info">
+          <p className="truncate text-[13px] font-medium text-text">{slide.title ?? "(Sin título)"}</p>
+          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-text-light">
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="11"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.6"
+              viewBox="0 0 20 20"
+              width="11"
+            >
+              <path d="M8.5 11.5a3 3 0 004.5 0l3-3a3 3 0 00-4.5-4.5l-1 1M11.5 8.5a3 3 0 00-4.5 0l-3 3a3 3 0 004.5 4.5l1-1" />
+            </svg>
+            {slide.linkUrl ? "Con enlace" : "Sin enlace"}
+          </div>
+        </div>
+
+        <div className="admin-slide-grid-actions">
+          <button
+            type="button"
+            onClick={() => startEdit(slide)}
+            className="admin-icon-btn"
+            aria-label="Editar"
+            title="Editar"
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="15"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.8"
+              viewBox="0 0 20 20"
+              width="15"
+            >
+              <path d="M14 3l3 3-9.5 9.5L4 16l.5-3.5L14 3z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => removeSlide(slide.id)}
+            className="admin-icon-btn admin-icon-btn--danger"
+            aria-label="Eliminar"
+            title="Eliminar"
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="15"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.8"
+              viewBox="0 0 20 20"
+              width="15"
+            >
+              <path d="M4 6h12M8 6V4h4v2M6 6l1 10h6l1-10" />
+            </svg>
+          </button>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -796,117 +919,26 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
               <p className="mt-1 text-[12px] text-text-light">Usa &quot;+ Nuevo slide&quot; para añadir el primero.</p>
             </div>
           ) : (
-            <div className="admin-slide-grid">
-              {slides.map((slide) => {
-                const isEditing = form.id === slide.id;
-                return (
-                  <article
-                    key={slide.id}
-                    data-slide-id={slide.id}
-                    className="admin-slide-grid-card"
-                    style={{
-                      opacity: draggedId === slide.id ? 0.4 : 1,
-                      borderColor: isEditing ? "rgba(200, 168, 48, 0.55)" : undefined,
-                      boxShadow: isEditing ? "0 0 0 2px rgba(200, 168, 48, 0.25)" : undefined,
-                    }}
-                  >
-                    <div className="admin-slide-grid-image-wrap">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={slide.imageUrl} alt={slide.title ?? "Hero"} className="admin-slide-grid-image" />
-                      <span
-                        className={`admin-badge admin-slide-grid-badge ${slide.isActive ? "admin-badge--active" : "admin-badge--inactive"}`}
-                      >
-                        <span className="admin-badge-dot" />
-                        {slide.isActive ? "Activo" : "Inactivo"}
-                      </span>
-                      <button
-                        type="button"
-                        className="admin-slide-grid-handle"
-                        onPointerDown={(event) => {
-                          event.preventDefault();
-                          setDraggedId(slide.id);
-                        }}
-                        aria-label="Arrastrar para reordenar"
-                        title="Arrastrar para reordenar"
-                      >
-                        <svg aria-hidden="true" fill="currentColor" height="14" viewBox="0 0 20 20" width="14">
-                          <circle cx="6" cy="5" r="1.4" />
-                          <circle cx="6" cy="10" r="1.4" />
-                          <circle cx="6" cy="15" r="1.4" />
-                          <circle cx="12" cy="5" r="1.4" />
-                          <circle cx="12" cy="10" r="1.4" />
-                          <circle cx="12" cy="15" r="1.4" />
-                        </svg>
-                      </button>
-                    </div>
+            <div className="space-y-6">
+              <div>
+                <p className="admin-section-label">Activos ({activeSlides.length}) — este es el orden real del sitio</p>
+                {activeSlides.length > 0 ? (
+                  <div className="admin-slide-grid mt-2">
+                    {activeSlides.map((slide, index) => renderSlideCard(slide, index + 1))}
+                  </div>
+                ) : (
+                  <p className="text-[12px] text-text-light">No hay slides activos ahora mismo.</p>
+                )}
+              </div>
 
-                    <div className="admin-slide-grid-info">
-                      <p className="truncate text-[13px] font-medium text-text">{slide.title ?? "(Sin título)"}</p>
-                      <div className="mt-1 flex items-center gap-1.5 text-[11px] text-text-light">
-                        <svg
-                          aria-hidden="true"
-                          fill="none"
-                          height="11"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.6"
-                          viewBox="0 0 20 20"
-                          width="11"
-                        >
-                          <path d="M8.5 11.5a3 3 0 004.5 0l3-3a3 3 0 00-4.5-4.5l-1 1M11.5 8.5a3 3 0 00-4.5 0l-3 3a3 3 0 004.5 4.5l1-1" />
-                        </svg>
-                        {slide.linkUrl ? "Con enlace" : "Sin enlace"}
-                      </div>
-                    </div>
-
-                    <div className="admin-slide-grid-actions">
-                      <button
-                        type="button"
-                        onClick={() => startEdit(slide)}
-                        className="admin-icon-btn"
-                        aria-label="Editar"
-                        title="Editar"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          fill="none"
-                          height="15"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.8"
-                          viewBox="0 0 20 20"
-                          width="15"
-                        >
-                          <path d="M14 3l3 3-9.5 9.5L4 16l.5-3.5L14 3z" />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeSlide(slide.id)}
-                        className="admin-icon-btn admin-icon-btn--danger"
-                        aria-label="Eliminar"
-                        title="Eliminar"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          fill="none"
-                          height="15"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.8"
-                          viewBox="0 0 20 20"
-                          width="15"
-                        >
-                          <path d="M4 6h12M8 6V4h4v2M6 6l1 10h6l1-10" />
-                        </svg>
-                      </button>
-                    </div>
-                  </article>
-                );
-              })}
+              {inactiveSlides.length > 0 ? (
+                <div>
+                  <p className="admin-section-label">Inactivos ({inactiveSlides.length}) — archivados, no aparecen en el sitio</p>
+                  <div className="admin-slide-grid mt-2">
+                    {inactiveSlides.map((slide) => renderSlideCard(slide, null))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           )}
         </div>
