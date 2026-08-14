@@ -18,6 +18,7 @@ import { useToast } from "@/shared/hooks";
 type CategoryData = {
   id: string;
   name?: string | null;
+  slug?: string | null;
   description?: string | null;
   parentId?: string | null;
   featured?: boolean | null;
@@ -235,6 +236,29 @@ export function CategoryAdminForm({ mode, categoryId, initialData }: CategoryAdm
               apuntando a <code>/productos?cat=slug</code>), pero no aparece en el carrusel del inicio,
               en <code>/categorias</code> ni en el menu de navegacion.
             </p>
+            {mode === "edit" && hideFromNav && initialData?.slug ? (
+              <div className="mt-4 rounded-[8px] border border-border-gold bg-[rgba(232,208,96,0.08)] p-3">
+                <p className="text-[11px] uppercase tracking-[0.12em] text-text-light">Link para el boton del hero</p>
+                <div className="mt-1 flex items-center justify-between gap-3">
+                  <code className="text-[12.5px] text-text">/productos?cat={initialData.slug}</code>
+                  <button
+                    className="rounded-[6px] border border-border-gold bg-white px-3 py-[6px] text-[11px] font-medium text-moss transition-colors hover:bg-[rgba(232,208,96,0.16)]"
+                    onClick={async () => {
+                      const link = `/productos?cat=${initialData.slug}`;
+                      try {
+                        await navigator.clipboard.writeText(link);
+                        toast({ message: `Link copiado: ${link}` });
+                      } catch {
+                        toast({ message: link, variant: "info" });
+                      }
+                    }}
+                    type="button"
+                  >
+                    Copiar
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </section>
         </div>
 

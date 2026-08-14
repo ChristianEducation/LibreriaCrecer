@@ -9,6 +9,7 @@ import { useToast } from "@/shared/hooks";
 type CategoryRow = {
   id: string;
   name: string;
+  slug: string;
   imageUrl: string | null;
   headerImageUrl?: string | null;
   featured: boolean;
@@ -102,6 +103,16 @@ export default function AdminCategoriasPage() {
     toast({ message: "Categoria activada." });
   }
 
+  async function handleCopyLink(slug: string) {
+    const link = `/productos?cat=${slug}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      toast({ message: `Link copiado: ${link}` });
+    } catch {
+      toast({ message: link, variant: "info" });
+    }
+  }
+
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -148,6 +159,15 @@ export default function AdminCategoriasPage() {
                       {category.headerImageUrl ? "Con header visual" : "Sin header configurado"}
                       {category.hideFromNav ? " · Oculta de navegacion" : ""}
                     </p>
+                    {category.hideFromNav ? (
+                      <button
+                        className="mt-1 flex items-center gap-1 rounded-[6px] border border-border-gold bg-[rgba(232,208,96,0.08)] px-2 py-[3px] text-[11px] text-moss transition-colors hover:bg-[rgba(232,208,96,0.16)]"
+                        onClick={() => handleCopyLink(category.slug)}
+                        type="button"
+                      >
+                        Copiar link: /productos?cat={category.slug}
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               ),
