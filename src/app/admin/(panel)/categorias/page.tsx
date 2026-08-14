@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { AdminStatusPill, AdminTable } from "@/features/admin/components";
+import { BRAND } from "@/shared/config/brand";
 import { useToast } from "@/shared/hooks";
 
 type CategoryRow = {
@@ -104,7 +105,7 @@ export default function AdminCategoriasPage() {
   }
 
   async function handleCopyLink(slug: string) {
-    const link = `/productos?cat=${slug}`;
+    const link = `${BRAND.siteUrl}/productos?cat=${slug}`;
     try {
       await navigator.clipboard.writeText(link);
       toast({ message: `Link copiado: ${link}` });
@@ -165,7 +166,7 @@ export default function AdminCategoriasPage() {
                         onClick={() => handleCopyLink(category.slug)}
                         type="button"
                       >
-                        Copiar link: /productos?cat={category.slug}
+                        Copiar link: {BRAND.siteUrl}/productos?cat={category.slug}
                       </button>
                     ) : null}
                   </div>

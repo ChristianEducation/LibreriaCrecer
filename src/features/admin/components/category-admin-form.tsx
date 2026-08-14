@@ -13,6 +13,7 @@ import {
   type UpdateCategoryInput,
 } from "../schemas/category-schemas";
 import { AdminToggle, AdminUploadZone } from "./index";
+import { BRAND } from "@/shared/config/brand";
 import { useToast } from "@/shared/hooks";
 
 type CategoryData = {
@@ -240,11 +241,13 @@ export function CategoryAdminForm({ mode, categoryId, initialData }: CategoryAdm
               <div className="mt-4 rounded-[8px] border border-border-gold bg-[rgba(232,208,96,0.08)] p-3">
                 <p className="text-[11px] uppercase tracking-[0.12em] text-text-light">Link para el boton del hero</p>
                 <div className="mt-1 flex items-center justify-between gap-3">
-                  <code className="text-[12.5px] text-text">/productos?cat={initialData.slug}</code>
+                  <code className="text-[12.5px] text-text">
+                    {BRAND.siteUrl}/productos?cat={initialData.slug}
+                  </code>
                   <button
                     className="rounded-[6px] border border-border-gold bg-white px-3 py-[6px] text-[11px] font-medium text-moss transition-colors hover:bg-[rgba(232,208,96,0.16)]"
                     onClick={async () => {
-                      const link = `/productos?cat=${initialData.slug}`;
+                      const link = `${BRAND.siteUrl}/productos?cat=${initialData.slug}`;
                       try {
                         await navigator.clipboard.writeText(link);
                         toast({ message: `Link copiado: ${link}` });
