@@ -22,6 +22,10 @@ export const categories = pgTable("categories", {
     onDelete: "set null",
   }),
   featured: boolean("featured").default(false).notNull(),
+  // Categoria "oculta": sigue siendo filtrable via /productos?cat=slug (para
+  // botones de campana, ej. el CTA de un hero), pero no aparece en el
+  // carrusel del home, /categorias ni el dropdown del navbar.
+  hideFromNav: boolean("hide_from_nav").default(false).notNull(),
   displayOrder: integer("display_order").default(0).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

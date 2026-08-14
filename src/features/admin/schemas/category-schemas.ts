@@ -13,6 +13,7 @@ export const CreateCategorySchema = z.object({
   description: nullableString,
   parentId: z.string().uuid().optional(),
   featured: z.boolean().default(false),
+  hideFromNav: z.boolean().default(false),
   displayOrder: z.number().int().min(0).default(0),
   isActive: z.boolean().default(true),
 });

@@ -21,6 +21,7 @@ type CategoryData = {
   description?: string | null;
   parentId?: string | null;
   featured?: boolean | null;
+  hideFromNav?: boolean | null;
   displayOrder?: number | null;
   isActive?: boolean | null;
   imageUrl?: string | null;
@@ -56,6 +57,7 @@ export function CategoryAdminForm({ mode, categoryId, initialData }: CategoryAdm
       description: initialData?.description ?? undefined,
       parentId: initialData?.parentId ?? undefined,
       featured: initialData?.featured ?? false,
+      hideFromNav: initialData?.hideFromNav ?? false,
       displayOrder: initialData?.displayOrder ?? 0,
       isActive: initialData?.isActive ?? true,
     }),
@@ -67,6 +69,7 @@ export function CategoryAdminForm({ mode, categoryId, initialData }: CategoryAdm
     defaultValues,
   });
   const featured = form.watch("featured") ?? false;
+  const hideFromNav = form.watch("hideFromNav") ?? false;
   const isActive = form.watch("isActive") ?? true;
   const optionalNumber = (value: unknown) => {
     if (value === "" || value === null || typeof value === "undefined") {
@@ -221,7 +224,17 @@ export function CategoryAdminForm({ mode, categoryId, initialData }: CategoryAdm
                 label="Visible en la tienda"
                 onChange={(checked) => form.setValue("isActive", checked)}
               />
+              <AdminToggle
+                checked={hideFromNav}
+                label="Ocultar de navegacion"
+                onChange={(checked) => form.setValue("hideFromNav", checked)}
+              />
             </div>
+            <p className="mt-3 text-[11.5px] leading-relaxed text-text-light">
+              La categoria sigue funcionando para enlaces directos (ej. el boton de un banner del hero
+              apuntando a <code>/productos?cat=slug</code>), pero no aparece en el carrusel del inicio,
+              en <code>/categorias</code> ni en el menu de navegacion.
+            </p>
           </section>
         </div>
 

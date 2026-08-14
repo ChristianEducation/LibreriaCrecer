@@ -40,6 +40,7 @@ export async function getCategoriesAdmin() {
       headerImageUrl: categories.headerImageUrl,
       parentId: categories.parentId,
       featured: categories.featured,
+      hideFromNav: categories.hideFromNav,
       displayOrder: categories.displayOrder,
       isActive: categories.isActive,
     })
@@ -80,6 +81,7 @@ export async function getCategoryAdmin(id: string) {
       headerImageUrl: categories.headerImageUrl,
       parentId: categories.parentId,
       featured: categories.featured,
+      hideFromNav: categories.hideFromNav,
       displayOrder: categories.displayOrder,
       isActive: categories.isActive,
       createdAt: categories.createdAt,
@@ -107,6 +109,7 @@ export async function createCategory(data: CreateCategoryInput) {
       description: data.description ?? null,
       parentId: data.parentId ?? null,
       featured: data.featured,
+      hideFromNav: data.hideFromNav,
       displayOrder: data.displayOrder,
       isActive: data.isActive,
     })
@@ -137,6 +140,8 @@ export async function updateCategory(id: string, data: UpdateCategoryInput) {
   if ("description" in data) updateData.description = data.description ?? null;
   if ("parentId" in data) updateData.parentId = data.parentId ?? null;
   if ("featured" in data && typeof data.featured === "boolean") updateData.featured = data.featured;
+  if ("hideFromNav" in data && typeof data.hideFromNav === "boolean")
+    updateData.hideFromNav = data.hideFromNav;
   if ("displayOrder" in data && typeof data.displayOrder === "number")
     updateData.displayOrder = data.displayOrder;
   if ("isActive" in data && typeof data.isActive === "boolean") updateData.isActive = data.isActive;

@@ -12,6 +12,7 @@ type CategoryRow = {
   imageUrl: string | null;
   headerImageUrl?: string | null;
   featured: boolean;
+  hideFromNav: boolean;
   displayOrder: number;
   isActive: boolean;
   productCount: number;
@@ -145,6 +146,7 @@ export default function AdminCategoriasPage() {
                     <p className="font-medium text-text">{category.name}</p>
                     <p className="text-[11px] text-text-light">
                       {category.headerImageUrl ? "Con header visual" : "Sin header configurado"}
+                      {category.hideFromNav ? " · Oculta de navegacion" : ""}
                     </p>
                   </div>
                 </div>

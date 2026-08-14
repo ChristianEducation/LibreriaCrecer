@@ -23,7 +23,7 @@ export async function getCategories(): Promise<CatalogCategory[]> {
       displayOrder: categories.displayOrder,
     })
     .from(categories)
-    .where(eq(categories.isActive, true))
+    .where(and(eq(categories.isActive, true), eq(categories.hideFromNav, false)))
     .orderBy(asc(categories.displayOrder), asc(categories.name));
 
   if (categoryRows.length === 0) {
@@ -114,6 +114,8 @@ export async function getFeaturedCategories(): Promise<CatalogCategory[]> {
       displayOrder: categories.displayOrder,
     })
     .from(categories)
-    .where(and(eq(categories.featured, true), eq(categories.isActive, true)))
+    .where(
+      and(eq(categories.featured, true), eq(categories.isActive, true), eq(categories.hideFromNav, false)),
+    )
     .orderBy(asc(categories.displayOrder), asc(categories.name));
 }
