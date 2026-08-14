@@ -157,7 +157,12 @@ export function HeroSlider({ data }: HeroSliderProps) {
   const textColor = isDarkTheme ? "var(--text)" : "#ffffff";
   const justifyClass = POSITION_JUSTIFY[activeSlide.textPosition];
   const blockAlignClass = ALIGN_BLOCK[activeSlide.textAlign];
-  const ctaIsLink = Boolean(activeSlide.ctaText && activeSlide.linkUrl);
+  const ctaIsLink = activeSlide.ctaMode !== "hotspot" && Boolean(activeSlide.ctaText && activeSlide.linkUrl);
+  const hotspotIsLink =
+    activeSlide.ctaMode === "hotspot" &&
+    Boolean(activeSlide.linkUrl) &&
+    activeSlide.hotspotWidth !== null &&
+    activeSlide.hotspotHeight !== null;
   const titleParts = splitTitle(activeSlide.title);
 
   return (
@@ -303,6 +308,20 @@ export function HeroSlider({ data }: HeroSliderProps) {
               </Link>
             </BlurFade>
           </div>
+        ) : null}
+
+        {hotspotIsLink && activeSlide.linkUrl ? (
+          <Link
+            aria-label={activeSlide.ctaText ?? "Ir al enlace destacado"}
+            className="hero-hotspot absolute z-[2]"
+            href={activeSlide.linkUrl}
+            style={{
+              left: `${activeSlide.hotspotX ?? 0}%`,
+              top: `${activeSlide.hotspotY ?? 0}%`,
+              width: `${activeSlide.hotspotWidth ?? 0}%`,
+              height: `${activeSlide.hotspotHeight ?? 0}%`,
+            }}
+          />
         ) : null}
 
         {items.length > 1 ? (

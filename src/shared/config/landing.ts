@@ -32,6 +32,15 @@ export const HERO_CTA_POSITION_DEFAULT: HeroCtaPosition = "bottom-left";
 export const HERO_CTA_BG_COLOR_DEFAULT = "#c8a830";
 export const HERO_CTA_TEXT_COLOR_DEFAULT = "#ffffff";
 
+// "button": boton de sistema (pildora dorada) posicionado en una grilla 3x3.
+// "hotspot": zona clickeable invisible sobre la imagen, para cuando el boton
+// ya viene dibujado dentro del arte y solo se necesita el area de click.
+export const HERO_CTA_MODES = ["button", "hotspot"] as const;
+export type HeroCtaMode = (typeof HERO_CTA_MODES)[number];
+export const HERO_CTA_MODE_DEFAULT: HeroCtaMode = "button";
+
+export const HERO_HOTSPOT_DEFAULT = { x: 25, y: 65, width: 50, height: 20 };
+
 export const HERO_TEXT_POSITIONS = ["left", "center", "right"] as const;
 export type HeroTextPosition = (typeof HERO_TEXT_POSITIONS)[number];
 export const HERO_TEXT_POSITION_DEFAULT: HeroTextPosition = "left";

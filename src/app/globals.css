@@ -427,6 +427,16 @@ body {
   font-size: 0.7rem;
 }
 
+/* Zona clickeable invisible cuando el boton ya viene dibujado en la imagen
+   del hero (ctaMode = "hotspot"). Sin estilo visual propio a proposito. */
+.hero-hotspot {
+  outline-offset: 4px;
+}
+.hero-hotspot:focus-visible {
+  outline: 2px solid var(--color-gold, #c8a830);
+  border-radius: 4px;
+}
+
 .hero-slide-picture {
   position: absolute;
   inset: 0;

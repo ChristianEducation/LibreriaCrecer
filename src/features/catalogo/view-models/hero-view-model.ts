@@ -1,5 +1,6 @@
 import {
   type HeroContentTheme,
+  type HeroCtaMode,
   type HeroCtaPosition,
   type HeroOverlayVariant,
   type HeroTextAlign,
@@ -21,6 +22,11 @@ export type HeroSlideViewModel = {
   ctaBgColor: string | null;
   ctaTextColor: string | null;
   ctaBorderColor: string | null;
+  ctaMode: HeroCtaMode;
+  hotspotX: number | null;
+  hotspotY: number | null;
+  hotspotWidth: number | null;
+  hotspotHeight: number | null;
   linkUrl: string | null;
   showContent: boolean;
   textPosition: HeroTextPosition;
@@ -65,6 +71,11 @@ export async function getHeroViewModel(): Promise<HeroViewModel> {
     ctaBgColor: slide.ctaBgColor,
     ctaTextColor: slide.ctaTextColor,
     ctaBorderColor: slide.ctaBorderColor,
+    ctaMode: slide.ctaMode,
+    hotspotX: slide.hotspotX,
+    hotspotY: slide.hotspotY,
+    hotspotWidth: slide.hotspotWidth,
+    hotspotHeight: slide.hotspotHeight,
     linkUrl: slide.linkUrl,
     showContent: slide.showContent,
     textPosition: slide.textPosition,

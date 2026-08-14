@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import { AdminToggle, AdminUploadZone } from "@/features/admin/components";
 import { HeroPreview } from "@/features/catalogo/components";
@@ -20,13 +20,16 @@ import {
   HERO_OVERLAY_VARIANT_DEFAULT,
   HERO_TEXT_ALIGN_DEFAULT,
   HERO_TEXT_POSITION_DEFAULT,
+  HERO_CTA_MODE_DEFAULT,
   HERO_CTA_POSITION_DEFAULT,
   HERO_CTA_BG_COLOR_DEFAULT,
   HERO_CTA_TEXT_COLOR_DEFAULT,
+  HERO_HOTSPOT_DEFAULT,
   type HeroContentTheme,
   type HeroOverlayVariant,
   type HeroTextAlign,
   type HeroTextPosition,
+  type HeroCtaMode,
   type HeroCtaPosition,
 } from "@/shared/config/landing";
 
@@ -42,6 +45,11 @@ type HeroSlide = {
   ctaBgColor: string | null;
   ctaTextColor: string | null;
   ctaBorderColor: string | null;
+  ctaMode: HeroCtaMode;
+  hotspotX: number | null;
+  hotspotY: number | null;
+  hotspotWidth: number | null;
+  hotspotHeight: number | null;
   showContent: boolean;
   textPosition: HeroTextPosition;
   textAlign: HeroTextAlign;
@@ -63,6 +71,11 @@ type HeroFormState = {
   cta_bg_color: string | null;
   cta_text_color: string | null;
   cta_border_color: string | null;
+  cta_mode: HeroCtaMode;
+  hotspot_x: number;
+  hotspot_y: number;
+  hotspot_width: number;
+  hotspot_height: number;
   link_url: string;
   show_content: boolean;
   text_position: HeroTextPosition;
@@ -86,6 +99,11 @@ const initialForm: HeroFormState = {
   cta_bg_color: HERO_CTA_BG_COLOR_DEFAULT,
   cta_text_color: HERO_CTA_TEXT_COLOR_DEFAULT,
   cta_border_color: null,
+  cta_mode: HERO_CTA_MODE_DEFAULT,
+  hotspot_x: HERO_HOTSPOT_DEFAULT.x,
+  hotspot_y: HERO_HOTSPOT_DEFAULT.y,
+  hotspot_width: HERO_HOTSPOT_DEFAULT.width,
+  hotspot_height: HERO_HOTSPOT_DEFAULT.height,
   link_url: "",
   show_content: true,
   text_position: HERO_TEXT_POSITION_DEFAULT,
@@ -197,6 +215,123 @@ function CtaPositionGrid({ value, onChange }: { value: HeroCtaPosition; onChange
   );
 }
 
+const CTA_MODE_OPTIONS: SegmentedOption<HeroCtaMode>[] = [
+  { value: "button", label: "Botón de sistema" },
+  { value: "hotspot", label: "Zona en la imagen" },
+];
+
+type HotspotRect = { x: number; y: number; width: number; height: number };
+
+function clampPercent(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), Math.max(min, max));
+}
+
+type HotspotDragState = {
+  mode: "move" | "resize";
+  startPointerX: number;
+  startPointerY: number;
+  startRect: HotspotRect;
+};
+
+function HotspotEditor({
+  imageUrl,
+  rect,
+  onChange,
+}: {
+  imageUrl: string;
+  rect: HotspotRect;
+  onChange: (rect: HotspotRect) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dragState, setDragState] = useState<HotspotDragState | null>(null);
+
+  useEffect(() => {
+    if (!dragState) return;
+
+    function handlePointerMove(event: PointerEvent) {
+      const container = containerRef.current;
+      if (!container || !dragState) return;
+      const bounds = container.getBoundingClientRect();
+      const deltaXPercent = ((event.clientX - dragState.startPointerX) / bounds.width) * 100;
+      const deltaYPercent = ((event.clientY - dragState.startPointerY) / bounds.height) * 100;
+
+      if (dragState.mode === "move") {
+        const nextX = clampPercent(dragState.startRect.x + deltaXPercent, 0, 100 - dragState.startRect.width);
+        const nextY = clampPercent(dragState.startRect.y + deltaYPercent, 0, 100 - dragState.startRect.height);
+        onChange({ ...dragState.startRect, x: Math.round(nextX), y: Math.round(nextY) });
+      } else {
+        const nextWidth = clampPercent(dragState.startRect.width + deltaXPercent, 5, 100 - dragState.startRect.x);
+        const nextHeight = clampPercent(dragState.startRect.height + deltaYPercent, 5, 100 - dragState.startRect.y);
+        onChange({ ...dragState.startRect, width: Math.round(nextWidth), height: Math.round(nextHeight) });
+      }
+    }
+
+    function handlePointerUp() {
+      setDragState(null);
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [dragState, onChange]);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        position: "relative",
+        width: "100%",
+        borderRadius: 8,
+        overflow: "hidden",
+        border: "1px solid var(--border)",
+        userSelect: "none",
+        touchAction: "none",
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img alt="" draggable={false} src={imageUrl} style={{ width: "100%", height: "auto", display: "block" }} />
+      <div
+        onPointerDown={(event) => {
+          event.preventDefault();
+          setDragState({ mode: "move", startPointerX: event.clientX, startPointerY: event.clientY, startRect: rect });
+        }}
+        style={{
+          position: "absolute",
+          left: `${rect.x}%`,
+          top: `${rect.y}%`,
+          width: `${rect.width}%`,
+          height: `${rect.height}%`,
+          border: "2px dashed #c8a830",
+          background: "rgba(200, 168, 48, 0.18)",
+          cursor: "move",
+        }}
+      >
+        <div
+          onPointerDown={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setDragState({ mode: "resize", startPointerX: event.clientX, startPointerY: event.clientY, startRect: rect });
+          }}
+          style={{
+            position: "absolute",
+            right: -7,
+            bottom: -7,
+            width: 14,
+            height: 14,
+            borderRadius: "50%",
+            background: "#c8a830",
+            border: "2px solid white",
+            cursor: "nwse-resize",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function ColorControl({
   label,
   value,
@@ -285,6 +420,11 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         ctaBgColor: form.cta_bg_color,
         ctaTextColor: form.cta_text_color,
         ctaBorderColor: form.cta_border_color,
+        ctaMode: form.cta_mode,
+        hotspotX: form.hotspot_x,
+        hotspotY: form.hotspot_y,
+        hotspotWidth: form.hotspot_width,
+        hotspotHeight: form.hotspot_height,
       };
       return {
         eyebrow: initialData?.eyebrow ?? null,
@@ -342,6 +482,11 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
           cta_bg_color: form.cta_bg_color,
           cta_text_color: form.cta_text_color,
           cta_border_color: form.cta_border_color,
+          cta_mode: form.cta_mode,
+          hotspot_x: form.hotspot_x,
+          hotspot_y: form.hotspot_y,
+          hotspot_width: form.hotspot_width,
+          hotspot_height: form.hotspot_height,
           show_content: form.show_content,
           text_position: form.text_position,
           text_align: form.text_align,
@@ -400,6 +545,11 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         if (form.cta_bg_color) createData.append("cta_bg_color", form.cta_bg_color);
         if (form.cta_text_color) createData.append("cta_text_color", form.cta_text_color);
         if (form.cta_border_color) createData.append("cta_border_color", form.cta_border_color);
+        createData.append("cta_mode", form.cta_mode);
+        createData.append("hotspot_x", String(form.hotspot_x));
+        createData.append("hotspot_y", String(form.hotspot_y));
+        createData.append("hotspot_width", String(form.hotspot_width));
+        createData.append("hotspot_height", String(form.hotspot_height));
         createData.append("show_content", String(form.show_content));
         createData.append("text_position", form.text_position);
         createData.append("text_align", form.text_align);
@@ -449,6 +599,11 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
       cta_bg_color: slide.ctaBgColor ?? null,
       cta_text_color: slide.ctaTextColor ?? null,
       cta_border_color: slide.ctaBorderColor ?? null,
+      cta_mode: slide.ctaMode ?? HERO_CTA_MODE_DEFAULT,
+      hotspot_x: slide.hotspotX ?? HERO_HOTSPOT_DEFAULT.x,
+      hotspot_y: slide.hotspotY ?? HERO_HOTSPOT_DEFAULT.y,
+      hotspot_width: slide.hotspotWidth ?? HERO_HOTSPOT_DEFAULT.width,
+      hotspot_height: slide.hotspotHeight ?? HERO_HOTSPOT_DEFAULT.height,
       link_url: slide.linkUrl ?? "",
       show_content: slide.showContent,
       text_position: slide.textPosition,
@@ -592,10 +747,27 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
           {/* ─── CTA ─── */}
           <section className="admin-fieldset">
             <p className="admin-section-label">Llamado a la acción (CTA)</p>
+
+            <div className="mb-5">
+              <label className="admin-field-label">Tipo de CTA</label>
+              <Segmented
+                value={form.cta_mode}
+                options={CTA_MODE_OPTIONS}
+                onChange={(value) => setForm((prev) => ({ ...prev, cta_mode: value }))}
+                full
+                ariaLabel="Tipo de CTA"
+              />
+              <p className="admin-field-help">
+                {form.cta_mode === "button"
+                  ? "Un botón con el estilo de la marca, posicionado sobre la imagen."
+                  : "Una zona invisible sobre el botón que ya dibujaste dentro de la imagen — no se muestra nada encima, solo se activa el clic en esa area."}
+              </p>
+            </div>
+
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="admin-field-label" htmlFor="hero-cta-text">
-                  Texto del botón
+                  {form.cta_mode === "button" ? "Texto del botón" : "Texto accesible (lectores de pantalla)"}
                 </label>
                 <input
                   id="hero-cta-text"
@@ -619,36 +791,156 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
               </div>
             </div>
             <p className="admin-field-help mt-2">
-              El botón solo aparece si completas <strong>texto</strong> y <strong>URL</strong>.
+              {form.cta_mode === "button" ? (
+                <>
+                  El botón solo aparece si completas <strong>texto</strong> y <strong>URL</strong>.
+                </>
+              ) : (
+                <>
+                  La zona clickeable se activa con solo completar la <strong>URL</strong>.
+                </>
+              )}
             </p>
 
-            <div className="mt-6 grid gap-6 md:grid-cols-2">
-              <div>
-                <label className="admin-field-label">Posición del botón</label>
-                <CtaPositionGrid
-                  value={form.cta_position}
-                  onChange={(value) => setForm((prev) => ({ ...prev, cta_position: value }))}
-                />
+            {form.cta_mode === "button" ? (
+              <div className="mt-6 grid gap-6 md:grid-cols-2">
+                <div>
+                  <label className="admin-field-label">Posición del botón</label>
+                  <CtaPositionGrid
+                    value={form.cta_position}
+                    onChange={(value) => setForm((prev) => ({ ...prev, cta_position: value }))}
+                  />
+                </div>
+                <div className="flex flex-col gap-4">
+                  <ColorControl
+                    label="Color de fondo del botón"
+                    value={form.cta_bg_color}
+                    onChange={(val) => setForm((prev) => ({ ...prev, cta_bg_color: val }))}
+                  />
+                  <ColorControl
+                    label="Color del texto del botón"
+                    value={form.cta_text_color}
+                    onChange={(val) => setForm((prev) => ({ ...prev, cta_text_color: val }))}
+                    allowNull={false}
+                  />
+                  <ColorControl
+                    label="Color del borde"
+                    value={form.cta_border_color}
+                    onChange={(val) => setForm((prev) => ({ ...prev, cta_border_color: val }))}
+                  />
+                </div>
               </div>
-              <div className="flex flex-col gap-4">
-                <ColorControl
-                  label="Color de fondo del botón"
-                  value={form.cta_bg_color}
-                  onChange={(val) => setForm((prev) => ({ ...prev, cta_bg_color: val }))}
-                />
-                <ColorControl
-                  label="Color del texto del botón"
-                  value={form.cta_text_color}
-                  onChange={(val) => setForm((prev) => ({ ...prev, cta_text_color: val }))}
-                  allowNull={false}
-                />
-                <ColorControl
-                  label="Color del borde"
-                  value={form.cta_border_color}
-                  onChange={(val) => setForm((prev) => ({ ...prev, cta_border_color: val }))}
-                />
+            ) : (
+              <div className="mt-6">
+                <label className="admin-field-label">Zona clickeable sobre la imagen</label>
+                {dropzonePreview ? (
+                  <HotspotEditor
+                    imageUrl={dropzonePreview}
+                    rect={{
+                      x: form.hotspot_x,
+                      y: form.hotspot_y,
+                      width: form.hotspot_width,
+                      height: form.hotspot_height,
+                    }}
+                    onChange={(rect) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        hotspot_x: rect.x,
+                        hotspot_y: rect.y,
+                        hotspot_width: rect.width,
+                        hotspot_height: rect.height,
+                      }))
+                    }
+                  />
+                ) : (
+                  <p className="admin-field-help">
+                    Sube la imagen del slide más abajo para poder ubicar la zona clickeable.
+                  </p>
+                )}
+                <p className="admin-field-help mt-2">
+                  Arrastra el rectángulo para moverlo, y el punto de la esquina para cambiar su tamaño.
+                </p>
+
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div>
+                    <label className="admin-field-label" htmlFor="hotspot-x">
+                      X (%)
+                    </label>
+                    <input
+                      id="hotspot-x"
+                      type="number"
+                      min={0}
+                      max={100}
+                      className="admin-input"
+                      value={form.hotspot_x}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          hotspot_x: clampPercent(Number(event.target.value || 0), 0, 100 - prev.hotspot_width),
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="admin-field-label" htmlFor="hotspot-y">
+                      Y (%)
+                    </label>
+                    <input
+                      id="hotspot-y"
+                      type="number"
+                      min={0}
+                      max={100}
+                      className="admin-input"
+                      value={form.hotspot_y}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          hotspot_y: clampPercent(Number(event.target.value || 0), 0, 100 - prev.hotspot_height),
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="admin-field-label" htmlFor="hotspot-width">
+                      Ancho (%)
+                    </label>
+                    <input
+                      id="hotspot-width"
+                      type="number"
+                      min={5}
+                      max={100}
+                      className="admin-input"
+                      value={form.hotspot_width}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          hotspot_width: clampPercent(Number(event.target.value || 5), 5, 100 - prev.hotspot_x),
+                        }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="admin-field-label" htmlFor="hotspot-height">
+                      Alto (%)
+                    </label>
+                    <input
+                      id="hotspot-height"
+                      type="number"
+                      min={5}
+                      max={100}
+                      className="admin-input"
+                      value={form.hotspot_height}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          hotspot_height: clampPercent(Number(event.target.value || 5), 5, 100 - prev.hotspot_y),
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </section>
 
           {/* ─── Imagen ─── */}
