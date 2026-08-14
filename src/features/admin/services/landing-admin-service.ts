@@ -55,6 +55,10 @@ export async function getHeroSlidesAdmin() {
       hotspotY: heroSlides.hotspotY,
       hotspotWidth: heroSlides.hotspotWidth,
       hotspotHeight: heroSlides.hotspotHeight,
+      mobileHotspotX: heroSlides.mobileHotspotX,
+      mobileHotspotY: heroSlides.mobileHotspotY,
+      mobileHotspotWidth: heroSlides.mobileHotspotWidth,
+      mobileHotspotHeight: heroSlides.mobileHotspotHeight,
       showContent: heroSlides.showContent,
       textPosition: heroSlides.textPosition,
       textAlign: heroSlides.textAlign,
@@ -90,6 +94,10 @@ export async function createHeroSlide(data: HeroSlideInput & { imageUrl: string 
       hotspotY: data.hotspot_y ?? null,
       hotspotWidth: data.hotspot_width ?? null,
       hotspotHeight: data.hotspot_height ?? null,
+      mobileHotspotX: data.mobile_hotspot_x ?? null,
+      mobileHotspotY: data.mobile_hotspot_y ?? null,
+      mobileHotspotWidth: data.mobile_hotspot_width ?? null,
+      mobileHotspotHeight: data.mobile_hotspot_height ?? null,
       textPosition: data.text_position,
       textAlign: data.text_align,
       overlayVariant: data.overlay_variant,
@@ -123,6 +131,10 @@ export async function updateHeroSlide(id: string, data: UpdateHeroSlideInput & {
   if ("hotspot_y" in data) updateData.hotspotY = data.hotspot_y ?? null;
   if ("hotspot_width" in data) updateData.hotspotWidth = data.hotspot_width ?? null;
   if ("hotspot_height" in data) updateData.hotspotHeight = data.hotspot_height ?? null;
+  if ("mobile_hotspot_x" in data) updateData.mobileHotspotX = data.mobile_hotspot_x ?? null;
+  if ("mobile_hotspot_y" in data) updateData.mobileHotspotY = data.mobile_hotspot_y ?? null;
+  if ("mobile_hotspot_width" in data) updateData.mobileHotspotWidth = data.mobile_hotspot_width ?? null;
+  if ("mobile_hotspot_height" in data) updateData.mobileHotspotHeight = data.mobile_hotspot_height ?? null;
   if ("text_position" in data && typeof data.text_position === "string")
     updateData.textPosition = data.text_position;
   if ("text_align" in data && typeof data.text_align === "string")

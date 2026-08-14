@@ -27,6 +27,10 @@ export type HeroSlideViewModel = {
   hotspotY: number | null;
   hotspotWidth: number | null;
   hotspotHeight: number | null;
+  mobileHotspotX: number | null;
+  mobileHotspotY: number | null;
+  mobileHotspotWidth: number | null;
+  mobileHotspotHeight: number | null;
   linkUrl: string | null;
   showContent: boolean;
   textPosition: HeroTextPosition;
@@ -76,6 +80,10 @@ export async function getHeroViewModel(): Promise<HeroViewModel> {
     hotspotY: slide.hotspotY,
     hotspotWidth: slide.hotspotWidth,
     hotspotHeight: slide.hotspotHeight,
+    mobileHotspotX: slide.mobileHotspotX,
+    mobileHotspotY: slide.mobileHotspotY,
+    mobileHotspotWidth: slide.mobileHotspotWidth,
+    mobileHotspotHeight: slide.mobileHotspotHeight,
     linkUrl: slide.linkUrl,
     showContent: slide.showContent,
     textPosition: slide.textPosition,

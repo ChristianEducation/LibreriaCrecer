@@ -50,6 +50,12 @@ export const heroSlides = pgTable("hero_slides", {
   hotspotY: integer("hotspot_y"),
   hotspotWidth: integer("hotspot_width"),
   hotspotHeight: integer("hotspot_height"),
+  // Zona clickeable independiente para la imagen mobile. Si alguna de las 4
+  // queda null, mobile usa el rectangulo de escritorio como respaldo.
+  mobileHotspotX: integer("mobile_hotspot_x"),
+  mobileHotspotY: integer("mobile_hotspot_y"),
+  mobileHotspotWidth: integer("mobile_hotspot_width"),
+  mobileHotspotHeight: integer("mobile_hotspot_height"),
   textPosition: text("text_position").$type<HeroTextPosition>().default(HERO_TEXT_POSITION_DEFAULT).notNull(),
   textAlign: text("text_align").$type<HeroTextAlign>().default(HERO_TEXT_ALIGN_DEFAULT).notNull(),
   overlayVariant: text("overlay_variant").$type<HeroOverlayVariant>().default(HERO_OVERLAY_VARIANT_DEFAULT).notNull(),

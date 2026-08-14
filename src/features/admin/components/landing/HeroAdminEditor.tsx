@@ -50,6 +50,10 @@ type HeroSlide = {
   hotspotY: number | null;
   hotspotWidth: number | null;
   hotspotHeight: number | null;
+  mobileHotspotX: number | null;
+  mobileHotspotY: number | null;
+  mobileHotspotWidth: number | null;
+  mobileHotspotHeight: number | null;
   showContent: boolean;
   textPosition: HeroTextPosition;
   textAlign: HeroTextAlign;
@@ -76,6 +80,11 @@ type HeroFormState = {
   hotspot_y: number;
   hotspot_width: number;
   hotspot_height: number;
+  mobile_hotspot_enabled: boolean;
+  mobile_hotspot_x: number;
+  mobile_hotspot_y: number;
+  mobile_hotspot_width: number;
+  mobile_hotspot_height: number;
   link_url: string;
   show_content: boolean;
   text_position: HeroTextPosition;
@@ -104,6 +113,11 @@ const initialForm: HeroFormState = {
   hotspot_y: HERO_HOTSPOT_DEFAULT.y,
   hotspot_width: HERO_HOTSPOT_DEFAULT.width,
   hotspot_height: HERO_HOTSPOT_DEFAULT.height,
+  mobile_hotspot_enabled: false,
+  mobile_hotspot_x: HERO_HOTSPOT_DEFAULT.x,
+  mobile_hotspot_y: HERO_HOTSPOT_DEFAULT.y,
+  mobile_hotspot_width: HERO_HOTSPOT_DEFAULT.width,
+  mobile_hotspot_height: HERO_HOTSPOT_DEFAULT.height,
   link_url: "",
   show_content: true,
   text_position: HERO_TEXT_POSITION_DEFAULT,
@@ -425,6 +439,10 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         hotspotY: form.hotspot_y,
         hotspotWidth: form.hotspot_width,
         hotspotHeight: form.hotspot_height,
+        mobileHotspotX: form.mobile_hotspot_enabled ? form.mobile_hotspot_x : null,
+        mobileHotspotY: form.mobile_hotspot_enabled ? form.mobile_hotspot_y : null,
+        mobileHotspotWidth: form.mobile_hotspot_enabled ? form.mobile_hotspot_width : null,
+        mobileHotspotHeight: form.mobile_hotspot_enabled ? form.mobile_hotspot_height : null,
       };
       return {
         eyebrow: initialData?.eyebrow ?? null,
@@ -487,6 +505,10 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
           hotspot_y: form.hotspot_y,
           hotspot_width: form.hotspot_width,
           hotspot_height: form.hotspot_height,
+          mobile_hotspot_x: form.mobile_hotspot_enabled ? form.mobile_hotspot_x : null,
+          mobile_hotspot_y: form.mobile_hotspot_enabled ? form.mobile_hotspot_y : null,
+          mobile_hotspot_width: form.mobile_hotspot_enabled ? form.mobile_hotspot_width : null,
+          mobile_hotspot_height: form.mobile_hotspot_enabled ? form.mobile_hotspot_height : null,
           show_content: form.show_content,
           text_position: form.text_position,
           text_align: form.text_align,
@@ -550,6 +572,12 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         createData.append("hotspot_y", String(form.hotspot_y));
         createData.append("hotspot_width", String(form.hotspot_width));
         createData.append("hotspot_height", String(form.hotspot_height));
+        if (form.mobile_hotspot_enabled) {
+          createData.append("mobile_hotspot_x", String(form.mobile_hotspot_x));
+          createData.append("mobile_hotspot_y", String(form.mobile_hotspot_y));
+          createData.append("mobile_hotspot_width", String(form.mobile_hotspot_width));
+          createData.append("mobile_hotspot_height", String(form.mobile_hotspot_height));
+        }
         createData.append("show_content", String(form.show_content));
         createData.append("text_position", form.text_position);
         createData.append("text_align", form.text_align);
@@ -604,6 +632,15 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
       hotspot_y: slide.hotspotY ?? HERO_HOTSPOT_DEFAULT.y,
       hotspot_width: slide.hotspotWidth ?? HERO_HOTSPOT_DEFAULT.width,
       hotspot_height: slide.hotspotHeight ?? HERO_HOTSPOT_DEFAULT.height,
+      mobile_hotspot_enabled:
+        slide.mobileHotspotX !== null &&
+        slide.mobileHotspotY !== null &&
+        slide.mobileHotspotWidth !== null &&
+        slide.mobileHotspotHeight !== null,
+      mobile_hotspot_x: slide.mobileHotspotX ?? HERO_HOTSPOT_DEFAULT.x,
+      mobile_hotspot_y: slide.mobileHotspotY ?? HERO_HOTSPOT_DEFAULT.y,
+      mobile_hotspot_width: slide.mobileHotspotWidth ?? HERO_HOTSPOT_DEFAULT.width,
+      mobile_hotspot_height: slide.mobileHotspotHeight ?? HERO_HOTSPOT_DEFAULT.height,
       link_url: slide.linkUrl ?? "",
       show_content: slide.showContent,
       text_position: slide.textPosition,
@@ -939,6 +976,136 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
                     />
                   </div>
                 </div>
+
+                {previewMobileUrl ?? form.existingMobileImageUrl ? (
+                  <div className="mt-6 rounded-[10px] border border-border bg-[#faf9f6] p-4">
+                    <AdminToggle
+                      checked={form.mobile_hotspot_enabled}
+                      label="Usar una zona distinta para mobile"
+                      description="Si la imagen mobile tiene el botón dibujado en otro lugar, marca esto y ubícalo aparte. Si lo dejas apagado, mobile usa la misma zona que escritorio."
+                      onChange={(checked) => setForm((prev) => ({ ...prev, mobile_hotspot_enabled: checked }))}
+                    />
+
+                    {form.mobile_hotspot_enabled ? (
+                      <div className="mt-4">
+                        <label className="admin-field-label">Zona clickeable sobre la imagen mobile</label>
+                        <HotspotEditor
+                          imageUrl={previewMobileUrl ?? form.existingMobileImageUrl ?? ""}
+                          rect={{
+                            x: form.mobile_hotspot_x,
+                            y: form.mobile_hotspot_y,
+                            width: form.mobile_hotspot_width,
+                            height: form.mobile_hotspot_height,
+                          }}
+                          onChange={(rect) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              mobile_hotspot_x: rect.x,
+                              mobile_hotspot_y: rect.y,
+                              mobile_hotspot_width: rect.width,
+                              mobile_hotspot_height: rect.height,
+                            }))
+                          }
+                        />
+
+                        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                          <div>
+                            <label className="admin-field-label" htmlFor="mobile-hotspot-x">
+                              X (%)
+                            </label>
+                            <input
+                              id="mobile-hotspot-x"
+                              type="number"
+                              min={0}
+                              max={100}
+                              className="admin-input"
+                              value={form.mobile_hotspot_x}
+                              onChange={(event) =>
+                                setForm((prev) => ({
+                                  ...prev,
+                                  mobile_hotspot_x: clampPercent(
+                                    Number(event.target.value || 0),
+                                    0,
+                                    100 - prev.mobile_hotspot_width,
+                                  ),
+                                }))
+                              }
+                            />
+                          </div>
+                          <div>
+                            <label className="admin-field-label" htmlFor="mobile-hotspot-y">
+                              Y (%)
+                            </label>
+                            <input
+                              id="mobile-hotspot-y"
+                              type="number"
+                              min={0}
+                              max={100}
+                              className="admin-input"
+                              value={form.mobile_hotspot_y}
+                              onChange={(event) =>
+                                setForm((prev) => ({
+                                  ...prev,
+                                  mobile_hotspot_y: clampPercent(
+                                    Number(event.target.value || 0),
+                                    0,
+                                    100 - prev.mobile_hotspot_height,
+                                  ),
+                                }))
+                              }
+                            />
+                          </div>
+                          <div>
+                            <label className="admin-field-label" htmlFor="mobile-hotspot-width">
+                              Ancho (%)
+                            </label>
+                            <input
+                              id="mobile-hotspot-width"
+                              type="number"
+                              min={5}
+                              max={100}
+                              className="admin-input"
+                              value={form.mobile_hotspot_width}
+                              onChange={(event) =>
+                                setForm((prev) => ({
+                                  ...prev,
+                                  mobile_hotspot_width: clampPercent(
+                                    Number(event.target.value || 5),
+                                    5,
+                                    100 - prev.mobile_hotspot_x,
+                                  ),
+                                }))
+                              }
+                            />
+                          </div>
+                          <div>
+                            <label className="admin-field-label" htmlFor="mobile-hotspot-height">
+                              Alto (%)
+                            </label>
+                            <input
+                              id="mobile-hotspot-height"
+                              type="number"
+                              min={5}
+                              max={100}
+                              className="admin-input"
+                              value={form.mobile_hotspot_height}
+                              onChange={(event) =>
+                                setForm((prev) => ({
+                                  ...prev,
+                                  mobile_hotspot_height: clampPercent(
+                                    Number(event.target.value || 5),
+                                    5,
+                                    100 - prev.mobile_hotspot_y,
+                                  ),
+                                }))
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             )}
           </section>

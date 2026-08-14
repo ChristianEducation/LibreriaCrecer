@@ -617,16 +617,6 @@ body {
   }
 }
 
-/* Indicador de scroll del hero — chevron animado */
-@keyframes scrollBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(7px); }
-}
-
-.scroll-bounce {
-  animation: scrollBounce 1.6s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -642,7 +632,6 @@ body {
 
   .hero-slide-image,
   .hero-overlay-enter,
-  .scroll-bounce,
   .hero-slide-dot--active::after,
   .recent-carousel-progress::after,
   .motion-line {

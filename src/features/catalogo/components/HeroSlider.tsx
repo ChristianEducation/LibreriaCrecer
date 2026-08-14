@@ -125,15 +125,6 @@ export function HeroSlider({ data }: HeroSliderProps) {
     }
   }, [activeIndex, items.length]);
 
-  const [hasScrolled, setHasScrolled] = useState(false);
-  useEffect(() => {
-    function onScroll() {
-      setHasScrolled(window.scrollY > 80);
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   if (items.length === 0) {
     return <section className="hero-full" aria-hidden="true" />;
   }
@@ -163,6 +154,24 @@ export function HeroSlider({ data }: HeroSliderProps) {
     Boolean(activeSlide.linkUrl) &&
     activeSlide.hotspotWidth !== null &&
     activeSlide.hotspotHeight !== null;
+  const hasMobileHotspot =
+    activeSlide.mobileHotspotX !== null &&
+    activeSlide.mobileHotspotY !== null &&
+    activeSlide.mobileHotspotWidth !== null &&
+    activeSlide.mobileHotspotHeight !== null;
+  const mobileHotspotRect = hasMobileHotspot
+    ? {
+        left: activeSlide.mobileHotspotX ?? 0,
+        top: activeSlide.mobileHotspotY ?? 0,
+        width: activeSlide.mobileHotspotWidth ?? 0,
+        height: activeSlide.mobileHotspotHeight ?? 0,
+      }
+    : {
+        left: activeSlide.hotspotX ?? 0,
+        top: activeSlide.hotspotY ?? 0,
+        width: activeSlide.hotspotWidth ?? 0,
+        height: activeSlide.hotspotHeight ?? 0,
+      };
   const titleParts = splitTitle(activeSlide.title);
 
   return (
@@ -311,17 +320,30 @@ export function HeroSlider({ data }: HeroSliderProps) {
         ) : null}
 
         {hotspotIsLink && activeSlide.linkUrl ? (
-          <Link
-            aria-label={activeSlide.ctaText ?? "Ir al enlace destacado"}
-            className="hero-hotspot absolute z-[2]"
-            href={activeSlide.linkUrl}
-            style={{
-              left: `${activeSlide.hotspotX ?? 0}%`,
-              top: `${activeSlide.hotspotY ?? 0}%`,
-              width: `${activeSlide.hotspotWidth ?? 0}%`,
-              height: `${activeSlide.hotspotHeight ?? 0}%`,
-            }}
-          />
+          <>
+            <Link
+              aria-label={activeSlide.ctaText ?? "Ir al enlace destacado"}
+              className="hero-hotspot absolute z-[2] hidden md:block"
+              href={activeSlide.linkUrl}
+              style={{
+                left: `${activeSlide.hotspotX ?? 0}%`,
+                top: `${activeSlide.hotspotY ?? 0}%`,
+                width: `${activeSlide.hotspotWidth ?? 0}%`,
+                height: `${activeSlide.hotspotHeight ?? 0}%`,
+              }}
+            />
+            <Link
+              aria-label={activeSlide.ctaText ?? "Ir al enlace destacado"}
+              className="hero-hotspot absolute z-[2] md:hidden"
+              href={activeSlide.linkUrl}
+              style={{
+                left: `${mobileHotspotRect.left}%`,
+                top: `${mobileHotspotRect.top}%`,
+                width: `${mobileHotspotRect.width}%`,
+                height: `${mobileHotspotRect.height}%`,
+              }}
+            />
+          </>
         ) : null}
 
         {items.length > 1 ? (
@@ -371,34 +393,6 @@ export function HeroSlider({ data }: HeroSliderProps) {
             </div>
           </div>
         ) : null}
-
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            left: "50%",
-            bottom: "clamp(1.5rem, 3vw, 2.5rem)",
-            transform: "translateX(-50%)",
-            opacity: hasScrolled ? 0 : 0.7,
-            transition: "opacity 0.4s ease",
-            zIndex: 5,
-            pointerEvents: "none",
-          }}
-        >
-          <svg
-            className="scroll-bounce"
-            fill="none"
-            height="32"
-            stroke={isDarkTheme ? "var(--text)" : "white"}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            width="32"
-          >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </div>
       </div>
     </section>
   );
