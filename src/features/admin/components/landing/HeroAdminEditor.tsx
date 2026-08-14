@@ -14,21 +14,21 @@ import type {
 import { useToast } from "@/shared/hooks";
 import {
   HERO_CONTENT_THEME_DEFAULT,
+  HERO_CONTENT_POSITION_DEFAULT,
   HERO_OVERLAY_OPACITY_DEFAULT,
   HERO_OVERLAY_OPACITY_MAX,
   HERO_OVERLAY_OPACITY_MIN,
   HERO_OVERLAY_VARIANT_DEFAULT,
   HERO_TEXT_ALIGN_DEFAULT,
-  HERO_TEXT_POSITION_DEFAULT,
   HERO_CTA_MODE_DEFAULT,
   HERO_CTA_POSITION_DEFAULT,
   HERO_CTA_BG_COLOR_DEFAULT,
   HERO_CTA_TEXT_COLOR_DEFAULT,
   HERO_HOTSPOT_DEFAULT,
   type HeroContentTheme,
+  type HeroContentPosition,
   type HeroOverlayVariant,
   type HeroTextAlign,
-  type HeroTextPosition,
   type HeroCtaMode,
   type HeroCtaPosition,
 } from "@/shared/config/landing";
@@ -55,7 +55,8 @@ type HeroSlide = {
   mobileHotspotWidth: number | null;
   mobileHotspotHeight: number | null;
   showContent: boolean;
-  textPosition: HeroTextPosition;
+  contentPosition: HeroContentPosition;
+  contentTextColor: string | null;
   textAlign: HeroTextAlign;
   overlayVariant: HeroOverlayVariant;
   overlayOpacity: number;
@@ -87,7 +88,8 @@ type HeroFormState = {
   mobile_hotspot_height: number;
   link_url: string;
   show_content: boolean;
-  text_position: HeroTextPosition;
+  content_position: HeroContentPosition;
+  content_text_color: string | null;
   text_align: HeroTextAlign;
   overlay_variant: HeroOverlayVariant;
   overlay_opacity: number;
@@ -120,7 +122,8 @@ const initialForm: HeroFormState = {
   mobile_hotspot_height: HERO_HOTSPOT_DEFAULT.height,
   link_url: "",
   show_content: true,
-  text_position: HERO_TEXT_POSITION_DEFAULT,
+  content_position: HERO_CONTENT_POSITION_DEFAULT,
+  content_text_color: null,
   text_align: HERO_TEXT_ALIGN_DEFAULT,
   overlay_variant: HERO_OVERLAY_VARIANT_DEFAULT,
   overlay_opacity: HERO_OVERLAY_OPACITY_DEFAULT,
@@ -136,12 +139,6 @@ type SegmentedOption<T extends string> = {
   label: string;
   icon?: React.ReactNode;
 };
-
-const POSITION_OPTIONS: SegmentedOption<HeroTextPosition>[] = [
-  { value: "left", label: "Izquierda" },
-  { value: "center", label: "Centro" },
-  { value: "right", label: "Derecha" },
-];
 
 const ALIGN_OPTIONS: SegmentedOption<HeroTextAlign>[] = [
   { value: "left", label: "Izquierda" },
@@ -199,16 +196,24 @@ function Segmented<T extends string>({
   );
 }
 
-const CTA_POSITIONS: HeroCtaPosition[] = [
+const GRID_9_POSITIONS = [
   "top-left", "top-center", "top-right",
   "middle-left", "middle-center", "middle-right",
   "bottom-left", "bottom-center", "bottom-right",
-];
+] as const;
 
-function CtaPositionGrid({ value, onChange }: { value: HeroCtaPosition; onChange: (v: HeroCtaPosition) => void }) {
+// Grilla generica de 9 posiciones (3x3) — la usan tanto la posicion del boton
+// CTA como la posicion del bloque de titulo/subtitulo, mismos 9 valores.
+function PositionGrid3x3<T extends (typeof GRID_9_POSITIONS)[number]>({
+  value,
+  onChange,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+}) {
   return (
     <div className="grid grid-cols-3 gap-1 rounded-[6px] border border-border bg-[#faf9f6] p-1 w-[160px]">
-      {CTA_POSITIONS.map((pos) => {
+      {GRID_9_POSITIONS.map((pos) => {
         const isActive = pos === value;
         return (
           <button
@@ -216,7 +221,7 @@ function CtaPositionGrid({ value, onChange }: { value: HeroCtaPosition; onChange
             type="button"
             role="radio"
             aria-checked={isActive}
-            onClick={() => onChange(pos)}
+            onClick={() => onChange(pos as T)}
             title={pos}
             className={`admin-segmented-option${isActive ? " admin-segmented-option--active" : ""}`}
             style={{ height: "36px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -408,6 +413,52 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<HeroFormState>(initialForm);
+  const [showAdvancedText, setShowAdvancedText] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const slidesRef = useRef<HeroSlide[]>([]);
+
+  useEffect(() => {
+    slidesRef.current = slides;
+  }, [slides]);
+
+  useEffect(() => {
+    if (!draggedId) return;
+
+    function handlePointerMove(event: PointerEvent) {
+      const el = document.elementFromPoint(event.clientX, event.clientY);
+      const card = el?.closest<HTMLElement>("[data-slide-id]");
+      const overId = card?.dataset.slideId;
+      if (!overId || overId === draggedId) return;
+
+      setSlides((prev) => {
+        const fromIndex = prev.findIndex((item) => item.id === draggedId);
+        const toIndex = prev.findIndex((item) => item.id === overId);
+        if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return prev;
+        const next = [...prev];
+        const [moved] = next.splice(fromIndex, 1);
+        next.splice(toIndex, 0, moved);
+        return next;
+      });
+    }
+
+    async function handlePointerUp() {
+      setDraggedId(null);
+      await fetch("/api/admin/landing/hero/reorder", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slideIds: slidesRef.current.map((item) => item.id) }),
+      });
+      router.refresh();
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [draggedId, router]);
 
   const previewUrl = useMemo(() => (form.imageFile ? URL.createObjectURL(form.imageFile) : null), [form.imageFile]);
   const previewMobileUrl = useMemo(() => (form.mobileImageFile ? URL.createObjectURL(form.mobileImageFile) : null), [form.mobileImageFile]);
@@ -425,7 +476,8 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         ctaText: form.cta_text || null,
         linkUrl: form.link_url || null,
         showContent: form.show_content,
-        textPosition: form.text_position,
+        contentPosition: form.content_position,
+        contentTextColor: form.content_text_color,
         textAlign: form.text_align,
         overlayVariant: mapOverlayVariant(form.overlay_variant),
         overlayOpacity: form.overlay_opacity,
@@ -510,7 +562,8 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
           mobile_hotspot_width: form.mobile_hotspot_enabled ? form.mobile_hotspot_width : null,
           mobile_hotspot_height: form.mobile_hotspot_enabled ? form.mobile_hotspot_height : null,
           show_content: form.show_content,
-          text_position: form.text_position,
+          content_position: form.content_position,
+          content_text_color: form.content_text_color,
           text_align: form.text_align,
           overlay_variant: form.overlay_variant,
           overlay_opacity: form.overlay_opacity,
@@ -579,7 +632,8 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
           createData.append("mobile_hotspot_height", String(form.mobile_hotspot_height));
         }
         createData.append("show_content", String(form.show_content));
-        createData.append("text_position", form.text_position);
+        createData.append("content_position", form.content_position);
+        if (form.content_text_color) createData.append("content_text_color", form.content_text_color);
         createData.append("text_align", form.text_align);
         createData.append("overlay_variant", form.overlay_variant);
         createData.append("overlay_opacity", String(form.overlay_opacity));
@@ -607,12 +661,26 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
       }
 
       setForm(initialForm);
+      setShowAdvancedText(false);
+      setFormOpen(false);
       toast({ message: "Hero actualizado correctamente." });
       await fetchSlides();
       router.refresh();
     } finally {
       setSaving(false);
     }
+  }
+
+  function openNewSlideForm() {
+    setForm(initialForm);
+    setShowAdvancedText(false);
+    setFormOpen(true);
+  }
+
+  function closeForm() {
+    setForm(initialForm);
+    setShowAdvancedText(false);
+    setFormOpen(false);
   }
 
   function startEdit(slide: HeroSlide) {
@@ -643,7 +711,8 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
       mobile_hotspot_height: slide.mobileHotspotHeight ?? HERO_HOTSPOT_DEFAULT.height,
       link_url: slide.linkUrl ?? "",
       show_content: slide.showContent,
-      text_position: slide.textPosition,
+      content_position: slide.contentPosition,
+      content_text_color: slide.contentTextColor ?? null,
       text_align: slide.textAlign,
       overlay_variant: slide.overlayVariant,
       overlay_opacity: slide.overlayOpacity,
@@ -653,6 +722,8 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
       imageFile: null,
       mobileImageFile: null,
     });
+    setShowAdvancedText(slide.showContent);
+    setFormOpen(true);
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -670,27 +741,6 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
     }
 
     toast({ message: "Slide eliminado." });
-    await fetchSlides();
-    router.refresh();
-  }
-
-  async function moveSlide(id: string, direction: "up" | "down") {
-    const currentIndex = slides.findIndex((item) => item.id === id);
-    if (currentIndex < 0) return;
-
-    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
-    if (targetIndex < 0 || targetIndex >= slides.length) return;
-
-    const reordered = [...slides];
-    const [moved] = reordered.splice(currentIndex, 1);
-    reordered.splice(targetIndex, 0, moved);
-
-    setSlides(reordered);
-    await fetch("/api/admin/landing/hero/reorder", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slideIds: reordered.map((item) => item.id) }),
-    });
     await fetchSlides();
     router.refresh();
   }
@@ -723,6 +773,146 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         </Link>
       </div>
 
+      <div className="editor-card">
+        <div className="editor-card-header flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-[15px] font-semibold text-text">Slides existentes</h3>
+            <p className="mt-0.5 text-[12px] text-text-light">
+              {slides.length} {slides.length === 1 ? "slide" : "slides"} configurado
+              {slides.length === 1 ? "" : "s"}. Arrastra el ícono de agarre para reordenar.
+            </p>
+          </div>
+          <button type="button" onClick={openNewSlideForm} className="admin-btn-primary">
+            + Nuevo slide
+          </button>
+        </div>
+
+        <div className="editor-card-body">
+          {loading ? (
+            <p className="text-sm text-text-light">Cargando slides...</p>
+          ) : slides.length === 0 ? (
+            <div className="rounded-[10px] border border-dashed border-border bg-[#faf9f6] px-6 py-10 text-center">
+              <p className="text-sm text-text-mid">Aún no hay slides creados.</p>
+              <p className="mt-1 text-[12px] text-text-light">Usa &quot;+ Nuevo slide&quot; para añadir el primero.</p>
+            </div>
+          ) : (
+            <div className="admin-slide-grid">
+              {slides.map((slide) => {
+                const isEditing = form.id === slide.id;
+                return (
+                  <article
+                    key={slide.id}
+                    data-slide-id={slide.id}
+                    className="admin-slide-grid-card"
+                    style={{
+                      opacity: draggedId === slide.id ? 0.4 : 1,
+                      borderColor: isEditing ? "rgba(200, 168, 48, 0.55)" : undefined,
+                      boxShadow: isEditing ? "0 0 0 2px rgba(200, 168, 48, 0.25)" : undefined,
+                    }}
+                  >
+                    <div className="admin-slide-grid-image-wrap">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={slide.imageUrl} alt={slide.title ?? "Hero"} className="admin-slide-grid-image" />
+                      <span
+                        className={`admin-badge admin-slide-grid-badge ${slide.isActive ? "admin-badge--active" : "admin-badge--inactive"}`}
+                      >
+                        <span className="admin-badge-dot" />
+                        {slide.isActive ? "Activo" : "Inactivo"}
+                      </span>
+                      <button
+                        type="button"
+                        className="admin-slide-grid-handle"
+                        onPointerDown={(event) => {
+                          event.preventDefault();
+                          setDraggedId(slide.id);
+                        }}
+                        aria-label="Arrastrar para reordenar"
+                        title="Arrastrar para reordenar"
+                      >
+                        <svg aria-hidden="true" fill="currentColor" height="14" viewBox="0 0 20 20" width="14">
+                          <circle cx="6" cy="5" r="1.4" />
+                          <circle cx="6" cy="10" r="1.4" />
+                          <circle cx="6" cy="15" r="1.4" />
+                          <circle cx="12" cy="5" r="1.4" />
+                          <circle cx="12" cy="10" r="1.4" />
+                          <circle cx="12" cy="15" r="1.4" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div className="admin-slide-grid-info">
+                      <p className="truncate text-[13px] font-medium text-text">{slide.title ?? "(Sin título)"}</p>
+                      <div className="mt-1 flex items-center gap-1.5 text-[11px] text-text-light">
+                        <svg
+                          aria-hidden="true"
+                          fill="none"
+                          height="11"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.6"
+                          viewBox="0 0 20 20"
+                          width="11"
+                        >
+                          <path d="M8.5 11.5a3 3 0 004.5 0l3-3a3 3 0 00-4.5-4.5l-1 1M11.5 8.5a3 3 0 00-4.5 0l-3 3a3 3 0 004.5 4.5l1-1" />
+                        </svg>
+                        {slide.linkUrl ? "Con enlace" : "Sin enlace"}
+                      </div>
+                    </div>
+
+                    <div className="admin-slide-grid-actions">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(slide)}
+                        className="admin-icon-btn"
+                        aria-label="Editar"
+                        title="Editar"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          fill="none"
+                          height="15"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.8"
+                          viewBox="0 0 20 20"
+                          width="15"
+                        >
+                          <path d="M14 3l3 3-9.5 9.5L4 16l.5-3.5L14 3z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeSlide(slide.id)}
+                        className="admin-icon-btn admin-icon-btn--danger"
+                        aria-label="Eliminar"
+                        title="Eliminar"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          fill="none"
+                          height="15"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.8"
+                          viewBox="0 0 20 20"
+                          width="15"
+                        >
+                          <path d="M4 6h12M8 6V4h4v2M6 6l1 10h6l1-10" />
+                        </svg>
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {formOpen ? (
       <div className="hero-editor-grid">
         {liveViewModel.slides.length > 0 ? (
           <div className="hero-editor-grid-preview">
@@ -750,35 +940,43 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         </div>
 
         <div className="editor-card-body">
-          {/* ─── Contenido ─── */}
+          {/* ─── Imagen ─── */}
           <section className="admin-fieldset">
-            <p className="admin-section-label">Contenido</p>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="admin-field-label" htmlFor="hero-title">
-                  Título
-                </label>
-                <input
-                  id="hero-title"
-                  className="admin-input"
-                  placeholder="Ej: Lecturas para esta cuaresma"
-                  value={form.title}
-                  onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
-                />
+            <p className="admin-section-label">Imagen de fondo</p>
+            <AdminUploadZone
+              hint="Recomendado: 1920×900 px. JPG o PNG."
+              onFileSelect={(file) => setForm((prev) => ({ ...prev, imageFile: file }))}
+              previewUrl={dropzonePreview}
+            />
+            {form.id && form.existingImageUrl && !form.imageFile ? (
+              <p className="admin-field-help">
+                Imagen actual del slide. Sube una nueva para reemplazarla.
+              </p>
+            ) : null}
+          </section>
+
+          <section className="admin-fieldset">
+            <p className="admin-section-label">Imagen Mobile (Opcional)</p>
+            <p className="admin-field-help mb-4">
+              Versión vertical para móviles (formato 9:16 recomendado). Si no subes una, se usa la imagen principal.
+            </p>
+            <AdminUploadZone
+              hint="Recomendado: 1080×1920 px. JPG o PNG."
+              onFileSelect={(file) => setForm((prev) => ({ ...prev, mobileImageFile: file, existingMobileImageUrl: null }))}
+              previewUrl={previewMobileUrl ?? form.existingMobileImageUrl}
+            />
+            {form.existingMobileImageUrl && !form.mobileImageFile ? (
+              <div className="mt-4 flex items-center justify-between rounded-[6px] border border-border bg-[#faf9f6] px-3 py-2">
+                <span className="text-sm text-text-mid">Ya existe una imagen mobile guardada.</span>
+                <button
+                  type="button"
+                  onClick={() => setForm((prev) => ({ ...prev, existingMobileImageUrl: null, mobileImageFile: null }))}
+                  className="text-sm text-[var(--color-gold)] hover:underline"
+                >
+                  Quitar imagen mobile
+                </button>
               </div>
-              <div>
-                <label className="admin-field-label" htmlFor="hero-subtitle">
-                  Subtítulo
-                </label>
-                <input
-                  id="hero-subtitle"
-                  className="admin-input"
-                  placeholder="Texto breve de apoyo"
-                  value={form.subtitle}
-                  onChange={(event) => setForm((prev) => ({ ...prev, subtitle: event.target.value }))}
-                />
-              </div>
-            </div>
+            ) : null}
           </section>
 
           {/* ─── CTA ─── */}
@@ -843,7 +1041,7 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
               <div className="mt-6 grid gap-6 md:grid-cols-2">
                 <div>
                   <label className="admin-field-label">Posición del botón</label>
-                  <CtaPositionGrid
+                  <PositionGrid3x3
                     value={form.cta_position}
                     onChange={(value) => setForm((prev) => ({ ...prev, cta_position: value }))}
                   />
@@ -1110,134 +1308,6 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
             )}
           </section>
 
-          {/* ─── Imagen ─── */}
-          <section className="admin-fieldset">
-            <p className="admin-section-label">Imagen de fondo</p>
-            <AdminUploadZone
-              hint="Recomendado: 1920×900 px. JPG o PNG."
-              onFileSelect={(file) => setForm((prev) => ({ ...prev, imageFile: file }))}
-              previewUrl={dropzonePreview}
-            />
-            {form.id && form.existingImageUrl && !form.imageFile ? (
-              <p className="admin-field-help">
-                Imagen actual del slide. Sube una nueva para reemplazarla.
-              </p>
-            ) : null}
-          </section>
-
-          <section className="admin-fieldset">
-            <p className="admin-section-label">Imagen Mobile (Opcional)</p>
-            <p className="admin-field-help mb-4">
-              Versión vertical para móviles (formato 9:16 recomendado). Si no subes una, se usa la imagen principal.
-            </p>
-            <AdminUploadZone
-              hint="Recomendado: 1080×1920 px. JPG o PNG."
-              onFileSelect={(file) => setForm((prev) => ({ ...prev, mobileImageFile: file, existingMobileImageUrl: null }))}
-              previewUrl={previewMobileUrl ?? form.existingMobileImageUrl}
-            />
-            {form.existingMobileImageUrl && !form.mobileImageFile ? (
-              <div className="mt-4 flex items-center justify-between rounded-[6px] border border-border bg-[#faf9f6] px-3 py-2">
-                <span className="text-sm text-text-mid">Ya existe una imagen mobile guardada.</span>
-                <button
-                  type="button"
-                  onClick={() => setForm((prev) => ({ ...prev, existingMobileImageUrl: null, mobileImageFile: null }))}
-                  className="text-sm text-[var(--color-gold)] hover:underline"
-                >
-                  Quitar imagen mobile
-                </button>
-              </div>
-            ) : null}
-          </section>
-
-          {/* ─── Configuración visual ─── */}
-          <section className="admin-fieldset">
-            <p className="admin-section-label">Configuración visual</p>
-
-            <div className="rounded-[10px] border border-border bg-[#faf9f6] px-4">
-              <AdminToggle
-                checked={form.show_content}
-                label="Mostrar contenido sobre la imagen"
-                description="Si está apagado, solo se muestra la imagen sin título ni botón."
-                onChange={(checked) => setForm((prev) => ({ ...prev, show_content: checked }))}
-              />
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="admin-field-label">Posición del contenido</label>
-                <Segmented
-                  value={form.text_position}
-                  options={POSITION_OPTIONS}
-                  onChange={(value) => setForm((prev) => ({ ...prev, text_position: value }))}
-                  full
-                  ariaLabel="Posición del contenido"
-                />
-                <p className="admin-field-help">Dónde se ancla el bloque de texto sobre la imagen.</p>
-              </div>
-              <div>
-                <label className="admin-field-label">Alineación del texto</label>
-                <Segmented
-                  value={form.text_align}
-                  options={ALIGN_OPTIONS}
-                  onChange={(value) => setForm((prev) => ({ ...prev, text_align: value }))}
-                  full
-                  ariaLabel="Alineación del texto"
-                />
-                <p className="admin-field-help">Cómo se alinean las líneas dentro del bloque.</p>
-              </div>
-            </div>
-
-            <div>
-              <label className="admin-field-label">Tema del texto</label>
-              <Segmented
-                value={form.content_theme}
-                options={THEME_OPTIONS}
-                onChange={(value) => setForm((prev) => ({ ...prev, content_theme: value }))}
-                ariaLabel="Tema del texto"
-              />
-              <p className="admin-field-help">
-                Usa <strong>texto claro</strong> sobre imágenes oscuras y <strong>texto oscuro</strong> sobre claras.
-              </p>
-            </div>
-
-            <div>
-              <label className="admin-field-label">Tipo de overlay</label>
-              <Segmented
-                value={form.overlay_variant}
-                options={OVERLAY_OPTIONS}
-                onChange={(value) => setForm((prev) => ({ ...prev, overlay_variant: value }))}
-                ariaLabel="Tipo de overlay"
-              />
-              <p className="admin-field-help">El overlay oscurece la imagen para que el texto sea legible.</p>
-            </div>
-
-            <div>
-              <label className="admin-field-label" htmlFor="hero-overlay-opacity">
-                Opacidad del overlay
-              </label>
-              <div className="admin-slider-row">
-                <input
-                  id="hero-overlay-opacity"
-                  type="range"
-                  min={HERO_OVERLAY_OPACITY_MIN}
-                  max={HERO_OVERLAY_OPACITY_MAX}
-                  step={1}
-                  disabled={overlayDisabled}
-                  className="admin-slider"
-                  style={sliderStyle}
-                  value={form.overlay_opacity}
-                  onChange={(event) => setForm((prev) => ({ ...prev, overlay_opacity: Number(event.target.value) }))}
-                />
-                <span className="admin-slider-value">{form.overlay_opacity}%</span>
-              </div>
-              {overlayDisabled ? (
-                <p className="admin-field-help">Selecciona un tipo de overlay para ajustar la opacidad.</p>
-              ) : (
-                <p className="admin-field-help">0% es transparente, 100% es completamente opaco.</p>
-              )}
-            </div>
-          </section>
-
           {/* ─── Publicación ─── */}
           <section className="admin-fieldset">
             <p className="admin-section-label">Publicación</p>
@@ -1268,15 +1338,177 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
             </div>
           </section>
 
+          {/* ─── Texto sobre la imagen (avanzado) ─── */}
+          <section className="admin-fieldset">
+            <button
+              type="button"
+              onClick={() => setShowAdvancedText((prev) => !prev)}
+              className="flex w-full items-center justify-between gap-3 text-left"
+            >
+              <div>
+                <p className="admin-section-label !mb-0">
+                  Texto sobre la imagen (avanzado)
+                  {form.show_content ? (
+                    <span className="ml-2 text-[10px] font-semibold normal-case text-moss">· Activo</span>
+                  ) : null}
+                </p>
+                <p className="mt-1 text-[12px] font-normal normal-case text-text-light">
+                  Título, subtítulo y cómo se ubican sobre la imagen. Solo importa si activas &quot;Mostrar
+                  contenido&quot; aquí abajo.
+                </p>
+              </div>
+              <svg
+                aria-hidden="true"
+                className="shrink-0 transition-transform"
+                fill="none"
+                height="16"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+                style={{ transform: showAdvancedText ? "rotate(180deg)" : "rotate(0deg)" }}
+                viewBox="0 0 20 20"
+                width="16"
+              >
+                <path d="M5 8l5 5 5-5" />
+              </svg>
+            </button>
+
+            {showAdvancedText ? (
+              <div className="mt-5 space-y-5">
+                <div className="rounded-[10px] border border-border bg-[#faf9f6] px-4">
+                  <AdminToggle
+                    checked={form.show_content}
+                    label="Mostrar contenido sobre la imagen"
+                    description="Si está apagado, solo se muestra la imagen sin título ni botón."
+                    onChange={(checked) => setForm((prev) => ({ ...prev, show_content: checked }))}
+                  />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="admin-field-label" htmlFor="hero-title">
+                      Título
+                    </label>
+                    <input
+                      id="hero-title"
+                      className="admin-input"
+                      placeholder="Ej: Lecturas para esta cuaresma"
+                      value={form.title}
+                      onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="admin-field-label" htmlFor="hero-subtitle">
+                      Subtítulo
+                    </label>
+                    <input
+                      id="hero-subtitle"
+                      className="admin-input"
+                      placeholder="Texto breve de apoyo"
+                      value={form.subtitle}
+                      onChange={(event) => setForm((prev) => ({ ...prev, subtitle: event.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="admin-field-label">Posición del contenido</label>
+                    <PositionGrid3x3
+                      value={form.content_position}
+                      onChange={(value) => setForm((prev) => ({ ...prev, content_position: value }))}
+                    />
+                    <p className="admin-field-help">Dónde se ancla el bloque de texto sobre la imagen.</p>
+                  </div>
+                  <div>
+                    <label className="admin-field-label">Alineación del texto</label>
+                    <Segmented
+                      value={form.text_align}
+                      options={ALIGN_OPTIONS}
+                      onChange={(value) => setForm((prev) => ({ ...prev, text_align: value }))}
+                      full
+                      ariaLabel="Alineación del texto"
+                    />
+                    <p className="admin-field-help">Cómo se alinean las líneas dentro del bloque.</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="admin-field-label">Tema del texto</label>
+                    <Segmented
+                      value={form.content_theme}
+                      options={THEME_OPTIONS}
+                      onChange={(value) => setForm((prev) => ({ ...prev, content_theme: value }))}
+                      ariaLabel="Tema del texto"
+                    />
+                    <p className="admin-field-help">
+                      Usa <strong>texto claro</strong> sobre imágenes oscuras y <strong>texto oscuro</strong> sobre
+                      claras. Se ignora si eliges un color personalizado al lado.
+                    </p>
+                  </div>
+                  <div>
+                    <ColorControl
+                      label="Color personalizado del texto"
+                      value={form.content_text_color}
+                      onChange={(val) => setForm((prev) => ({ ...prev, content_text_color: val }))}
+                    />
+                    <p className="admin-field-help">
+                      Si eliges un color aquí, reemplaza al tema claro/oscuro para el título y subtítulo.
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="admin-field-label">Tipo de overlay</label>
+                  <Segmented
+                    value={form.overlay_variant}
+                    options={OVERLAY_OPTIONS}
+                    onChange={(value) => setForm((prev) => ({ ...prev, overlay_variant: value }))}
+                    ariaLabel="Tipo de overlay"
+                  />
+                  <p className="admin-field-help">El overlay oscurece la imagen para que el texto sea legible.</p>
+                </div>
+
+                <div>
+                  <label className="admin-field-label" htmlFor="hero-overlay-opacity">
+                    Opacidad del overlay
+                  </label>
+                  <div className="admin-slider-row">
+                    <input
+                      id="hero-overlay-opacity"
+                      type="range"
+                      min={HERO_OVERLAY_OPACITY_MIN}
+                      max={HERO_OVERLAY_OPACITY_MAX}
+                      step={1}
+                      disabled={overlayDisabled}
+                      className="admin-slider"
+                      style={sliderStyle}
+                      value={form.overlay_opacity}
+                      onChange={(event) =>
+                        setForm((prev) => ({ ...prev, overlay_opacity: Number(event.target.value) }))
+                      }
+                    />
+                    <span className="admin-slider-value">{form.overlay_opacity}%</span>
+                  </div>
+                  {overlayDisabled ? (
+                    <p className="admin-field-help">Selecciona un tipo de overlay para ajustar la opacidad.</p>
+                  ) : (
+                    <p className="admin-field-help">0% es transparente, 100% es completamente opaco.</p>
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </section>
+
           {error ? <div className="admin-error-block">{error}</div> : null}
         </div>
 
         <div className="editor-card-footer">
-          {form.id ? (
-            <button type="button" onClick={() => setForm(initialForm)} className="admin-btn-secondary">
-              Cancelar edición
-            </button>
-          ) : null}
+          <button type="button" onClick={closeForm} className="admin-btn-secondary">
+            Cancelar
+          </button>
           <button type="submit" disabled={saving} className="admin-btn-primary">
             {saving ? (
               <>
@@ -1308,191 +1540,7 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
       </form>
         </div>
       </div>
-
-      <div className="editor-card">
-        <div className="editor-card-header flex items-center justify-between gap-3">
-          <div>
-            <h3 className="text-[15px] font-semibold text-text">Slides existentes</h3>
-            <p className="mt-0.5 text-[12px] text-text-light">
-              {slides.length} {slides.length === 1 ? "slide" : "slides"} configurado
-              {slides.length === 1 ? "" : "s"}.
-            </p>
-          </div>
-        </div>
-
-        <div className="editor-card-body">
-          {loading ? (
-            <p className="text-sm text-text-light">Cargando slides...</p>
-          ) : slides.length === 0 ? (
-            <div className="rounded-[10px] border border-dashed border-border bg-[#faf9f6] px-6 py-10 text-center">
-              <p className="text-sm text-text-mid">Aún no hay slides creados.</p>
-              <p className="mt-1 text-[12px] text-text-light">Usa el formulario de arriba para añadir el primero.</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2.5">
-              {slides.map((slide, index) => {
-                const isEditing = form.id === slide.id;
-                return (
-                  <article
-                    key={slide.id}
-                    className="admin-slide-card"
-                    style={isEditing ? { borderColor: "rgba(200, 168, 48, 0.55)", background: "#fdfbef" } : undefined}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={slide.imageUrl} alt={slide.title ?? "Hero"} className="admin-slide-thumb" />
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate text-[14px] font-medium text-text">
-                          {slide.title ?? "(Sin título)"}
-                        </p>
-                        <span
-                          className={`admin-badge ${slide.isActive ? "admin-badge--active" : "admin-badge--inactive"}`}
-                        >
-                          <span className="admin-badge-dot" />
-                          {slide.isActive ? "Activo" : "Inactivo"}
-                        </span>
-                      </div>
-                      {slide.subtitle ? (
-                        <p className="mt-0.5 truncate text-[12.5px] text-text-mid">{slide.subtitle}</p>
-                      ) : null}
-                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-text-light">
-                        <span className="inline-flex items-center gap-1">
-                          <svg
-                            aria-hidden="true"
-                            fill="none"
-                            height="11"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="1.6"
-                            viewBox="0 0 20 20"
-                            width="11"
-                          >
-                            <path d="M3 6h14M3 10h14M3 14h14" />
-                          </svg>
-                          Orden {slide.displayOrder}
-                        </span>
-                        <span className="truncate">
-                          {slide.linkUrl ? (
-                            <span className="inline-flex items-center gap-1">
-                              <svg
-                                aria-hidden="true"
-                                fill="none"
-                                height="11"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="1.6"
-                                viewBox="0 0 20 20"
-                                width="11"
-                              >
-                                <path d="M8.5 11.5a3 3 0 004.5 0l3-3a3 3 0 00-4.5-4.5l-1 1M11.5 8.5a3 3 0 00-4.5 0l-3 3a3 3 0 004.5 4.5l1-1" />
-                              </svg>
-                              {slide.linkUrl}
-                            </span>
-                          ) : (
-                            "Sin enlace"
-                          )}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => moveSlide(slide.id, "up")}
-                        disabled={index === 0}
-                        className="admin-icon-btn"
-                        aria-label="Subir"
-                        title="Subir"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          fill="none"
-                          height="15"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.8"
-                          viewBox="0 0 20 20"
-                          width="15"
-                        >
-                          <path d="M5 12l5-5 5 5" />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveSlide(slide.id, "down")}
-                        disabled={index === slides.length - 1}
-                        className="admin-icon-btn"
-                        aria-label="Bajar"
-                        title="Bajar"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          fill="none"
-                          height="15"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.8"
-                          viewBox="0 0 20 20"
-                          width="15"
-                        >
-                          <path d="M5 8l5 5 5-5" />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => startEdit(slide)}
-                        className="admin-icon-btn"
-                        aria-label="Editar"
-                        title="Editar"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          fill="none"
-                          height="15"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.8"
-                          viewBox="0 0 20 20"
-                          width="15"
-                        >
-                          <path d="M14 3l3 3-9.5 9.5L4 16l.5-3.5L14 3z" />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeSlide(slide.id)}
-                        className="admin-icon-btn admin-icon-btn--danger"
-                        aria-label="Eliminar"
-                        title="Eliminar"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          fill="none"
-                          height="15"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.8"
-                          viewBox="0 0 20 20"
-                          width="15"
-                        >
-                          <path d="M4 6h12M8 6V4h4v2M6 6l1 10h6l1-10" />
-                        </svg>
-                      </button>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
+      ) : null}
     </div>
   );
 }

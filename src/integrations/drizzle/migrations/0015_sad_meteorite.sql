@@ -1,0 +1,1 @@
+ALTER TABLE "hero_slides" DROP COLUMN "text_position";

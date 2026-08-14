@@ -60,7 +60,8 @@ export async function getHeroSlidesAdmin() {
       mobileHotspotWidth: heroSlides.mobileHotspotWidth,
       mobileHotspotHeight: heroSlides.mobileHotspotHeight,
       showContent: heroSlides.showContent,
-      textPosition: heroSlides.textPosition,
+      contentPosition: heroSlides.contentPosition,
+      contentTextColor: heroSlides.contentTextColor,
       textAlign: heroSlides.textAlign,
       overlayVariant: heroSlides.overlayVariant,
       overlayOpacity: heroSlides.overlayOpacity,
@@ -98,7 +99,8 @@ export async function createHeroSlide(data: HeroSlideInput & { imageUrl: string 
       mobileHotspotY: data.mobile_hotspot_y ?? null,
       mobileHotspotWidth: data.mobile_hotspot_width ?? null,
       mobileHotspotHeight: data.mobile_hotspot_height ?? null,
-      textPosition: data.text_position,
+      contentPosition: data.content_position,
+      contentTextColor: data.content_text_color ?? null,
       textAlign: data.text_align,
       overlayVariant: data.overlay_variant,
       overlayOpacity: data.overlay_opacity,
@@ -135,8 +137,9 @@ export async function updateHeroSlide(id: string, data: UpdateHeroSlideInput & {
   if ("mobile_hotspot_y" in data) updateData.mobileHotspotY = data.mobile_hotspot_y ?? null;
   if ("mobile_hotspot_width" in data) updateData.mobileHotspotWidth = data.mobile_hotspot_width ?? null;
   if ("mobile_hotspot_height" in data) updateData.mobileHotspotHeight = data.mobile_hotspot_height ?? null;
-  if ("text_position" in data && typeof data.text_position === "string")
-    updateData.textPosition = data.text_position;
+  if ("content_position" in data && typeof data.content_position === "string")
+    updateData.contentPosition = data.content_position;
+  if ("content_text_color" in data) updateData.contentTextColor = data.content_text_color ?? null;
   if ("text_align" in data && typeof data.text_align === "string")
     updateData.textAlign = data.text_align;
   if ("overlay_variant" in data && typeof data.overlay_variant === "string")

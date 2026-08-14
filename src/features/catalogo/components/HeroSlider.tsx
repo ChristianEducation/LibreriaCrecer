@@ -7,7 +7,7 @@ import { cx } from "class-variance-authority";
 
 import { BlurFade } from "@/shared/ui/BlurFade";
 import { useReducedMotion } from "framer-motion";
-import type { HeroCtaPosition, HeroTextAlign, HeroTextPosition } from "@/shared/config/landing";
+import type { HeroContentPosition, HeroCtaPosition, HeroTextAlign } from "@/shared/config/landing";
 import type {
   HeroOverlayVariantViewModel,
   HeroSlideViewModel,
@@ -30,10 +30,16 @@ const CTA_ANCHOR: Record<HeroCtaPosition, string> = {
   "bottom-right": "items-end justify-end",
 };
 
-const POSITION_JUSTIFY: Record<HeroTextPosition, string> = {
-  left: "justify-start",
-  center: "justify-center",
-  right: "justify-end",
+const CONTENT_ANCHOR: Record<HeroContentPosition, string> = {
+  "top-left": "items-start justify-start",
+  "top-center": "items-start justify-center",
+  "top-right": "items-start justify-end",
+  "middle-left": "items-center justify-start",
+  "middle-center": "items-center justify-center",
+  "middle-right": "items-center justify-end",
+  "bottom-left": "items-end justify-start",
+  "bottom-center": "items-end justify-center",
+  "bottom-right": "items-end justify-end",
 };
 
 const ALIGN_BLOCK: Record<HeroTextAlign, string> = {
@@ -145,8 +151,8 @@ export function HeroSlider({ data }: HeroSliderProps) {
 
   const overlayStyle = buildOverlayStyle(activeSlide.overlayVariant, activeSlide.overlayOpacity);
   const isDarkTheme = activeSlide.contentTheme === "dark";
-  const textColor = isDarkTheme ? "var(--text)" : "#ffffff";
-  const justifyClass = POSITION_JUSTIFY[activeSlide.textPosition];
+  const textColor = activeSlide.contentTextColor ?? (isDarkTheme ? "var(--text)" : "#ffffff");
+  const contentAnchorClass = CONTENT_ANCHOR[activeSlide.contentPosition];
   const blockAlignClass = ALIGN_BLOCK[activeSlide.textAlign];
   const ctaIsLink = activeSlide.ctaMode !== "hotspot" && Boolean(activeSlide.ctaText && activeSlide.linkUrl);
   const hotspotIsLink =
@@ -203,7 +209,7 @@ export function HeroSlider({ data }: HeroSliderProps) {
         <div className="absolute inset-x-0 top-0 h-40 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.08),transparent)]" />
 
         {activeSlide.showContent ? (
-          <div className={cx("hero-content-shell absolute inset-0 z-[2] flex items-center", justifyClass)}>
+          <div className={cx("hero-content-shell absolute inset-0 z-[2] flex", contentAnchorClass)}>
             <div
               className={cx("hero-copy flex w-full flex-col", blockAlignClass)}
               key={activeSlide.id}

@@ -41,9 +41,16 @@ export const HERO_CTA_MODE_DEFAULT: HeroCtaMode = "button";
 
 export const HERO_HOTSPOT_DEFAULT = { x: 25, y: 65, width: 50, height: 20 };
 
-export const HERO_TEXT_POSITIONS = ["left", "center", "right"] as const;
-export type HeroTextPosition = (typeof HERO_TEXT_POSITIONS)[number];
-export const HERO_TEXT_POSITION_DEFAULT: HeroTextPosition = "left";
+// Donde se ancla el bloque de titulo/subtitulo sobre la imagen — grilla 3x3,
+// mismo patron que HERO_CTA_POSITIONS. Reemplaza al viejo HERO_TEXT_POSITIONS
+// (solo horizontal, con vertical siempre centrado).
+export const HERO_CONTENT_POSITIONS = [
+  "top-left", "top-center", "top-right",
+  "middle-left", "middle-center", "middle-right",
+  "bottom-left", "bottom-center", "bottom-right",
+] as const;
+export type HeroContentPosition = (typeof HERO_CONTENT_POSITIONS)[number];
+export const HERO_CONTENT_POSITION_DEFAULT: HeroContentPosition = "middle-left";
 
 export const HERO_TEXT_ALIGNS = ["left", "center", "right"] as const;
 export type HeroTextAlign = (typeof HERO_TEXT_ALIGNS)[number];

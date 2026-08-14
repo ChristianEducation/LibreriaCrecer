@@ -1988,7 +1988,6 @@ body {
 .hero-preview-stage {
   position: relative;
   display: flex;
-  align-items: center;
   overflow: hidden;
   background-size: cover;
   background-position: center;
@@ -1999,9 +1998,12 @@ body {
 .hero-preview--desktop .hero-preview-stage { min-height: 280px; padding: 56px 48px; }
 .hero-preview--mobile  .hero-preview-stage { min-height: 220px; padding: 32px 20px 28px; }
 
-.hero-preview-stage--left   { justify-content: flex-start; }
-.hero-preview-stage--center { justify-content: center; }
-.hero-preview-stage--right  { justify-content: flex-end; }
+.hero-preview-stage--h-left   { justify-content: flex-start; }
+.hero-preview-stage--h-center { justify-content: center; }
+.hero-preview-stage--h-right  { justify-content: flex-end; }
+.hero-preview-stage--v-top    { align-items: flex-start; }
+.hero-preview-stage--v-middle { align-items: center; }
+.hero-preview-stage--v-bottom { align-items: flex-end; }
 
 .hero-preview-overlay {
   position: absolute;
@@ -2196,27 +2198,76 @@ body {
   box-shadow: 0 0 0 3px rgba(200, 168, 48, 0.12);
 }
 
-.admin-slide-card {
+.admin-slide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.admin-slide-grid-card {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  flex-direction: column;
   background: white;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  transition: background 0.15s, border-color 0.15s;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
 }
-.admin-slide-card:hover {
-  background: #faf9f6;
-  border-color: rgba(115, 96, 2, 0.2);
+.admin-slide-grid-card:hover {
+  border-color: rgba(115, 96, 2, 0.25);
 }
-.admin-slide-thumb {
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
-  object-fit: cover;
+
+.admin-slide-grid-image-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   background: #f0ede8;
-  flex-shrink: 0;
+}
+.admin-slide-grid-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.admin-slide-grid-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+}
+.admin-slide-grid-handle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-mid);
+  cursor: grab;
+  touch-action: none;
+}
+.admin-slide-grid-handle:active {
+  cursor: grabbing;
+}
+
+.admin-slide-grid-info {
+  padding: 10px 12px 4px;
+}
+
+.admin-slide-grid-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 6px 8px 10px;
+  margin-top: auto;
 }
 
 .admin-badge {

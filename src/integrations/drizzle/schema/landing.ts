@@ -3,19 +3,19 @@ import { boolean, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle
 
 import {
   HERO_CONTENT_THEME_DEFAULT,
+  HERO_CONTENT_POSITION_DEFAULT,
   HERO_OVERLAY_OPACITY_DEFAULT,
   HERO_OVERLAY_VARIANT_DEFAULT,
   HERO_CTA_MODE_DEFAULT,
   HERO_CTA_POSITION_DEFAULT,
   HERO_TEXT_ALIGN_DEFAULT,
-  HERO_TEXT_POSITION_DEFAULT,
   type BannerPosition,
   type HeroContentTheme,
+  type HeroContentPosition,
   type HeroCtaMode,
   type HeroCtaPosition,
   type HeroOverlayVariant,
   type HeroTextAlign,
-  type HeroTextPosition,
   type LandingSectionKey,
 } from "@/shared/config/landing";
 
@@ -56,7 +56,9 @@ export const heroSlides = pgTable("hero_slides", {
   mobileHotspotY: integer("mobile_hotspot_y"),
   mobileHotspotWidth: integer("mobile_hotspot_width"),
   mobileHotspotHeight: integer("mobile_hotspot_height"),
-  textPosition: text("text_position").$type<HeroTextPosition>().default(HERO_TEXT_POSITION_DEFAULT).notNull(),
+  contentPosition: text("content_position").$type<HeroContentPosition>().default(HERO_CONTENT_POSITION_DEFAULT).notNull(),
+  // Si esta seteado, reemplaza al color derivado de "content_theme" (claro/oscuro).
+  contentTextColor: text("content_text_color"),
   textAlign: text("text_align").$type<HeroTextAlign>().default(HERO_TEXT_ALIGN_DEFAULT).notNull(),
   overlayVariant: text("overlay_variant").$type<HeroOverlayVariant>().default(HERO_OVERLAY_VARIANT_DEFAULT).notNull(),
   overlayOpacity: integer("overlay_opacity").default(HERO_OVERLAY_OPACITY_DEFAULT).notNull(),

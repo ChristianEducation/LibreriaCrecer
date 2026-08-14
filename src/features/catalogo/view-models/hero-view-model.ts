@@ -1,10 +1,10 @@
 import {
   type HeroContentTheme,
+  type HeroContentPosition,
   type HeroCtaMode,
   type HeroCtaPosition,
   type HeroOverlayVariant,
   type HeroTextAlign,
-  type HeroTextPosition,
 } from "@/shared/config/landing";
 
 import { getHeroSlides, getSectionCopy } from "../services/landing-service";
@@ -33,7 +33,8 @@ export type HeroSlideViewModel = {
   mobileHotspotHeight: number | null;
   linkUrl: string | null;
   showContent: boolean;
-  textPosition: HeroTextPosition;
+  contentPosition: HeroContentPosition;
+  contentTextColor: string | null;
   textAlign: HeroTextAlign;
   overlayVariant: HeroOverlayVariantViewModel;
   overlayOpacity: number;
@@ -86,7 +87,8 @@ export async function getHeroViewModel(): Promise<HeroViewModel> {
     mobileHotspotHeight: slide.mobileHotspotHeight,
     linkUrl: slide.linkUrl,
     showContent: slide.showContent,
-    textPosition: slide.textPosition,
+    contentPosition: slide.contentPosition,
+    contentTextColor: slide.contentTextColor,
     textAlign: slide.textAlign,
     overlayVariant: mapOverlayVariant(slide.overlayVariant),
     overlayOpacity: slide.overlayOpacity,

@@ -103,7 +103,7 @@ export function HeroPreview({ data, viewMode = "desktop" }: HeroPreviewProps) {
       </div>
 
       <div
-        className={`hero-preview-stage hero-preview-stage--${slide.textPosition} ${
+        className={`hero-preview-stage hero-preview-stage--v-${slide.contentPosition.split("-")[0]} hero-preview-stage--h-${slide.contentPosition.split("-")[1]} ${
           slide.imageUrl ? "" : "hero-preview-stage--fallback"
         }`}
         style={stageStyle}
@@ -122,6 +122,7 @@ export function HeroPreview({ data, viewMode = "desktop" }: HeroPreviewProps) {
         {slide.showContent ? (
           <div
             className={`hero-preview-content hero-preview-content--${slide.textAlign} hero-preview-content--${slide.contentTheme}`}
+            style={slide.contentTextColor ? { color: slide.contentTextColor } : undefined}
           >
             {data.eyebrow ? (
               <span className="hero-preview-badge">
