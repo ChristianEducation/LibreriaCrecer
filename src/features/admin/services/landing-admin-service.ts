@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
 import { banners, featuredProducts, heroSlides, landingSectionCopy, products } from "@/integrations/drizzle/schema";
@@ -73,6 +73,13 @@ export async function getHeroSlidesAdmin() {
     })
     .from(heroSlides)
     .orderBy(asc(heroSlides.displayOrder), asc(heroSlides.createdAt));
+}
+
+// Signal liviano para el auto-refresh del listado de slides (ver
+// useAutoRefreshOnChange) — mismo patron que getCatalogChangeSignal.
+export async function getHeroSlidesChangeSignal(): Promise<string | null> {
+  const [row] = await db.select({ latest: sql<Date | null>`max(${heroSlides.updatedAt})` }).from(heroSlides);
+  return row?.latest ? new Date(row.latest).toISOString() : null;
 }
 
 export async function createHeroSlide(data: HeroSlideInput & { imageUrl: string }) {

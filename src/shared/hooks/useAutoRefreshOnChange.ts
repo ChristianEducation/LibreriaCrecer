@@ -5,25 +5,41 @@ import { useRouter } from "next/navigation";
 
 const DEFAULT_INTERVAL_MS = 15_000;
 
+type AutoRefreshOptions = {
+  /** Si se pasa, se llama en vez de router.refresh() cuando cambia el signal. */
+  onChange?: () => void;
+  /** Si es false, no hace polling (util para pausar mientras hay una edicion en curso). */
+  enabled?: boolean;
+};
+
 /**
  * Detecta cambios en el servidor sin que el usuario recargue la página.
  * `fetchSignal` debe devolver un valor liviano (ej. `updated_at`) que cambia
  * cuando cambian los datos relevantes. La primera lectura solo establece la
  * base — recién a partir de la segunda se compara y, si difiere, se llama
- * `router.refresh()`.
+ * `router.refresh()` (o `onChange`, si se pasa uno — util cuando el
+ * componente mantiene su propio estado en vez de depender solo de props del
+ * servidor).
  *
- * Solo hace polling mientras la pestaña está visible, y siempre revisa una
- * vez de inmediato al recuperar el foco (sin esperar el próximo intervalo).
+ * Solo hace polling mientras la pestaña está visible y `enabled` es true, y
+ * siempre revisa una vez de inmediato al recuperar el foco (sin esperar el
+ * próximo intervalo).
  */
 export function useAutoRefreshOnChange(
   fetchSignal: () => Promise<string | null>,
   intervalMs: number = DEFAULT_INTERVAL_MS,
+  options?: AutoRefreshOptions,
 ) {
   const router = useRouter();
   const fetchSignalRef = useRef(fetchSignal);
   fetchSignalRef.current = fetchSignal;
+  const onChangeRef = useRef(options?.onChange);
+  onChangeRef.current = options?.onChange;
+  const enabled = options?.enabled ?? true;
 
   useEffect(() => {
+    if (!enabled) return;
+
     let cancelled = false;
     let lastSignal: string | null | undefined;
 
@@ -38,7 +54,11 @@ export function useAutoRefreshOnChange(
 
       if (signal !== lastSignal) {
         lastSignal = signal;
-        router.refresh();
+        if (onChangeRef.current) {
+          onChangeRef.current();
+        } else {
+          router.refresh();
+        }
       }
     }
 
@@ -63,5 +83,5 @@ export function useAutoRefreshOnChange(
       window.clearInterval(intervalId);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [router, intervalMs]);
+  }, [router, intervalMs, enabled]);
 }

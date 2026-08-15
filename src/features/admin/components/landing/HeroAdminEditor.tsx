@@ -11,7 +11,7 @@ import type {
   HeroSlideViewModel,
   HeroViewModel,
 } from "@/features/catalogo/view-models/hero-view-model";
-import { useToast } from "@/shared/hooks";
+import { useAutoRefreshOnChange, useToast } from "@/shared/hooks";
 import {
   HERO_CONTENT_THEME_DEFAULT,
   HERO_CONTENT_POSITION_DEFAULT,
@@ -405,6 +405,13 @@ function mapOverlayVariant(v: HeroOverlayVariant): HeroOverlayVariantViewModel {
   return v === "solid" ? "dark" : v;
 }
 
+async function fetchHeroChangeSignal(): Promise<string | null> {
+  const response = await fetch("/api/admin/landing/hero/estado", { cache: "no-store" });
+  if (!response.ok) return null;
+  const payload = (await response.json().catch(() => null)) as { data?: { signal: string | null } } | null;
+  return payload?.data?.signal ?? null;
+}
+
 export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
   const router = useRouter();
   const { toast } = useToast();
@@ -545,6 +552,15 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
   useEffect(() => {
     void fetchSlides();
   }, []);
+
+  // Actualiza el listado solo cuando no hay edicion en curso, para no
+  // pisar un formulario abierto o un arrastre a medio hacer.
+  useAutoRefreshOnChange(fetchHeroChangeSignal, 15_000, {
+    onChange: () => {
+      void fetchSlides();
+    },
+    enabled: !formOpen && draggedId === null && !saving,
+  });
 
   async function submitForm(event: React.FormEvent) {
     event.preventDefault();
@@ -777,12 +793,6 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         <div className="admin-slide-grid-image-wrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={slide.imageUrl} alt={slide.title ?? "Hero"} className="admin-slide-grid-image" />
-          <span
-            className={`admin-badge admin-slide-grid-badge ${slide.isActive ? "admin-badge--active" : "admin-badge--inactive"}`}
-          >
-            <span className="admin-badge-dot" />
-            {positionNumber !== null ? `${positionNumber} · Activo` : "Inactivo"}
-          </span>
           <button
             type="button"
             className="admin-slide-grid-handle"
@@ -805,7 +815,11 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         </div>
 
         <div className="admin-slide-grid-info">
-          <p className="truncate text-[13px] font-medium text-text">{slide.title ?? "(Sin título)"}</p>
+          <span className={`admin-badge ${slide.isActive ? "admin-badge--active" : "admin-badge--inactive"}`}>
+            <span className="admin-badge-dot" />
+            {positionNumber !== null ? `${positionNumber} · Activo` : "Inactivo"}
+          </span>
+          <p className="mt-1.5 truncate text-[13px] font-medium text-text">{slide.title ?? "(Sin título)"}</p>
           <div className="mt-1 flex items-center gap-1.5 text-[11px] text-text-light">
             <svg
               aria-hidden="true"

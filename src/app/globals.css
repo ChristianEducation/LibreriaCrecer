@@ -2229,13 +2229,6 @@ body {
   object-fit: cover;
   display: block;
 }
-.admin-slide-grid-badge {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(4px);
-}
 .admin-slide-grid-handle {
   position: absolute;
   top: 8px;
