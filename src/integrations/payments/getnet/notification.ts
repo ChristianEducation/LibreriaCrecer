@@ -35,13 +35,13 @@ function parseRequestId(value: number | string | undefined): number | null {
 
 function normalizeSignature(signature: string): string {
   return signature
-    .replace(/^sha256:/i, "")
+    .replace(/^sha1:/i, "")
     .trim()
     .toLowerCase();
 }
 
 function signaturesMatch(expected: string, received: string): boolean {
-  if (!/^[a-f0-9]{64}$/.test(received)) return false;
+  if (!/^[a-f0-9]{40}$/.test(received)) return false;
 
   const expectedBuffer = Buffer.from(expected, "hex");
   const receivedBuffer = Buffer.from(received, "hex");
@@ -79,7 +79,7 @@ export function verifyGetnetNotification(
   if (!allowedStatuses.has(status)) {
     return { success: false, code: "invalid_payload" };
   }
-  const expectedSignature = createHash("sha256")
+  const expectedSignature = createHash("sha1")
     .update(`${requestId}${statusValue}${date}${secretKey}`)
     .digest("hex");
 
