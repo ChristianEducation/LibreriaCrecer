@@ -67,6 +67,8 @@ export default function AdminPedidoDetallePage() {
   const [loading, setLoading] = useState(true);
   const [savingStatus, setSavingStatus] = useState(false);
   const [generatingOt, setGeneratingOt] = useState(false);
+  const [loadingLabel, setLoadingLabel] = useState(false);
+  const [reprintingLabel, setReprintingLabel] = useState(false);
   const [shippingError, setShippingError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -215,19 +217,77 @@ export default function AdminPedidoDetallePage() {
     }
   }
 
-  function openChilexpressLabel() {
+  async function openChilexpressLabel() {
     if (!order?.chilexpressLabelUrl) return;
 
-    if (order.chilexpressLabelUrl.startsWith("data:application/pdf;base64,")) {
-      const base64 = order.chilexpressLabelUrl.replace("data:application/pdf;base64,", "");
-      const binary = window.atob(base64);
-      const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-      const blob = new Blob([bytes], { type: "application/pdf" });
-      window.open(URL.createObjectURL(blob), "_blank", "noopener,noreferrer");
-      return;
-    }
+    setLoadingLabel(true);
+    try {
+      // El backend guarda solo un path de Storage privado — se pide aca una
+      // signed URL temporal (pedidos historicos devuelven el data URI/URL
+      // completo tal cual, sin firmar, para no romper el admin).
+      const response = await fetch(`/api/admin/pedidos/${params.id}/etiqueta`, { cache: "no-store" });
+      const payload = (await response.json().catch(() => null)) as
+        | { data?: { legacy: boolean; url: string }; message?: string }
+        | null;
 
-    window.open(order.chilexpressLabelUrl, "_blank", "noopener,noreferrer");
+      if (!response.ok || !payload?.data) {
+        toast({ message: payload?.message ?? "No se pudo obtener la etiqueta.", variant: "error" });
+        return;
+      }
+
+      const { legacy, url } = payload.data;
+
+      // Legado: data URI base64 completo (pedidos generados antes de mover
+      // el guardado a Storage). No asumimos un unico formato: se detecta el
+      // mime type real del data URI.
+      const dataUriMatch = legacy ? url.match(/^data:([^;]+);base64,(.+)$/) : null;
+      if (dataUriMatch) {
+        const [, mimeType, base64] = dataUriMatch;
+        const binary = window.atob(base64);
+        const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+        const blob = new Blob([bytes], { type: mimeType });
+        window.open(URL.createObjectURL(blob), "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      // Caso normal: signed URL temporal del bucket privado, o URL legado directa.
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch {
+      toast({ message: "Error de red al obtener la etiqueta.", variant: "error" });
+    } finally {
+      setLoadingLabel(false);
+    }
+  }
+
+  async function reprintChilexpressLabel() {
+    setReprintingLabel(true);
+    try {
+      // Reobtiene la etiqueta de la OT YA EXISTENTE (no crea una OT nueva).
+      // Util cuando la subida a Storage fallo al generar la OT, o cuando el
+      // admin quiere reimprimir explicitamente.
+      const response = await fetch(`/api/admin/pedidos/${params.id}/etiqueta/recuperar`, { method: "POST" });
+      const payload = (await response.json().catch(() => null)) as
+        | { data?: { path: string | null; url: string | null }; message?: string }
+        | null;
+
+      if (!response.ok || !payload?.data) {
+        toast({ message: payload?.message ?? "No se pudo recuperar la etiqueta.", variant: "error" });
+        return;
+      }
+
+      setOrder((current) =>
+        current ? { ...current, chilexpressLabelUrl: payload.data?.path ?? current.chilexpressLabelUrl } : current,
+      );
+      toast({ message: "Etiqueta recuperada correctamente." });
+
+      if (payload.data.url) {
+        window.open(payload.data.url, "_blank", "noopener,noreferrer");
+      }
+    } catch {
+      toast({ message: "Error de red al recuperar la etiqueta.", variant: "error" });
+    } finally {
+      setReprintingLabel(false);
+    }
   }
 
   if (loading) {
@@ -371,14 +431,29 @@ export default function AdminPedidoDetallePage() {
                 <p>Servicio: {order.chilexpressServiceDescription ?? order.chilexpressServiceTypeCode ?? "-"}</p>
                 <p>Origen: {order.chilexpressOriginCoverageCode ?? "-"}</p>
                 <p>Destino: {order.chilexpressDestinationCoverageCode ?? "-"}</p>
-                <button
-                  className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-                  disabled={!order.chilexpressLabelUrl}
-                  onClick={openChilexpressLabel}
-                  type="button"
-                >
-                  Imprimir etiqueta PDF
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    className="rounded-[8px] bg-moss px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                    disabled={!order.chilexpressLabelUrl || loadingLabel}
+                    onClick={openChilexpressLabel}
+                    type="button"
+                  >
+                    {loadingLabel ? "Cargando..." : "Ver / imprimir etiqueta (10x5cm)"}
+                  </button>
+                  <button
+                    className="rounded-[8px] border border-border px-4 py-2 text-sm text-text-mid disabled:opacity-60"
+                    disabled={reprintingLabel}
+                    onClick={reprintChilexpressLabel}
+                    type="button"
+                  >
+                    {reprintingLabel ? "Recuperando..." : "Recuperar / reimprimir etiqueta"}
+                  </button>
+                </div>
+                {!order.chilexpressLabelUrl ? (
+                  <p className="text-[12px] text-text-light">
+                    No hay etiqueta guardada para esta OT — usa &quot;Recuperar / reimprimir etiqueta&quot;.
+                  </p>
+                ) : null}
               </div>
             ) : (
               <div className="space-y-3 text-sm text-text-mid">

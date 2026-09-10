@@ -3,6 +3,7 @@ import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 import { coupons } from "./coupons";
 import { products } from "./products";
+import { shippingPackages } from "./shipping";
 
 export const orders = pgTable("orders", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -20,6 +21,14 @@ export const orders = pgTable("orders", {
   chilexpressDestinationCoverageCode: text("chilexpress_destination_coverage_code"),
   chilexpressTransportOrderNumber: text("chilexpress_transport_order_number"),
   chilexpressLabelUrl: text("chilexpress_label_url"),
+  // Snapshot del paquete que justifico la cotizacion pagada. La generacion de
+  // OT debe usar estos valores, no volver a resolver shipping_packages (que
+  // puede haber cambiado desde que se pago el pedido).
+  chilexpressPackageWeightGrams: integer("chilexpress_package_weight_grams"),
+  chilexpressPackageHeightCm: integer("chilexpress_package_height_cm"),
+  chilexpressPackageWidthCm: integer("chilexpress_package_width_cm"),
+  chilexpressPackageLengthCm: integer("chilexpress_package_length_cm"),
+  chilexpressPackageId: uuid("chilexpress_package_id").references(() => shippingPackages.id, { onDelete: "set null" }),
   couponId: uuid("coupon_id").references(() => coupons.id, { onDelete: "set null" }),
   discountAmount: integer("discount_amount").default(0).notNull(),
   adminNotes: text("admin_notes"),

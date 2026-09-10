@@ -16,7 +16,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
-    "test:payments": "node --import tsx --test tests-unit/getnet-notification.test.ts tests-unit/getnet-types.test.ts"
+    "test:payments": "node --import tsx --test tests-unit/getnet-notification.test.ts tests-unit/getnet-types.test.ts",
+    "test:shipping": "node --env-file=.env.local --import tsx --test tests-unit/chilexpress-rating.test.ts tests-unit/chilexpress-transport-orders.test.ts tests-unit/chilexpress-package.test.ts tests-unit/chilexpress-label-storage.test.ts tests-unit/chilexpress-label-reprint.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

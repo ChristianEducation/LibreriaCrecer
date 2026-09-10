@@ -13,6 +13,14 @@ export const shippingConfig = pgTable("shipping_config", {
   originRegion: text("origin_region").notNull(),
   originCommune: text("origin_commune").notNull(),
   originCoverageCode: text("origin_coverage_code"),
+  // Direccion fisica de devolucion (DEV) y contacto remitente (R) para
+  // generar la OT. No se hardcodean en el cliente Chilexpress: viven aca.
+  originStreet: text("origin_street"),
+  originStreetNumber: text("origin_street_number"),
+  originSupplement: text("origin_supplement"),
+  senderName: text("sender_name"),
+  senderPhone: text("sender_phone"),
+  senderEmail: text("sender_email"),
   estimatedBookWeightGrams: integer("estimated_book_weight_grams").default(300).notNull(),
   tcc: text("tcc"),
   senderRut: text("sender_rut"),

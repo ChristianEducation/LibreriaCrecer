@@ -9,6 +9,12 @@ type ShippingConfig = {
   originRegion: string;
   originCommune: string;
   originCoverageCode: string | null;
+  originStreet: string | null;
+  originStreetNumber: string | null;
+  originSupplement: string | null;
+  senderName: string | null;
+  senderPhone: string | null;
+  senderEmail: string | null;
   estimatedBookWeightGrams: number;
   serviceTypeCode: string | null;
   declaredWorth: number;
@@ -56,6 +62,12 @@ export default function AdminEnviosPage() {
     originRegion: "Antofagasta",
     originCommune: "Antofagasta",
     originCoverageCode: "",
+    originStreet: "",
+    originStreetNumber: "",
+    originSupplement: "",
+    senderName: "",
+    senderPhone: "",
+    senderEmail: "",
     estimatedBookWeightGrams: 300,
     serviceTypeCode: "",
     declaredWorth: 1000,
@@ -95,6 +107,12 @@ export default function AdminEnviosPage() {
           ...current,
           ...loadedConfig,
           originCoverageCode: loadedConfig.originCoverageCode ?? "",
+          originStreet: loadedConfig.originStreet ?? "",
+          originStreetNumber: loadedConfig.originStreetNumber ?? "",
+          originSupplement: loadedConfig.originSupplement ?? "",
+          senderName: loadedConfig.senderName ?? "",
+          senderPhone: loadedConfig.senderPhone ?? "",
+          senderEmail: loadedConfig.senderEmail ?? "",
           serviceTypeCode: loadedConfig.serviceTypeCode ?? "",
         }));
       }
@@ -119,6 +137,12 @@ export default function AdminEnviosPage() {
         body: JSON.stringify({
           ...config,
           originCoverageCode: config.originCoverageCode || null,
+          originStreet: config.originStreet || null,
+          originStreetNumber: config.originStreetNumber || null,
+          originSupplement: config.originSupplement || null,
+          senderName: config.senderName || null,
+          senderPhone: config.senderPhone || null,
+          senderEmail: config.senderEmail || null,
           serviceTypeCode: config.serviceTypeCode || null,
         }),
       });
@@ -226,6 +250,30 @@ export default function AdminEnviosPage() {
             <label className="grid gap-1 text-sm">
               <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Codigo cobertura origen</span>
               <input className={inputClassName} value={config.originCoverageCode ?? ""} onChange={(event) => setConfig((current) => ({ ...current, originCoverageCode: event.target.value }))} />
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Calle origen (direccion devolucion)</span>
+              <input className={inputClassName} placeholder="Arturo Prat" value={config.originStreet ?? ""} onChange={(event) => setConfig((current) => ({ ...current, originStreet: event.target.value }))} />
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Numero origen</span>
+              <input className={inputClassName} placeholder="470" value={config.originStreetNumber ?? ""} onChange={(event) => setConfig((current) => ({ ...current, originStreetNumber: event.target.value }))} />
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Complemento origen (opcional)</span>
+              <input className={inputClassName} value={config.originSupplement ?? ""} onChange={(event) => setConfig((current) => ({ ...current, originSupplement: event.target.value }))} />
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Nombre remitente (contacto R)</span>
+              <input className={inputClassName} placeholder="Crecer Libreria" value={config.senderName ?? ""} onChange={(event) => setConfig((current) => ({ ...current, senderName: event.target.value }))} />
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Telefono remitente</span>
+              <input className={inputClassName} value={config.senderPhone ?? ""} onChange={(event) => setConfig((current) => ({ ...current, senderPhone: event.target.value }))} />
+            </label>
+            <label className="grid gap-1 text-sm">
+              <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Email remitente</span>
+              <input className={inputClassName} type="email" value={config.senderEmail ?? ""} onChange={(event) => setConfig((current) => ({ ...current, senderEmail: event.target.value }))} />
             </label>
             <label className="grid gap-1 text-sm">
               <span className="text-[11px] uppercase tracking-[0.12em] text-text-light">Peso estimado por libro (g)</span>

@@ -144,15 +144,6 @@ function SectionTitle({ number, children }: { number: number; children: React.Re
   );
 }
 
-function buildQuotePackage(itemQuantity: number) {
-  return {
-    weightKg: Math.max(1, itemQuantity),
-    heightCm: 8,
-    widthCm: 20,
-    lengthCm: 28,
-  };
-}
-
 export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
   const { items, couponCode, couponDiscount } = useCart();
   const { subtotal, total } = useCartSummary();
@@ -380,7 +371,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
               regionCode: region || undefined,
               destinationCoverageCode: destinationCoverageCode ?? undefined,
             },
-            package: buildQuotePackage(totalItemQuantity),
+            quantity: totalItemQuantity,
             declaredWorth: Math.max(0, subtotal),
           }),
           signal: controller.signal,

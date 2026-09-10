@@ -40,7 +40,8 @@ class CheckoutServiceError extends Error {
     | "invalid_transition"
     | "order_not_found"
     | "validation_error"
-    | "product_not_available_online";
+    | "product_not_available_online"
+    | "shipping_unavailable";
   details?: unknown;
 
   constructor(
@@ -50,7 +51,8 @@ class CheckoutServiceError extends Error {
       | "invalid_transition"
       | "order_not_found"
       | "validation_error"
-      | "product_not_available_online",
+      | "product_not_available_online"
+      | "shipping_unavailable",
     message: string,
     details?: unknown,
   ) {
@@ -292,6 +294,15 @@ export async function createOrder(data: CreateOrderInput): Promise<ServiceResult
         }
 
         let shippingCost = 0;
+        let chilexpressServiceTypeCode: string | null = null;
+        let chilexpressServiceDescription: string | null = null;
+        let chilexpressOriginCoverageCode: string | null = null;
+        let chilexpressDestinationCoverageCode: string | null = null;
+        let chilexpressPackageWeightGrams: number | null = null;
+        let chilexpressPackageHeightCm: number | null = null;
+        let chilexpressPackageWidthCm: number | null = null;
+        let chilexpressPackageLengthCm: number | null = null;
+        let chilexpressPackageId: string | null = null;
 
         if (data.deliveryMethod === "shipping" && data.address) {
           const totalItemQuantity = normalizedItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -300,16 +311,35 @@ export async function createOrder(data: CreateOrderInput): Promise<ServiceResult
               commune: data.address.commune,
               regionCode: data.address.region,
             },
-            package: {
-              weightKg: Math.max(1, totalItemQuantity),
-              heightCm: 8,
-              widthCm: 20,
-              lengthCm: 28,
-            },
+            quantity: totalItemQuantity,
             declaredWorth: Math.max(0, subtotal),
           });
 
-          shippingCost = shippingQuote.success ? shippingQuote.data.cost : 0;
+          if (!shippingQuote.success) {
+            // Nunca convertir una falla de Chilexpress en shippingCost = 0:
+            // se corta la creacion de la orden con un error controlado. El
+            // codigo/mensaje interno (shippingQuote.code/message) se loguea
+            // para diagnostico, pero al cliente solo le llega un mensaje
+            // generico — no exponemos detalles internos ni credenciales.
+            console.error("createOrder: shipping quote failed", shippingQuote.code, shippingQuote.message);
+            throw new CheckoutServiceError(
+              "shipping_unavailable",
+              "No pudimos calcular el despacho en este momento. Intenta nuevamente.",
+            );
+          }
+
+          shippingCost = shippingQuote.data.cost;
+          // La tarifa que el cliente paga aqui es la misma que despues generara
+          // la OT — nunca se vuelve a elegir "la mas barata" al despachar.
+          chilexpressServiceTypeCode = shippingQuote.data.selectedRate.serviceTypeCode;
+          chilexpressServiceDescription = shippingQuote.data.selectedRate.serviceDescription;
+          chilexpressOriginCoverageCode = shippingQuote.data.originCoverageCode;
+          chilexpressDestinationCoverageCode = shippingQuote.data.destinationCoverageCode;
+          chilexpressPackageWeightGrams = shippingQuote.data.package.weightGrams;
+          chilexpressPackageHeightCm = shippingQuote.data.package.heightCm;
+          chilexpressPackageWidthCm = shippingQuote.data.package.widthCm;
+          chilexpressPackageLengthCm = shippingQuote.data.package.lengthCm;
+          chilexpressPackageId = shippingQuote.data.package.packageId;
         }
 
         const total = Math.max(0, subtotal - discountAmount + shippingCost);
@@ -327,6 +357,15 @@ export async function createOrder(data: CreateOrderInput): Promise<ServiceResult
             couponId,
             discountAmount,
             adminNotes: data.notes ?? null,
+            chilexpressServiceTypeCode,
+            chilexpressServiceDescription,
+            chilexpressOriginCoverageCode,
+            chilexpressDestinationCoverageCode,
+            chilexpressPackageWeightGrams,
+            chilexpressPackageHeightCm,
+            chilexpressPackageWidthCm,
+            chilexpressPackageLengthCm,
+            chilexpressPackageId,
           })
           .returning({
             id: orders.id,

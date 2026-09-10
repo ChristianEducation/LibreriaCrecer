@@ -1,17 +1,10 @@
-import { and, asc, eq, gte } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
-import { getCoverageCode, getRates, createShipment } from "@/integrations/shipping/chilexpress/client";
-import { chilexpressConfig } from "@/integrations/shipping/chilexpress/config";
+import { createShipment, reprintLabel } from "@/integrations/shipping/chilexpress/client";
+import { getSignedChilexpressLabelUrl, isLegacyLabelValue, storeChilexpressLabel } from "@/integrations/shipping/chilexpress/label-storage";
 import { db } from "@/integrations/drizzle";
-import {
-  orderAddresses,
-  orderCustomers,
-  orderItems,
-  orders,
-  shippingConfig,
-  shippingPackages,
-} from "@/integrations/drizzle/schema";
-import type { ChilexpressPackage } from "@/integrations/shipping/chilexpress/types";
+import { orderAddresses, orderCustomers, orderItems, orders, shippingConfig, shippingPackages } from "@/integrations/drizzle/schema";
+import { calculateShippingCost, getActiveShippingConfig } from "@/features/checkout/services/shipping-service";
 
 type ShippingPackageInput = {
   name: string;
@@ -29,19 +22,15 @@ type ShippingConfigInput = {
   originRegion: string;
   originCommune: string;
   originCoverageCode?: string | null;
+  originStreet?: string | null;
+  originStreetNumber?: string | null;
+  originSupplement?: string | null;
+  senderName?: string | null;
+  senderPhone?: string | null;
+  senderEmail?: string | null;
   estimatedBookWeightGrams: number;
   serviceTypeCode?: string | null;
   declaredWorth: number;
-};
-
-const DEFAULT_CONFIG = {
-  provider: "chilexpress",
-  originRegion: "Antofagasta",
-  originCommune: chilexpressConfig.originCommune,
-  originCoverageCode: chilexpressConfig.originCoverageCode,
-  estimatedBookWeightGrams: 300,
-  serviceTypeCode: null,
-  declaredWorth: 1000,
 };
 
 function mapPackage(row: typeof shippingPackages.$inferSelect) {
@@ -59,15 +48,9 @@ function mapPackage(row: typeof shippingPackages.$inferSelect) {
   };
 }
 
+/** Delega en la unica fuente de verdad de shipping_config (shipping-service.ts). */
 export async function getShippingConfigAdmin() {
-  const [config] = await db
-    .select()
-    .from(shippingConfig)
-    .where(eq(shippingConfig.provider, "chilexpress"))
-    .orderBy(asc(shippingConfig.createdAt))
-    .limit(1);
-
-  return config ?? DEFAULT_CONFIG;
+  return getActiveShippingConfig();
 }
 
 export async function updateShippingConfigAdmin(input: ShippingConfigInput) {
@@ -82,6 +65,12 @@ export async function updateShippingConfigAdmin(input: ShippingConfigInput) {
     originRegion: input.originRegion,
     originCommune: input.originCommune,
     originCoverageCode: input.originCoverageCode || null,
+    originStreet: input.originStreet || null,
+    originStreetNumber: input.originStreetNumber || null,
+    originSupplement: input.originSupplement || null,
+    senderName: input.senderName || null,
+    senderPhone: input.senderPhone || null,
+    senderEmail: input.senderEmail || null,
     estimatedBookWeightGrams: input.estimatedBookWeightGrams,
     serviceTypeCode: input.serviceTypeCode || null,
     declaredWorth: input.declaredWorth,
@@ -183,29 +172,6 @@ export async function deleteShippingPackageAdmin(id: string) {
   return updated ? mapPackage(updated) : null;
 }
 
-async function findCompatiblePackage(totalQuantity: number, estimatedWeightGrams: number) {
-  const totalProductWeight = totalQuantity * estimatedWeightGrams;
-
-  const rows = await db
-    .select()
-    .from(shippingPackages)
-    .where(and(eq(shippingPackages.isActive, true), gte(shippingPackages.maxItems, totalQuantity)))
-    .orderBy(asc(shippingPackages.maxWeightGrams), asc(shippingPackages.maxItems));
-
-  return rows.find((row) => row.maxWeightGrams >= totalProductWeight + row.packageWeightGrams) ?? rows[0] ?? null;
-}
-
-function toChilexpressPackage(row: typeof shippingPackages.$inferSelect, totalQuantity: number, bookWeightGrams: number): ChilexpressPackage {
-  const totalWeightGrams = totalQuantity * bookWeightGrams + row.packageWeightGrams;
-
-  return {
-    weightKg: Math.max(1, Math.ceil(totalWeightGrams / 1000)),
-    heightCm: row.dimensions.heightCm,
-    widthCm: row.dimensions.widthCm,
-    lengthCm: row.dimensions.lengthCm,
-  };
-}
-
 export async function generateChilexpressOtAdmin(orderId: string) {
   const [order] = await db
     .select({
@@ -214,8 +180,14 @@ export async function generateChilexpressOtAdmin(orderId: string) {
       status: orders.status,
       deliveryMethod: orders.deliveryMethod,
       chilexpressTransportOrderNumber: orders.chilexpressTransportOrderNumber,
+      chilexpressServiceTypeCode: orders.chilexpressServiceTypeCode,
+      chilexpressServiceDescription: orders.chilexpressServiceDescription,
       chilexpressOriginCoverageCode: orders.chilexpressOriginCoverageCode,
       chilexpressDestinationCoverageCode: orders.chilexpressDestinationCoverageCode,
+      chilexpressPackageWeightGrams: orders.chilexpressPackageWeightGrams,
+      chilexpressPackageHeightCm: orders.chilexpressPackageHeightCm,
+      chilexpressPackageWidthCm: orders.chilexpressPackageWidthCm,
+      chilexpressPackageLengthCm: orders.chilexpressPackageLengthCm,
       shippingCost: orders.shippingCost,
       subtotal: orders.subtotal,
     })
@@ -260,105 +232,144 @@ export async function generateChilexpressOtAdmin(orderId: string) {
     return { success: false as const, code: "missing_data", message: "Faltan datos de cliente o dirección." };
   }
 
-  const items = await db
-    .select({ quantity: orderItems.quantity })
-    .from(orderItems)
-    .where(eq(orderItems.orderId, order.id));
-
+  const items = await db.select({ quantity: orderItems.quantity }).from(orderItems).where(eq(orderItems.orderId, order.id));
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
-  const config = await getShippingConfigAdmin();
-  const selectedPackage = await findCompatiblePackage(totalQuantity, config.estimatedBookWeightGrams);
-
-  if (!selectedPackage) {
-    return { success: false as const, code: "missing_package", message: "No hay empaques activos compatibles." };
-  }
+  const config = await getActiveShippingConfig();
 
   try {
-    const originCoverageCode =
-      order.chilexpressOriginCoverageCode ??
-      config.originCoverageCode ??
-      chilexpressConfig.originCoverageCode ??
-      (await getCoverageCode({
-        commune: config.originCommune,
-        regionCode: config.originRegion,
-      }));
+    let serviceTypeCode = order.chilexpressServiceTypeCode;
+    let serviceDescription = order.chilexpressServiceDescription;
+    let originCoverageCode = order.chilexpressOriginCoverageCode;
+    let destinationCoverageCode = order.chilexpressDestinationCoverageCode;
+    let packageWeightKg =
+      order.chilexpressPackageWeightGrams !== null
+        ? Math.max(0.1, Math.round((order.chilexpressPackageWeightGrams / 1000) * 100) / 100)
+        : null;
+    let packageHeightCm = order.chilexpressPackageHeightCm;
+    let packageWidthCm = order.chilexpressPackageWidthCm;
+    let packageLengthCm = order.chilexpressPackageLengthCm;
 
-    if (!originCoverageCode) {
-      return { success: false as const, code: "missing_coverage", message: "No se pudo resolver la cobertura de origen." };
-    }
+    const hasCompleteSnapshot =
+      serviceTypeCode !== null &&
+      originCoverageCode !== null &&
+      destinationCoverageCode !== null &&
+      packageWeightKg !== null &&
+      packageHeightCm !== null &&
+      packageWidthCm !== null &&
+      packageLengthCm !== null;
 
-    const destinationCoverageCode =
-      order.chilexpressDestinationCoverageCode ??
-      (await getCoverageCode({
-        commune: address.commune,
-        regionCode: address.region,
-      }));
+    if (!hasCompleteSnapshot) {
+      // Pedido creado antes de esta correccion (sin snapshot guardado al
+      // pagar): se resuelve una unica vez ahora, con la misma logica que usa
+      // el checkout. Para pedidos nuevos esto nunca deberia ejecutarse.
+      const quote = await calculateShippingCost({
+        destination: { commune: address.commune, regionCode: address.region },
+        quantity: totalQuantity,
+        declaredWorth: Math.max(config.declaredWorth, order.subtotal),
+      });
 
-    if (!destinationCoverageCode) {
-      return { success: false as const, code: "missing_coverage", message: "No se pudo resolver la cobertura de destino." };
-    }
-
-    const chilexpressPackage = toChilexpressPackage(selectedPackage, totalQuantity, config.estimatedBookWeightGrams);
-    const rates = await getRates({
-      originCoverageCode,
-      destinationCoverageCode,
-      package: chilexpressPackage,
-      declaredWorth: Math.max(config.declaredWorth, order.subtotal),
-    });
-    const selectedRate = rates.reduce<(typeof rates)[number] | undefined>((selected, rate) => {
-      if (!selected || rate.serviceValue < selected.serviceValue) {
-        return rate;
+      if (!quote.success) {
+        // Propaga el codigo real (puede ser missing_coverage, rates_unavailable
+        // o no_compatible_package) — no se fuerza a un unico codigo generico.
+        return { success: false as const, code: quote.code, message: quote.message };
       }
 
-      return selected;
-    }, undefined);
-    const serviceTypeCode = config.serviceTypeCode ?? selectedRate?.serviceTypeCode;
-
-    if (!serviceTypeCode) {
-      return { success: false as const, code: "missing_rate", message: "No hay servicio Chilexpress disponible para este pedido." };
+      serviceTypeCode = quote.data.selectedRate.serviceTypeCode;
+      serviceDescription = quote.data.selectedRate.serviceDescription;
+      originCoverageCode = quote.data.originCoverageCode;
+      destinationCoverageCode = quote.data.destinationCoverageCode;
+      packageWeightKg = quote.data.package.weightKg;
+      packageHeightCm = quote.data.package.heightCm;
+      packageWidthCm = quote.data.package.widthCm;
+      packageLengthCm = quote.data.package.lengthCm;
     }
 
-    const shipment = await createShipment({
-      orderNumber: order.orderNumber,
-      serviceTypeCode,
-      originCoverageCode,
-      destinationCoverageCode,
-      package: chilexpressPackage,
-      recipient: {
-        name: `${customer.firstName} ${customer.lastName}`.trim(),
-        email: customer.email,
-        phone: customer.phone,
-      },
-      address: {
-        street: address.street,
-        number: address.number,
-        apartment: address.apartment,
-        commune: address.commune,
-        city: address.city,
-        region: address.region,
-        zipCode: address.zipCode,
-        deliveryInstructions: address.deliveryInstructions,
-      },
-    });
+    if (!serviceTypeCode || !originCoverageCode || !destinationCoverageCode) {
+      return { success: false as const, code: "missing_coverage", message: "Faltan datos de cobertura/servicio para generar la OT." };
+    }
 
-    const transportOrderNumber = shipment.transportOrderNumber ?? shipment.reference;
+    if (!config.senderName || !config.senderPhone || !config.senderEmail || !config.originStreet || !config.originStreetNumber) {
+      return {
+        success: false as const,
+        code: "missing_sender_config",
+        message: "Falta completar los datos de remitente y direccion de origen en /admin/envios antes de generar OT.",
+      };
+    }
 
-    if (!transportOrderNumber) {
+    const shipment = await createShipment(
+      {
+        orderNumber: order.orderNumber,
+        serviceTypeCode,
+        originCoverageCode,
+        destinationCoverageCode,
+        package: {
+          weightKg: packageWeightKg!,
+          heightCm: packageHeightCm!,
+          widthCm: packageWidthCm!,
+          lengthCm: packageLengthCm!,
+        },
+        declaredWorth: Math.max(config.declaredWorth, order.subtotal),
+        labelType: 2,
+        recipient: {
+          name: `${customer.firstName} ${customer.lastName}`.trim(),
+          email: customer.email,
+          phone: customer.phone,
+        },
+        address: {
+          street: address.street,
+          number: address.number,
+          apartment: address.apartment,
+          commune: address.commune,
+          observation: address.deliveryInstructions,
+        },
+        sender: {
+          name: config.senderName,
+          email: config.senderEmail,
+          phone: config.senderPhone,
+          street: config.originStreet,
+          number: config.originStreetNumber,
+          apartment: config.originSupplement,
+          commune: config.originCommune,
+        },
+      },
+      { productType: config.productType, declaredContent: config.contentType },
+    );
+
+    if (!shipment.transportOrderNumber) {
       return { success: false as const, code: "shipment_failed", message: "Chilexpress no devolvió número de OT." };
+    }
+
+    // No se guarda el base64/data URI completo en `orders`: se decodifica y
+    // sube al bucket privado, y solo el path queda en chilexpress_label_url.
+    let chilexpressLabelUrl: string | null = null;
+    if (shipment.labelData) {
+      try {
+        const stored = await storeChilexpressLabel({
+          orderNumber: order.orderNumber,
+          transportOrderNumber: shipment.transportOrderNumber,
+          labelData: shipment.labelData,
+        });
+        chilexpressLabelUrl = stored?.path ?? null;
+      } catch (error) {
+        // La OT ya se genero en Chilexpress y no se puede deshacer: no se
+        // bloquea el despacho si falla solo el guardado de la etiqueta. Se
+        // guarda sin etiqueta y queda registrado en el log del servidor.
+        console.error("No se pudo guardar la etiqueta Chilexpress en Storage", error);
+      }
     }
 
     const [updated] = await db
       .update(orders)
       .set({
-        chilexpressTransportOrderNumber: transportOrderNumber,
-        chilexpressLabelUrl: shipment.labelUrl ?? null,
+        chilexpressTransportOrderNumber: shipment.transportOrderNumber,
+        chilexpressLabelUrl,
         chilexpressServiceTypeCode: serviceTypeCode,
-        chilexpressServiceDescription: selectedRate?.serviceDescription ?? null,
+        chilexpressServiceDescription: shipment.serviceDescription ?? serviceDescription,
         chilexpressOriginCoverageCode: originCoverageCode,
         chilexpressDestinationCoverageCode: destinationCoverageCode,
-        shippingCost: selectedRate ? Math.round(selectedRate.serviceValue) : order.shippingCost,
         // Generar el ticket es el momento en que el paquete sale de la tienda:
         // el pedido pasa directo a "enviado", sin paso manual intermedio.
+        // shippingCost NO se toca aca: es la tarifa que el cliente ya pago.
         status: "shipped",
         updatedAt: new Date(),
       })
@@ -377,6 +388,127 @@ export async function generateChilexpressOtAdmin(orderId: string) {
       success: false as const,
       code: "chilexpress_unavailable",
       message: error instanceof Error ? error.message : "Chilexpress no respondió correctamente.",
+    };
+  }
+}
+
+export type ChilexpressLabelAccess = { legacy: boolean; url: string };
+
+/**
+ * Resuelve como acceder a la etiqueta de un pedido: pedidos nuevos guardan un
+ * path de Storage (se firma una URL temporal), pedidos historicos guardan un
+ * data URI/URL completo (se devuelve tal cual, sin firmar). Solo debe
+ * llamarse desde una ruta ya protegida por el middleware de admin.
+ */
+export async function getChilexpressLabelAccess(orderId: string): Promise<ChilexpressLabelAccess | null> {
+  const [order] = await db
+    .select({ chilexpressLabelUrl: orders.chilexpressLabelUrl })
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .limit(1);
+
+  if (!order?.chilexpressLabelUrl) {
+    return null;
+  }
+
+  if (isLegacyLabelValue(order.chilexpressLabelUrl)) {
+    return { legacy: true, url: order.chilexpressLabelUrl };
+  }
+
+  const signedUrl = await getSignedChilexpressLabelUrl(order.chilexpressLabelUrl);
+  if (!signedUrl) {
+    return null;
+  }
+
+  return { legacy: false, url: signedUrl };
+}
+
+/**
+ * Recupera/reimprime la etiqueta de una OT YA EXISTENTE (POST
+ * /transport-orders-labels) y la guarda en el bucket privado. NUNCA crea una
+ * OT nueva ni llama a /transport-orders — solo usa reprintLabel(), que pega
+ * a un endpoint distinto. No toca shippingCost, serviceTypeCode, coberturas,
+ * snapshot del paquete ni status: la OT existente es la unica fuente de
+ * verdad, esto solo reobtiene su etiqueta.
+ */
+export async function reprintChilexpressLabelAdmin(orderId: string) {
+  const [order] = await db
+    .select({
+      id: orders.id,
+      orderNumber: orders.orderNumber,
+      chilexpressTransportOrderNumber: orders.chilexpressTransportOrderNumber,
+    })
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .limit(1);
+
+  if (!order) {
+    return { success: false as const, code: "order_not_found", message: "Pedido no encontrado." };
+  }
+
+  // El numero de OT sale siempre de nuestra BD, nunca de un dato confiado al navegador.
+  if (!order.chilexpressTransportOrderNumber) {
+    return {
+      success: false as const,
+      code: "no_transport_order",
+      message: "Este pedido todavía no tiene una OT Chilexpress generada.",
+    };
+  }
+
+  let shipment;
+  try {
+    shipment = await reprintLabel(order.chilexpressTransportOrderNumber, 2);
+  } catch (error) {
+    // Info tecnica solo al log del servidor — nunca se expone la API key ni
+    // detalles internos al Admin. No se toca la OT ni el pedido.
+    console.error("reprintChilexpressLabelAdmin: fallo la reimpresion en Chilexpress", error);
+    return {
+      success: false as const,
+      code: "chilexpress_unavailable",
+      message: "Chilexpress no respondió correctamente al solicitar la etiqueta. Puedes intentar nuevamente.",
+    };
+  }
+
+  if (!shipment.labelData) {
+    return {
+      success: false as const,
+      code: "label_unavailable",
+      message: "Chilexpress no devolvió una etiqueta para esta OT.",
+    };
+  }
+
+  try {
+    // Path deterministico por orderNumber/OT + upsert:true en storeChilexpressLabel:
+    // reintentar esta operacion siempre sobreescribe el mismo archivo — idempotente.
+    const stored = await storeChilexpressLabel({
+      orderNumber: order.orderNumber,
+      transportOrderNumber: order.chilexpressTransportOrderNumber,
+      labelData: shipment.labelData,
+    });
+
+    if (!stored) {
+      return {
+        success: false as const,
+        code: "label_unavailable",
+        message: "Chilexpress no devolvió una etiqueta válida para esta OT.",
+      };
+    }
+
+    // Unico campo que se actualiza: la OT existente sigue siendo la fuente
+    // de verdad de todo lo demas (servicio, coberturas, paquete, estado).
+    const [updated] = await db
+      .update(orders)
+      .set({ chilexpressLabelUrl: stored.path, updatedAt: new Date() })
+      .where(eq(orders.id, order.id))
+      .returning({ id: orders.id, chilexpressLabelUrl: orders.chilexpressLabelUrl });
+
+    return { success: true as const, data: updated };
+  } catch (error) {
+    console.error("reprintChilexpressLabelAdmin: fallo el guardado en Storage", error);
+    return {
+      success: false as const,
+      code: "storage_failed",
+      message: "Se obtuvo la etiqueta pero no se pudo guardar. Puedes intentar nuevamente.",
     };
   }
 }

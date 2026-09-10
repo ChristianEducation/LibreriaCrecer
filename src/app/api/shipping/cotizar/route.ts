@@ -9,14 +9,9 @@ const QuoteShippingSchema = z.object({
     regionCode: z.string().trim().min(1).optional(),
     destinationCoverageCode: z.string().trim().min(1).optional(),
   }),
-  package: z
-    .object({
-      weightKg: z.number().positive(),
-      heightCm: z.number().positive(),
-      widthCm: z.number().positive(),
-      lengthCm: z.number().positive(),
-    })
-    .optional(),
+  // El frontend nunca manda peso/dimensiones: solo la cantidad de items.
+  // El paquete real se resuelve server-side (resolveOrderPackage).
+  quantity: z.number().int().positive(),
   declaredWorth: z.number().int().min(0).optional(),
 });
 

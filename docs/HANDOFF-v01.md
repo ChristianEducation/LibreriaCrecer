@@ -1,5 +1,87 @@
 # Crecer Librería Católica — Handoff v01
 **Última actualización:** Abril 2026 — cierre de jornada: buscador/Navbar actualizado, `publisher` agregado a productos, admin de envíos validado con tablas Supabase manuales y diagnóstico Chilexpress checkout/fallback.
+**⚡ Chilexpress tiene una actualización posterior (22 ago 2026) que reemplaza todo lo dicho de Chilexpress en el resto de este documento — ver la sección "CHILEXPRESS — ESTADO PRODUCCIÓN" justo debajo. Cualquier mención más abajo a "Fase 1–3", "credenciales pendientes" o "shippingCost: 0 fallback" está obsoleta.**
+
+---
+
+## CHILEXPRESS — ESTADO PRODUCCIÓN (22 ago 2026) — FUENTE DE VERDAD ACTUAL
+
+> Esta sección reemplaza todo lo dicho sobre Chilexpress más abajo en este documento (Feature 3B, checklists, notas de env). Se deja el resto del historial sin tocar como registro, pero no es confiable para el estado de Chilexpress — usar solo esta sección.
+
+**Resumen:** la integración Chilexpress está **implementada y validada hasta producción** para Coberturas y Cotizador Empresa. El código está terminado. La única fase que falta es generar la primera OT real (**Fase 7**, requiere autorización explícita de la clienta/dueño del proyecto — no ejecutarla de oficio).
+
+### Fuente de verdad técnica
+Los 3 contratos oficiales son los OpenAPI descargados del portal de Chilexpress (GeoReference, Rating, Transport-Orders) — tienen prioridad sobre cualquier Postman collection vieja o documentación de terceros. Endpoints PROD confirmados y en uso:
+- Coverage: `https://services.wschilexpress.com/georeference/api/v1.0`
+- Rating: `https://services.wschilexpress.com/rating/api/v1.0`
+- Shipment: `https://services.wschilexpress.com/transport-orders/api/v1.0`
+
+### Cotizador Empresa (`POST /rates/business`)
+Usa código cobertura origen/destino, paquete real, TCC, producto/contenido, valor declarado y `deliveryTime`. Respuesta relevante: `serviceTypeCode`, `serviceDescription`, `serviceValue`, `serviceValueDiscount`, `didUseVolumetricWeight`, `finalWeight`. Regla de precio: se usa `serviceValueDiscount` cuando es válido, con fallback a `serviceValue` (`effectiveValue` en `normalizeRateOption`, `src/integrations/shipping/chilexpress/client.ts`); luego se elige el servicio de menor `effectiveValue`.
+
+**Probado contra PROD con éxito** (22 ago 2026): origen Antofagasta (`ANTO`) → destino Providencia (`PROV`), paquete real "Caja S" (8×20×25cm, 0.45kg = 300g libro + 150g empaque). HTTP 200, 7 servicios devueltos, TCC productiva aceptada. El más económico fue el servicio código 5 ("XTRE hasta 3 días hábiles", $9.353 CLP efectivos). En esta prueba `serviceValueDiscount` fue igual a `serviceValue` en todos los servicios (sin descuento adicional para ese destino/paquete puntual) — el fallback existe y está bien cableado, pero esa prueba no forzó su activación. Sin diferencias entre el contrato OpenAPI y la respuesta real.
+
+### Coberturas PROD
+Probado con éxito. Antofagasta quedó **confirmado oficialmente** (ya no es una suposición de QA): `countyCode=ANTO`, `coverageName=ANTOFAGASTA`, `regionCode=R2`. Providencia confirmada como `PROV` (usada como destino de prueba). Persistido en `shipping_config.origin_coverage_code='ANTO'`, consistente con la variable de entorno `CHILEXPRESS_ORIGIN_COVERAGE_CODE` — la variable de entorno es la fuente de verdad real que usa el código en ejecución (tiene prioridad sobre la columna de BD); la columna solo refleja el mismo valor para visibilidad en el admin.
+
+### Migración Supabase aplicada
+`src/integrations/drizzle/migrations/0017_whole_jubilee.sql` — aplicada correctamente (vía MCP de Supabase, verificada por lectura, no por `db:migrate`). Agregó a `orders`: `chilexpress_package_weight_grams`, `chilexpress_package_height_cm`, `chilexpress_package_width_cm`, `chilexpress_package_length_cm`, `chilexpress_package_id` (FK a `shipping_packages.id`, `ON DELETE SET NULL`). Agregó a `shipping_config`: `origin_street`, `origin_street_number`, `origin_supplement`, `sender_name`, `sender_phone`, `sender_email`. Todas las columnas nuevas son nullable, sin cambios destructivos.
+
+### Configuración remitente/origen (`shipping_config`)
+Configurado en BD con datos institucionales reales (nombre, teléfono y email del remitente configurados — no se repiten aquí los valores por higiene de este documento; ver `shipping_config` en Supabase o `BRAND` en `src/shared/config/brand.ts` para los valores públicos). `origin_street="Arturo Prat"`, `origin_street_number="470"`, `origin_region="Antofagasta"`, `origin_commune="Antofagasta"`, `origin_coverage_code="ANTO"` (confirmado PROD), `estimated_book_weight_grams=300`.
+
+### Packaging — deuda técnica identificada y activa
+No existe peso ni dimensión individual por producto en `products`. El peso se calcula como `quantity × estimatedBookWeightGrams` (300g fijo por libro, sin importar el libro real). **No implementar peso/dimensión por producto salvo tarea específica futura** — queda identificado como mejora, no como bug bloqueante.
+
+**Sobre A4 desactivado (`is_active=false`, no eliminado, dimensiones intactas):** se detectó que, con el promedio de 300g/libro, cualquier pedido de 1 libro elegía automáticamente el Sobre A4 (1×23×32cm, máx. 500g) sin ninguna garantía de que el libro real cupiera físicamente en un sobre de 1cm de alto — riesgo de empaque físicamente inadecuado y de subdeclarar peso/dimensiones ante Chilexpress. Se evaluaron 3 opciones (desactivar / ajustar datos sin desactivar / mantenerlo activo) — se descartó "ajustar datos" porque la única forma de lograrlo sería inventar un peso/capacidad falsos del sobre. Reversible cuando exista peso real por producto.
+
+**Empaques activos actuales** (`shipping_packages`):
+
+| Nombre | Medidas (alto×ancho×largo) | Peso propio | Peso máx. | Máx. items |
+|---|---|---|---|---|
+| Caja S | 8×20×25 cm | 150g | 1000g | 3 |
+| Caja pequeña libros | 8×20×28 cm | 100g | 1500g | 3 |
+| Caja M | 12×25×35 cm | 300g | 2500g | 7 |
+| Caja L | 20×35×45 cm | 500g | 5000g | 14 |
+| ~~Sobre A4~~ (inactivo) | 1×23×32 cm | 30g | 500g | 1 |
+
+Con 300g/libro: **1 libro → Caja S**, **2 libros → Caja S**, **3 libros → Caja pequeña libros**, **5 libros → Caja M**. Ningún caso normal queda bloqueado.
+
+### Resolución de paquetes — reglas que NO deben reintroducirse
+La lógica es estricta (`selectCompatiblePackage`, `resolveOrderPackage` en `src/features/checkout/services/shipping-service.ts`): si no hay empaque activo compatible por cantidad Y peso, devuelve `null` y el llamador propaga `no_compatible_package`. **Nunca reintroducir:** un paquete fijo 8×20×28 de respaldo, un mínimo artificial de 1kg, ni "usar el primero aunque no alcance el peso". Checkout, creación de orden y generación de OT comparten esta misma resolución — no hay lógica duplicada.
+
+Al pagar se guarda un **snapshot** en `orders`: peso/alto/ancho/largo del paquete + `chilexpress_package_id`, más el servicio Chilexpress elegido, su descripción, coberturas origen/destino y el costo de despacho. La generación de OT usa ese snapshot directamente — **no vuelve a cotizar ni a elegir otro servicio después del pago** (solo hay una rama de respaldo para pedidos anteriores a este cambio, sin snapshot).
+
+### Bug crítico corregido: despacho $0
+`createOrder()` ya **no puede** crear un pedido con despacho si `calculateShippingCost()` falla — antes silenciosamente dejaba `shippingCost=0`. Ahora lanza `CheckoutServiceError("shipping_unavailable", ...)`, hace rollback de la transacción, y el cliente ve "No pudimos calcular el despacho en este momento. Intenta nuevamente." Nunca más despacho gratis por falla de Chilexpress.
+
+### Creación de OT (`POST /transport-orders`) — implementada, NO ejecutada en PROD todavía
+Sigue el contrato oficial: `header` (certificateNumber, customerCardNumber/TCC, countyOfOriginCoverageCode, `labelType=2`, marketplaceRut/sellerRut) + `details[].addresses[]/contacts[]/packages[]`. La respuesta se parsea desde `data.detail[]` (transportOrderNumber, reference, servicio, `label.labelData`/`label.labelType`) sin asumir tipos. **Hasta el 22 ago 2026 no se ha ejecutado ninguna OT productiva real.**
+
+### Etiquetas — Storage privado (ya no Base64 en Postgres)
+Bucket Supabase `chilexpress-labels`: creado, **privado** (`public=false`), sin policies para `anon`, restringido a `image/jpeg`/`image/png`/`application/pdf` hasta 2MB. Acceso exclusivamente server-side vía `SUPABASE_SERVICE_ROLE_KEY` (nunca exponer al cliente). Path: `{orderNumber}/{transportOrderNumber}.{ext}`; en `orders.chilexpress_label_url` se guarda **solo el path**, nunca el base64. Para ver/imprimir se genera una signed URL temporal on-demand (`src/integrations/shipping/chilexpress/label-storage.ts`).
+
+**Recuperación/reimpresión implementada** (`POST /transport-orders-labels`, botón "Recuperar / reimprimir etiqueta" en el admin de pedido): reobtiene la etiqueta de una OT **ya existente** — nunca crea una OT nueva, nunca llama a `/transport-orders`. El número de OT sale siempre de la BD, nunca del navegador. Path determinístico + `upsert:true` → idempotente, se puede reintentar sin duplicar. Si falla el guardado en Storage después de recibir la etiqueta, la OT y el pedido quedan intactos.
+
+### Tests / build (última validación, 22 ago 2026)
+`npm run test:shipping` → 27/27 ok (normalización de tarifa/`serviceValueDiscount`, payload de OT, parser de respuesta/etiqueta, selección de paquete, plan de Storage — todos con fixtures de los OpenAPI oficiales). `npx tsc --noEmit` ok, sin `any` nuevo. `npm run lint` ok (solo warnings preexistentes no relacionados). `npm run build` ok.
+
+### Deploy
+Desplegado en producción, dominio real `www.libreriacrecer.cl` (usar la versión **con** www — el proyecto Vercel la trata como canónica; la versión sin www puede depender de una redirección). Deployment `Ready`, alias apuntando al build nuevo, verificado `HTTP 200`. Las variables de entorno necesarias ya están activas en ese deployment.
+
+### Variables de entorno Chilexpress (solo nombres — nunca guardar valores aquí)
+`CHILEXPRESS_COVERAGE_API_KEY`, `CHILEXPRESS_RATING_API_KEY`, `CHILEXPRESS_SHIPMENT_API_KEY`, `CHILEXPRESS_TCC`, `CHILEXPRESS_SENDER_RUT`, `CHILEXPRESS_ORIGIN_REGION_CODE`, `CHILEXPRESS_ORIGIN_COMMUNE`, `CHILEXPRESS_ORIGIN_COVERAGE_CODE`, `CHILEXPRESS_COVERAGE_ENDPOINT`, `CHILEXPRESS_RATING_ENDPOINT`, `CHILEXPRESS_SHIPMENT_ENDPOINT`, `SUPABASE_SERVICE_ROLE_KEY`. Todas ya configuradas en Vercel (Production) al 22 ago 2026.
+
+### Estado de fases
+Fase 1 Migración Supabase ✅ · Fase 2 Storage privado ✅ · Fase 3 ENV producción ✅ · Fase 4 Config Admin/envíos ✅ · Fase 5 Deploy ✅ · Fase 6 Coberturas + Cotizador Empresa PROD ✅ (validado con llamadas reales) · **Fase 7 Primera OT real controlada ⏳ PENDIENTE — única fase que falta.**
+
+### Próxima tarea al retomar: FASE 7 — primera OT real controlada
+**No investigar Chilexpress desde cero — continuar directo aquí.** Antes de ejecutar: elegir un único pedido/destinatario real y controlado; revisar destinatario, dirección, snapshot de paquete, peso, servicio pagado y costo; generar **una única** OT; verificar `transportOrderNumber`; confirmar que no se pueda duplicar accidentalmente; guardar la etiqueta en Storage privado; abrir la signed URL; revisar visualmente la etiqueta 10×5cm; comprobar datos remitente/destinatario; probar la reimpresión sobre esa misma OT. **No generar una OT productiva sin autorización explícita** — representa un despacho real/facturable.
+
+### Reglas permanentes Chilexpress
+OpenAPI oficial > documentación antigua · no volver a usar QA para validar comportamiento PROD · no exponer secretos · nunca `NEXT_PUBLIC_` para credenciales · no guardar Base64 de etiquetas en BD · no inventar paquetes (nunca reintroducir el fallback fijo) · no permitir despacho $0 ante error · no recotizar una orden pagada si existe snapshot válido · no generar OT automáticamente durante pruebas ni más de una OT por prueba · no tocar Getnet como parte de tareas Chilexpress · no implementar tracking salvo pedido específico.
+
+---
 **Estado resumido:** **Hero principal**, **Top banner**, **Selección del mes**, **Categorías del landing**, **Hero final** y **Footer** completos con pantallas admin dedicadas y previews en vivo donde aplica. **Footer público** lee datos frescos desde servicios/BD con `noStore()`. **SEO:** metadata, JSON-LD, sitemap y robots implementados. **Catálogo:** Navbar con `Conócenos` al final y autocomplete de productos; búsqueda textual en `title`, `author`, `coverType` y `publisher` (**no** `description`). **Chilexpress:** infraestructura, cotización en checkout con fallback, admin de envíos y generación de OT implementados; `shipping_config`, `shipping_packages` y columnas `chilexpress_*` fueron aplicadas/validadas manualmente en Supabase, pero faltan credenciales reales y alinear la cotización pública con config/empaques admin. **Automáticos / externos:** recién llegados (últimos productos), Instagram (Elfsight). **Pendiente global:** primer preview Vercel para clienta, credenciales Chilexpress, VESSI, Resend/emails, QA final, posibles E2E/Playwright admin→storefront y mejoras opcionales de Top Banner vía `metadata`.
 **Stack:** Next.js 15.2.4 (App Router) · TypeScript · Drizzle ORM · Supabase PostgreSQL + Storage · Zustand 5 · Tailwind v4 · Getnet · lottie-react · framer-motion  
 **Build / calidad:** verificar en el clon con `npx tsc --noEmit`, `npm run lint` y `npm run build` antes de entregar; no asumir verde sin ejecutarlos.  
@@ -986,3 +1068,5 @@ No asumir que sigan idénticos ni que bloqueen el build — **comprobar** en el 
 8. [ ] **Deploy + QA producción** — variables Vercel, Getnet producción, seed en prod, smoke tests, `checkout.spec.ts` si aplica. **Verificar** build con `npx tsc --noEmit`, `npm run lint`, `npm run build`.
 
 *Handoff v01 — Abril 2026 · E-commerce + admin; panel Landing cerrado con editores por sección, previews y Footer editable conectado al storefront; SEO completo; buscador/Navbar y publisher actualizados; Chilexpress Fase 1–3 en código con tablas/columnas validadas manualmente en el entorno actual; pendiente: preview Vercel, credenciales/prueba Chilexpress, Resend, VESSI, QA final e infra (ver `git` y schema para detalle fino)*
+
+**Nota (22 ago 2026):** todo lo de Chilexpress en esta línea y en el resto del documento quedó obsoleto — Chilexpress ya está en producción, validado con llamadas reales (Coberturas + Cotizador Empresa). Ver la sección **"CHILEXPRESS — ESTADO PRODUCCIÓN (22 ago 2026)"** al inicio del documento. Única fase pendiente: **Fase 7 — primera OT real controlada**, requiere autorización explícita antes de ejecutarse.

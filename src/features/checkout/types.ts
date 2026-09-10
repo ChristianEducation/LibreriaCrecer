@@ -71,7 +71,8 @@ export type ServiceErrorCode =
   | "payment_reference_mismatch"
   | "payment_data_mismatch"
   | "provider_error"
-  | "product_not_available_online";
+  | "product_not_available_online"
+  | "shipping_unavailable";
 
 export type ServiceResult<T> =
   | { success: true; data: T }

@@ -120,6 +120,13 @@
       "when": 1786744964179,
       "tag": "0016_wakeful_purifiers",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1787359603314,
+      "tag": "0017_whole_jubilee",
+      "breakpoints": true
     }
   ]
 }
