@@ -75,17 +75,17 @@ export function buildOrderConfirmationEmail({
             <table width="100%" max-width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #faf9f4; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(58,48,1,0.05); max-width: 600px; width: 100%;">
               <!-- Header -->
               <tr>
-                <td style="background-color: #736002; padding: 30px; text-align: center;">
-                  <h1 style="color: #faf9f4; margin: 0; font-family: Georgia, serif; font-size: 24px; font-weight: normal;">
+                <td style="background-color: #c8a830; padding: 30px; text-align: center;">
+                  <h1 style="color: #3a3001; margin: 0; font-family: Georgia, serif; font-size: 24px; font-weight: normal;">
                     Crecer Librería
                   </h1>
                 </td>
               </tr>
-              
+
               <!-- Body -->
               <tr>
                 <td style="padding: 40px 30px;">
-                  <h2 style="color: #c8a830; margin: 0 0 20px 0; font-family: Georgia, serif; font-size: 22px;">
+                  <h2 style="color: #6b5a04; margin: 0 0 20px 0; font-family: Georgia, serif; font-size: 22px;">
                     ¡Gracias por tu compra, ${customerName}!
                   </h2>
                   <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #6b5a04;">

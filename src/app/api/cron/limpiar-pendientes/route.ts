@@ -4,9 +4,14 @@ import { NextResponse, type NextRequest } from "next/server";
 import { processPaymentResult } from "@/features/checkout/services/payment-service";
 import { db } from "@/integrations/drizzle";
 import { coupons, orders } from "@/integrations/drizzle/schema";
+import { sendPaymentAlertEmail } from "@/integrations/email";
+import { buildAdminOrderUrl } from "@/integrations/email/config";
 
 const MAX_RECONCILIATIONS_PER_RUN = 20;
 const ORPHAN_ORDER_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const STUCK_PENDING_ALERT_AGE_MS = 24 * 60 * 60 * 1000;
+
+const ALERTABLE_ERROR_CODES = new Set(["payment_data_mismatch", "provider_error"]);
 
 function parseRequestId(value: string | null): number | null {
   if (!value) return null;
@@ -25,6 +30,7 @@ export async function GET(request: NextRequest) {
   try {
     const pendingOrders = await db
       .select({
+        id: orders.id,
         orderNumber: orders.orderNumber,
         paymentReference: orders.paymentReference,
       })
@@ -38,7 +44,7 @@ export async function GET(request: NextRequest) {
       paid: [] as string[],
       cancelled: [] as string[],
       pending: [] as string[],
-      errors: [] as Array<{ orderNumber: string; code: string }>,
+      errors: [] as Array<{ orderId: string; orderNumber: string; code: string }>,
     };
 
     for (const order of pendingOrders) {
@@ -52,6 +58,7 @@ export async function GET(request: NextRequest) {
 
       if (!result.success) {
         reconciliation.errors.push({
+          orderId: order.id,
           orderNumber: order.orderNumber,
           code: result.code,
         });
@@ -108,6 +115,49 @@ export async function GET(request: NextRequest) {
         }
       }
     });
+
+    const alertableErrors = reconciliation.errors.filter((error) =>
+      ALERTABLE_ERROR_CODES.has(error.code),
+    );
+
+    for (const error of alertableErrors) {
+      await sendPaymentAlertEmail({
+        orderNumber: error.orderNumber,
+        reason:
+          error.code === "payment_data_mismatch"
+            ? "Los datos del pago no coinciden con el pedido"
+            : "Error al consultar el estado del pago en Getnet",
+        detail: `code: ${error.code}`,
+        adminOrderUrl: buildAdminOrderUrl(error.orderId),
+      });
+    }
+
+    const alertedOrderNumbers = new Set(alertableErrors.map((error) => error.orderNumber));
+    const stuckCutoff = new Date(Date.now() - STUCK_PENDING_ALERT_AGE_MS);
+    const stuckOrders = await db
+      .select({
+        id: orders.id,
+        orderNumber: orders.orderNumber,
+      })
+      .from(orders)
+      .where(
+        and(
+          eq(orders.status, "pending"),
+          isNotNull(orders.paymentReference),
+          lt(orders.createdAt, stuckCutoff),
+        ),
+      )
+      .limit(MAX_RECONCILIATIONS_PER_RUN);
+
+    for (const order of stuckOrders) {
+      if (alertedOrderNumbers.has(order.orderNumber)) continue;
+      await sendPaymentAlertEmail({
+        orderNumber: order.orderNumber,
+        reason: "Pedido con pago iniciado lleva más de 24 horas sin resolverse",
+        detail: "Sin errores explícitos en la reconciliación automática",
+        adminOrderUrl: buildAdminOrderUrl(order.id),
+      });
+    }
 
     console.warn("[cron] Getnet reconciliation completed", {
       checked: reconciliation.checked,

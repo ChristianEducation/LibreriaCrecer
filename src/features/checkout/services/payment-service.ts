@@ -21,7 +21,8 @@ import {
   type GetnetNotificationPayload,
   type GetnetSessionStatus,
 } from "@/integrations/payments/getnet";
-import { sendOrderConfirmationEmail } from "@/integrations/email";
+import { sendOrderConfirmationEmail, sendOwnerSaleConfirmedEmail, sendPaymentAlertEmail } from "@/integrations/email";
+import { buildAdminOrderUrl } from "@/integrations/email/config";
 
 import type { OrderStatus, ServiceResult } from "../types";
 import { checkProductsAvailability, decrementStock } from "./stock-service";
@@ -393,6 +394,15 @@ export async function processPaymentResult(
             deliveryMethod: fullOrder.deliveryMethod,
             address,
           });
+
+          await sendOwnerSaleConfirmedEmail({
+            orderNumber: order.orderNumber,
+            customerName: `${customer.firstName} ${customer.lastName}`,
+            items,
+            total: fullOrder.total,
+            deliveryMethod: fullOrder.deliveryMethod,
+            adminOrderUrl: buildAdminOrderUrl(order.id),
+          });
         }
       }
 
@@ -503,6 +513,15 @@ export async function processGetnetNotification(
   const notification = verifyGetnetNotification(body, getnetConfig.secretKey);
 
   if (!notification.success) {
+    if (notification.code === "invalid_signature") {
+      await sendPaymentAlertEmail({
+        orderNumber: typeof body.reference === "string" ? body.reference : null,
+        reason: "Firma de webhook inválida",
+        detail: `requestId recibido: ${body.requestId ?? "desconocido"}`,
+        adminOrderUrl: null,
+      });
+    }
+
     return {
       success: false,
       code: notification.code,

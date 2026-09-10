@@ -1,6 +1,7 @@
 # Plan — Fix webhook Getnet + avisos propios a la dueña
 
-**Estado:** pendiente de aprobación — no se ha tocado código todavía.
+**Estado:** tareas 1, 2, 3, 4 y 6 implementadas y verificadas localmente
+(2026-09-10). Falta commit/push a producción — pendiente de confirmación.
 **Fecha del diagnóstico:** 2026-09-08
 
 ## Por qué estamos haciendo esto
@@ -34,44 +35,61 @@ Verificado en el código actual (2026-09-09): el bug sigue sin corregir.
 
 ## Las 4 tareas
 
-### 1. Fix de la firma del webhook (causa raíz)
+### 1. Fix de la firma del webhook (causa raíz) — ✅ COMPLETO
 - Archivo: `src/integrations/payments/getnet/notification.ts`
-- Cambiar `createHash("sha256")` → `createHash("sha1")` (líneas ~82-84)
-- Ajustar la validación de largo de la firma recibida: regex de 64 a 40
-  caracteres hex (línea ~44)
-- Sin esto, todo lo demás es un parche — es el fix que soluciona el problema
-  de fondo.
+- `createHash("sha256")` → `createHash("sha1")`, largo de firma 64 → 40
+  caracteres hex
+- Commit `ad336cf`, desplegado y verificado en producción
 
-### 2. Configurar CRON_SECRET en Vercel Production
-- Generar un secreto nuevo y agregarlo como env var en Vercel (Production)
-- Acción sobre producción → requiere confirmación explícita antes de
-  aplicarla
-- Activa la red de seguridad: el cron de reconciliación empieza a poder
-  corregir pedidos que quedaron mal sincronizados
+### 2. CRON_SECRET en Vercel Production — ✅ COMPLETO
+- Configurado en Production. Verificado: el cron pasó de 401 a 200
+- Al probarlo se reconciliaron 3 pedidos reales atascados desde antes del
+  fix (ORD-0040, ORD-0043, ORD-0044) — detalle completo en la memoria de
+  sesión `project_fix-getnet-webhook-2026-09`. Se corrigió además un
+  pedido duplicado (ORD-0041) que había quedado "paid" por error manual.
 
 ### 3. Aviso "Venta confirmada" — correo a la dueña
 - Se dispara cada vez que un pedido pasa a `paid`, sin importar la vía
   (retorno del navegador, webhook ya arreglado, o cron)
 - Mismo punto del código donde hoy se envía el correo de confirmación al
   cliente (`processPaymentResult()` en `payment-service.ts`)
-- Contenido: cliente, productos, monto, modalidad de entrega
-- Hoy no existe ningún correo a la dueña — solo le llega al cliente
-- **Destinatarios:** la dueña siempre, + `c.wevarh@gmail.com` (el usuario) por
-  un tiempo, como respaldo mientras se confirma que el sistema nuevo funciona
-  bien. Fácil de sacar después (un solo lugar donde se define la lista de
-  destinatarios, no hardcodeado disperso en el código).
+- Contenido: cliente, producto(s), monto, modalidad de entrega, link directo
+  al pedido en `admin.libreriacrecer.cl/pedidos/[id]` (si no está logueada,
+  el middleware existente ya la redirige sola al login y de vuelta — no hay
+  que construir nada extra para eso)
+- **Destinatarios:** `crecerlibreria@gmail.com` (dueña) siempre, +
+  `c.wevarh@gmail.com` (el usuario) por un tiempo, como respaldo mientras se
+  confirma que el sistema nuevo funciona bien. Fácil de sacar después (un
+  solo lugar donde se define la lista de destinatarios, no hardcodeado
+  disperso en el código).
+- **Diseño:** header dorado sólido (`#c8a830` fondo, `#3a3001` texto), sin
+  musgo — mismo tratamiento que el correo al cliente (punto 6)
 
 ### 4. Aviso "Pago recibido pero no confirmado" — alerta
 - Este es el que habría evitado el caso de Alejandro
-- Se dispara cuando:
-  - Llega un webhook de Getnet y falla la validación de firma, o
-  - Un pedido con sesión de pago iniciada (`paymentReference`) lleva más de
-    1-2 horas en `pending` sin resolverse (probablemente extendiendo el cron
-    existente)
 - **Destinatario: solo `c.wevarh@gmail.com` (el usuario), siempre — NO a la
-  dueña.** Requiere una acción técnica (revisar webhook/portal de Getnet) que
-  ella no podría resolver; mandárselo solo la alarmaría sin darle nada
-  accionable.
+  dueña.** Requiere una acción técnica que ella no podría resolver.
+- Se dispara en dos casos, con prioridad distinta:
+  1. **Inmediato:** llega un webhook de Getnet y falla la validación de
+     firma — la señal más directa, habría capturado el caso de Alejandro en
+     tiempo real.
+  2. **Vía cron (sin crear un cron nuevo, se extiende el existente):**
+     - Señal principal: el cron intenta reconciliar un pedido `pending` y
+       Getnet devuelve un error real (`payment_data_mismatch` o
+       `provider_error` — hoy esto solo queda en un log que nadie revisa).
+     - Señal de respaldo, más laxa: un pedido con `paymentReference` sigue
+       `pending` más de **24 horas** sin error explícito ni resolución (no
+       2 horas — un umbral corto genera ruido por carritos abandonados
+       normales, que Getnet suele marcar como rechazados/expirados y el
+       cron limpia solo en la corrida siguiente).
+- Diseño: acento rojo/alerta (ya aprobado), incluye motivo, `requestId`,
+  link al pedido en el panel admin.
+
+### 6. Ajuste de diseño — correo de confirmación al cliente (ya existente)
+- Archivo: `src/integrations/email/templates/order-confirmation.ts`
+- Quitar el musgo (`#736002`) del header — reemplazar por dorado sólido
+  (`#c8a830` fondo, `#3a3001` texto), igual que el aviso a la dueña
+- Solo cambio visual, sin tocar la lógica de envío
 
 ## Tarea 5 — NO incluida
 Reconciliar manualmente pedidos "pending" que ya estén pagados. La dueña

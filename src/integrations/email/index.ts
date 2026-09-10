@@ -1,7 +1,9 @@
 import { Resend } from "resend";
-import { emailConfig } from "./config";
+import { emailConfig, PAYMENT_ALERT_RECIPIENTS, SALE_CONFIRMATION_RECIPIENTS } from "./config";
 import { buildOrderConfirmationEmail, OrderConfirmationEmailProps } from "./templates/order-confirmation";
 import { buildOrderShippedEmail, OrderShippedEmailProps } from "./templates/order-shipped";
+import { buildOwnerSaleConfirmedEmail, OwnerSaleConfirmedEmailProps } from "./templates/owner-sale-confirmed";
+import { buildPaymentAlertEmail, PaymentAlertEmailProps } from "./templates/payment-alert";
 
 const resend = new Resend(emailConfig.apiKey);
 
@@ -25,6 +27,50 @@ export async function sendOrderConfirmationEmail(params: OrderConfirmationEmailP
   } catch (error) {
     console.error(`[Email] Error enviando confirmación de pedido ${params.orderNumber}:`, error);
     // Best-effort: no relanzar el error para no romper la transacción principal
+  }
+}
+
+export async function sendOwnerSaleConfirmedEmail(params: OwnerSaleConfirmedEmailProps): Promise<void> {
+  if (!emailConfig.apiKey) {
+    console.warn("sendOwnerSaleConfirmedEmail: RESEND_API_KEY no configurada. Saltando envío.");
+    return;
+  }
+
+  try {
+    const html = buildOwnerSaleConfirmedEmail(params);
+
+    await resend.emails.send({
+      from: `${emailConfig.fromName} <${emailConfig.fromAddress}>`,
+      to: SALE_CONFIRMATION_RECIPIENTS,
+      subject: `Nueva venta: ${params.orderNumber}`,
+      html,
+    });
+
+    console.warn(`[Email] Aviso de venta confirmada ${params.orderNumber} enviado`);
+  } catch (error) {
+    console.error(`[Email] Error enviando aviso de venta confirmada ${params.orderNumber}:`, error);
+  }
+}
+
+export async function sendPaymentAlertEmail(params: PaymentAlertEmailProps): Promise<void> {
+  if (!emailConfig.apiKey) {
+    console.warn("sendPaymentAlertEmail: RESEND_API_KEY no configurada. Saltando envío.");
+    return;
+  }
+
+  try {
+    const html = buildPaymentAlertEmail(params);
+
+    await resend.emails.send({
+      from: `${emailConfig.fromName} <${emailConfig.fromAddress}>`,
+      to: PAYMENT_ALERT_RECIPIENTS,
+      subject: `Alerta: pago no reconciliado${params.orderNumber ? ` — ${params.orderNumber}` : ""}`,
+      html,
+    });
+
+    console.warn(`[Email] Alerta de pago no reconciliado enviada`, { orderNumber: params.orderNumber });
+  } catch (error) {
+    console.error(`[Email] Error enviando alerta de pago no reconciliado:`, error);
   }
 }
 
