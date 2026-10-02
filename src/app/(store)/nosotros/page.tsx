@@ -89,7 +89,7 @@ export default async function NosotrosPage() {
           </nav>
 
           <div className="about-hero-copy">
-            <p className="about-eyebrow">
+            <p className="about-eyebrow about-eyebrow--hero">
               <span aria-hidden="true" />
               Librería Católica · Antofagasta
             </p>

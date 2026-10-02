@@ -957,6 +957,10 @@ body {
   color: var(--gold);
 }
 
+.about-eyebrow--hero {
+  color: var(--text);
+}
+
 .about-hero-title {
   max-width: 1000px;
   text-wrap: balance;
