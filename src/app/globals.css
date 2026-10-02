@@ -908,7 +908,7 @@ body {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin-bottom: clamp(2.25rem, 5vw, 4.25rem);
+  margin-bottom: clamp(1.25rem, 3vw, 2.25rem);
   font-family: var(--font-inter), system-ui, sans-serif;
   font-size: 10px;
   color: var(--text-light);
@@ -929,7 +929,7 @@ body {
 }
 
 .about-hero-copy {
-  max-width: 760px;
+  max-width: 1000px;
 }
 
 .about-eyebrow {
@@ -958,7 +958,8 @@ body {
 }
 
 .about-hero-title {
-  max-width: 760px;
+  max-width: 1000px;
+  text-wrap: balance;
   margin-bottom: 1.3rem;
   font-family: var(--font-castoro), Georgia, serif;
   font-size: clamp(2.7rem, 4.8vw, 4.45rem);
@@ -968,6 +969,10 @@ body {
   color: var(--text);
 }
 
+.about-hero-title-accent {
+  color: var(--gold);
+}
+
 .about-hero-title em {
   font-style: italic;
   font-weight: 400;
@@ -975,7 +980,7 @@ body {
 }
 
 .about-hero-description {
-  max-width: 680px;
+  max-width: 760px;
   font-family: var(--font-inter), system-ui, sans-serif;
   font-size: clamp(1.05rem, 1.5vw, 1.24rem);
   font-weight: 400;

@@ -73,7 +73,7 @@ export default async function NosotrosPage() {
     <main className="bg-beige">
       <section
         className="page-px about-hero relative overflow-hidden"
-        style={{ paddingTop: "4.5rem", paddingBottom: "5rem" }}
+        style={{ paddingTop: "2.5rem", paddingBottom: "3.5rem" }}
       >
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(232,208,96,0.16),transparent_34%),radial-gradient(circle_at_10%_85%,rgba(200,168,48,0.10),transparent_30%)]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-[linear-gradient(to_right,transparent,rgba(200,168,48,0.55),transparent)]" />
@@ -94,11 +94,13 @@ export default async function NosotrosPage() {
               Librería Católica · Antofagasta
             </p>
             <h1 className="about-hero-title">
-              Promovemos el crecimiento integral de la persona
+              <span className="about-hero-title-accent">CRECER,</span>
+              <br />
+              una librería para encontrarnos con los libros y ampliar la mirada.
             </h1>
             <p className="about-hero-description">
-              …ofreciendo libros, experiencias y espacios de encuentro que favorecen el diálogo
-              entre la fe, la cultura, la educación y las distintas dimensiones del saber humano.
+              Seleccionamos y acercamos libros que nos ayudan a crecer en humanidad, conocimiento
+              y sentido, aportando a la lectura, la educación y la cultura de nuestra región.
             </p>
           </div>
         </div>
