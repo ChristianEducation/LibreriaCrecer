@@ -127,6 +127,13 @@
       "when": 1787359603314,
       "tag": "0017_whole_jubilee",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792861745719,
+      "tag": "0018_newsletter_subscribers",
+      "breakpoints": true
     }
   ]
 }

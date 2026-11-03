@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { emailConfig, PAYMENT_ALERT_RECIPIENTS, SALE_CONFIRMATION_RECIPIENTS } from "./config";
+import { buildNewsletterWelcomeEmail, NewsletterWelcomeEmailProps } from "./templates/newsletter-welcome";
 import { buildOrderConfirmationEmail, OrderConfirmationEmailProps } from "./templates/order-confirmation";
 import { buildOrderShippedEmail, OrderShippedEmailProps } from "./templates/order-shipped";
 import { buildOwnerSaleConfirmedEmail, OwnerSaleConfirmedEmailProps } from "./templates/owner-sale-confirmed";
@@ -93,6 +94,29 @@ export async function sendOrderShippedEmail(params: OrderShippedEmailProps & { t
     console.log(`[Email] Notificación de despacho ${params.orderNumber} enviada exitosamente a ${params.toEmail}`);
   } catch (error) {
     console.error(`[Email] Error enviando notificación de despacho ${params.orderNumber}:`, error);
+    // Best-effort: no relanzar el error
+  }
+}
+
+export async function sendNewsletterWelcomeEmail(
+  params: NewsletterWelcomeEmailProps & { toEmail: string },
+): Promise<void> {
+  if (!emailConfig.apiKey) {
+    console.warn("sendNewsletterWelcomeEmail: RESEND_API_KEY no configurada. Saltando envío.");
+    return;
+  }
+
+  try {
+    const html = buildNewsletterWelcomeEmail(params);
+
+    await resend.emails.send({
+      from: `${emailConfig.fromName} <${emailConfig.fromAddress}>`,
+      to: params.toEmail,
+      subject: "Gracias por suscribirte a Crecer Librería",
+      html,
+    });
+  } catch (error) {
+    console.error("[Email] Error enviando bienvenida de newsletter:", error);
     // Best-effort: no relanzar el error
   }
 }
