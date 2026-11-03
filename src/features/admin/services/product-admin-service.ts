@@ -221,7 +221,7 @@ export async function getProductAdmin(id: string) {
 export async function createProduct(data: CreateProductInput) {
   const slug = await generateUniqueProductSlug(data.title);
 
-  return db.transaction(async (tx) => {
+  const createdProductId = await db.transaction(async (tx) => {
     const [product] = await tx
       .insert(products)
       .values({
@@ -255,8 +255,13 @@ export async function createProduct(data: CreateProductInput) {
       );
     }
 
-    return getProductAdmin(product.id);
+    return product.id;
   });
+
+  // Se lee después del commit: dentro de la transacción `getProductAdmin` usa otra
+  // conexión que todavía no ve la fila y devolvía null, por lo que el formulario
+  // no recibía el id y nunca subía la imagen del producto nuevo.
+  return getProductAdmin(createdProductId);
 }
 
 export async function updateProduct(id: string, data: UpdateProductInput) {
