@@ -16,6 +16,7 @@ import {
   MONTHLY_SELECTION_SECTION_ALIASES,
   normalizeCuratedSection,
 } from "@/shared/config/landing";
+import { GIFT_OCCASIONS, type GiftOccasion } from "@/shared/config/regalos";
 
 import type { CuratedProduct, ProductCategoryRef } from "../types";
 
@@ -132,6 +133,18 @@ export async function getSectionCopy(key: LandingSectionKey) {
     .limit(1);
 
   return row ?? null;
+}
+
+/**
+ * Ocasiones de regalo visibles hoy: las fijas siempre, y las de temporada
+ * (Navidad) solo si el interruptor del admin está encendido.
+ */
+export async function getActiveGiftOccasions(): Promise<GiftOccasion[]> {
+  const seasonalEnabled = await getSectionCopy("regalos.navidad")
+    .then((row) => row !== null)
+    .catch(() => false);
+
+  return GIFT_OCCASIONS.filter((occasion) => !occasion.seasonal || seasonalEnabled);
 }
 
 export async function getCuratedProducts(section?: string): Promise<CuratedProduct[]> {

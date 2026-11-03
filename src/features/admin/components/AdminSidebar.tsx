@@ -71,7 +71,7 @@ const sections: { label: string; items: SidebarItem[] }[] = [
       { href: "/landing/top-banner", label: "Top Banner", icon: "banner" },
       { href: "/landing/hero", label: "Hero principal", icon: "image" },
       { href: "/landing/seleccion", label: "Selección del mes", icon: "star" },
-      { href: "/landing/categorias", label: "Categorías del landing", icon: "list" },
+      { href: "/landing/regalos", label: "Regalos con intención", icon: "tag" },
       { href: "/landing/hero-final", label: "Hero final", icon: "image" },
       { href: "/landing/footer", label: "Footer", icon: "footer" },
       { href: "/nosotros", label: "Página Conócenos", icon: "info" },

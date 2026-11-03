@@ -4,8 +4,10 @@ import {
   count,
   desc,
   eq,
+  gte,
   inArray,
   isNotNull,
+  lte,
   notInArray,
   or,
   sql,
@@ -13,7 +15,15 @@ import {
 } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
-import { categories, featuredProducts, productCategories, productImages, products } from "@/integrations/drizzle/schema";
+import {
+  categories,
+  featuredProducts,
+  orderItems,
+  orders,
+  productCategories,
+  productImages,
+  products,
+} from "@/integrations/drizzle/schema";
 import { MONTHLY_SELECTION_SECTION_ALIASES } from "@/shared/config/landing";
 
 import type {
@@ -69,6 +79,28 @@ function getMonthlySelectionOrderClause() {
     where ${featuredProducts.productId} = ${products.id}
       and ${featuredProducts.isActive} = true
       and ${featuredProducts.section} in (${aliasValues})
+  ), 2147483647)`;
+}
+
+function buildGiftSectionsSubquery(sections: string[]) {
+  return db
+    .select({ productId: featuredProducts.productId })
+    .from(featuredProducts)
+    .where(and(inArray(featuredProducts.section, sections), eq(featuredProducts.isActive, true)));
+}
+
+function getGiftOrderClause(sections: string[]) {
+  const sectionValues = sql.join(
+    sections.map((section) => sql`${section}`),
+    sql`, `,
+  );
+
+  return sql<number>`coalesce((
+    select min(${featuredProducts.displayOrder})
+    from ${featuredProducts}
+    where ${featuredProducts.productId} = ${products.id}
+      and ${featuredProducts.isActive} = true
+      and ${featuredProducts.section} in (${sectionValues})
   ), 2147483647)`;
 }
 
@@ -143,6 +175,7 @@ function getSortClause(sortBy: ProductSortBy) {
       return [desc(effectivePrice), asc(products.title)];
     case "name":
       return [asc(products.title)];
+    case "curated":
     case "newest":
     default:
       return [desc(products.createdAt)];
@@ -158,7 +191,23 @@ function buildProductConditions({
   isFeatured = false,
   onlySeleccion = false,
   onlyNewArrivals = false,
-}: Pick<ProductQueryParams, "categorySlug" | "search" | "onlyInStock" | "onlyActive" | "onlyOnSale" | "isFeatured" | "onlySeleccion" | "onlyNewArrivals">) {
+  giftSections,
+  minPrice,
+  maxPrice,
+}: Pick<
+  ProductQueryParams,
+  | "categorySlug"
+  | "search"
+  | "onlyInStock"
+  | "onlyActive"
+  | "onlyOnSale"
+  | "isFeatured"
+  | "onlySeleccion"
+  | "onlyNewArrivals"
+  | "giftSections"
+  | "minPrice"
+  | "maxPrice"
+>) {
   const conditions: SQL[] = [];
 
   if (onlyNewArrivals) {
@@ -216,6 +265,23 @@ function buildProductConditions({
     conditions.push(inArray(products.id, buildMonthlySelectionSubquery()));
   }
 
+  if (giftSections) {
+    // Lista vacía = ninguna ocasión disponible: no debe devolver productos.
+    conditions.push(
+      giftSections.length > 0
+        ? inArray(products.id, buildGiftSectionsSubquery(giftSections))
+        : sql`false`,
+    );
+  }
+
+  if (minPrice !== undefined) {
+    conditions.push(gte(sql`coalesce(${products.salePrice}, ${products.price})`, minPrice));
+  }
+
+  if (maxPrice !== undefined) {
+    conditions.push(lte(sql`coalesce(${products.salePrice}, ${products.price})`, maxPrice));
+  }
+
   return conditions.length > 0 ? and(...conditions) : undefined;
 }
 
@@ -256,7 +322,9 @@ export async function getProducts(params: ProductQueryParams): Promise<ProductLi
     .orderBy(
       ...(params.onlySeleccion
         ? [asc(getMonthlySelectionOrderClause()), asc(products.title)]
-        : getSortClause(sortBy)),
+        : sortBy === "curated" && params.giftSections && params.giftSections.length > 0
+          ? [asc(getGiftOrderClause(params.giftSections)), asc(products.title)]
+          : getSortClause(sortBy)),
     )
     .limit(limit)
     .offset(offset);
@@ -361,6 +429,107 @@ export async function getNewProducts(limit = DEFAULT_SLIDER_LIMIT): Promise<Cata
     limit,
     [desc(products.createdAt)],
   );
+}
+
+const BEST_SELLER_WINDOW_DAYS = 90;
+const COUNTED_ORDER_STATUSES = ["paid", "preparing", "shipped", "delivered"];
+
+/**
+ * "Más buscados": unidades vendidas en pedidos pagados de los últimos 90 días.
+ * Si hay pocas ventas, completa con productos recomendados y luego con los más nuevos.
+ */
+export async function getBestSellingProducts(limit = 10): Promise<CatalogProduct[]> {
+  const since = new Date(Date.now() - BEST_SELLER_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+  const soldRows = await db
+    .select({
+      productId: orderItems.productId,
+      units: sql<number>`sum(${orderItems.quantity})`,
+    })
+    .from(orderItems)
+    .innerJoin(orders, eq(orders.id, orderItems.orderId))
+    .innerJoin(products, eq(products.id, orderItems.productId))
+    .where(
+      and(
+        inArray(orders.status, COUNTED_ORDER_STATUSES),
+        gte(orders.createdAt, since),
+        eq(products.isActive, true),
+        eq(products.inStock, true),
+      ),
+    )
+    .groupBy(orderItems.productId)
+    .orderBy(desc(sql`sum(${orderItems.quantity})`))
+    .limit(limit);
+
+  const rankedIds = soldRows
+    .map((row) => row.productId)
+    .filter((id): id is string => id !== null);
+
+  const ranked =
+    rankedIds.length > 0
+      ? await getSimpleProductCollection(inArray(products.id, rankedIds), rankedIds.length, [asc(products.title)])
+      : [];
+  const rankedById = new Map(ranked.map((product) => [product.id, product]));
+  const result = rankedIds
+    .map((id) => rankedById.get(id))
+    .filter((product): product is CatalogProduct => Boolean(product));
+
+  if (result.length >= limit) {
+    return result;
+  }
+
+  const taken = new Set(result.map((product) => product.id));
+  const baseWhere = and(eq(products.isActive, true), eq(products.inStock, true));
+  const fillers = await getSimpleProductCollection(
+    taken.size > 0 ? and(baseWhere, eq(products.isFeatured, true), notInArray(products.id, [...taken])) : and(baseWhere, eq(products.isFeatured, true)),
+    limit - result.length,
+    [desc(products.createdAt)],
+  );
+  result.push(...fillers);
+
+  if (result.length >= limit) {
+    return result;
+  }
+
+  const takenNow = result.map((product) => product.id);
+  const newest = await getSimpleProductCollection(
+    takenNow.length > 0 ? and(baseWhere, notInArray(products.id, takenNow)) : baseWhere,
+    limit - result.length,
+    [desc(products.createdAt)],
+  );
+  result.push(...newest);
+
+  return result;
+}
+
+export type GiftCategoryFacet = { slug: string; name: string; count: number };
+
+/** Categorías (con conteo) de los productos que pertenecen a las ocasiones indicadas. */
+export async function getGiftCategoryFacets(sections: string[]): Promise<GiftCategoryFacet[]> {
+  if (sections.length === 0) {
+    return [];
+  }
+
+  const rows = await db
+    .select({
+      slug: categories.slug,
+      name: categories.name,
+      count: sql<number>`count(distinct ${products.id})`,
+    })
+    .from(productCategories)
+    .innerJoin(categories, eq(categories.id, productCategories.categoryId))
+    .innerJoin(products, eq(products.id, productCategories.productId))
+    .where(
+      and(
+        eq(categories.isActive, true),
+        eq(products.isActive, true),
+        inArray(products.id, buildGiftSectionsSubquery(sections)),
+      ),
+    )
+    .groupBy(categories.slug, categories.name)
+    .orderBy(asc(categories.name));
+
+  return rows.map((row) => ({ slug: row.slug, name: row.name, count: Number(row.count) }));
 }
 
 export async function getOnSaleProducts(limit = DEFAULT_SLIDER_LIMIT): Promise<CatalogProduct[]> {

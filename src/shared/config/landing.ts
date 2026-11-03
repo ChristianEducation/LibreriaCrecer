@@ -92,6 +92,8 @@ export const LANDING_SECTION_KEYS = [
   "nosotros.hero",
   "nosotros.manifesto",
   "nosotros.cta",
+  // Interruptor de la ocasión de temporada "Navidad" (is_active = encendida).
+  "regalos.navidad",
 ] as const;
 export type LandingSectionKey = (typeof LANDING_SECTION_KEYS)[number];
 

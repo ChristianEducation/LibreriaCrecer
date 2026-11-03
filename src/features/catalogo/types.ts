@@ -71,7 +71,7 @@ export type ProductListResult = {
   totalPages: number;
 };
 
-export type ProductSortBy = "price_asc" | "price_desc" | "newest" | "name";
+export type ProductSortBy = "price_asc" | "price_desc" | "newest" | "name" | "curated";
 
 export type ProductQueryParams = {
   page: number;
@@ -85,6 +85,11 @@ export type ProductQueryParams = {
   isFeatured?: boolean;
   onlySeleccion?: boolean;
   onlyNewArrivals?: boolean;
+  // Secciones de `featured_products` (ocasiones de regalo) a las que debe pertenecer el producto.
+  giftSections?: string[];
+  // Rango de precio efectivo (CLP).
+  minPrice?: number;
+  maxPrice?: number;
 };
 
 export type CategoryWithProducts = {

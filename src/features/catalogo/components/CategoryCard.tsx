@@ -1,107 +1,43 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { getCategoryImage } from "@/shared/config/category-images";
+
 export interface CategoryCardProps {
   name: string;
   slug: string;
   imageUrl?: string | null;
+  // Opcional: solo se muestra donde se pasa (p. ej. /categorias); el home no lo usa.
   productCount?: number;
-  panoramaUrl?: string | null;
-  panoramaIndex?: number;
-  panoramaTotal?: number;
 }
 
-function getPuzzleStyle(index: number, total: number, cols: number) {
-  const row = Math.floor(index / cols);
-  const col = index % cols;
-  const totalRows = Math.ceil(total / cols);
-  
-  const xPos = cols > 1 ? (col / (cols - 1)) * 100 : 0;
-  const yPos = totalRows > 1 ? (row / (totalRows - 1)) * 100 : 0;
-  
-  const bgSizeX = `calc(${cols * 100}% + ${(cols - 1) * 12}px)`;
-  const bgSizeY = `calc(${totalRows * 100}% + ${(totalRows - 1) * 12}px)`;
-
-  return `background-size: ${bgSizeX} ${bgSizeY} !important; background-position: ${xPos}% ${yPos}% !important;`;
-}
-
-export function CategoryCard({
-  name,
-  slug,
-  imageUrl,
-  productCount,
-  panoramaUrl,
-  panoramaIndex = 0,
-  panoramaTotal = 1,
-}: CategoryCardProps) {
-  const hasPanorama = !!panoramaUrl && panoramaTotal > 1;
+export function CategoryCard({ name, slug, imageUrl, productCount }: CategoryCardProps) {
+  const image = getCategoryImage(slug, imageUrl);
 
   return (
-    <>
-      {hasPanorama && (
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            .puzzle-${slug} { ${getPuzzleStyle(panoramaIndex, panoramaTotal, 4)} }
-          `
-        }} />
-      )}
-      <Link
-        href={`/productos?cat=${slug}`}
-        style={{
-          display: "block",
-          position: "relative",
-          aspectRatio: "3/2",
-          overflow: "hidden",
-          borderRadius: "var(--radius-sm)",
-          textDecoration: "none",
-        }}
-        className="category-motion-card"
-      >
-        {/* Background */}
-        <div className="category-motion-media" style={{ position: "absolute", inset: 0 }}>
-          {panoramaUrl ? (
-            <div
-              className={hasPanorama ? `puzzle-${slug}` : ""}
-              style={{
-                position: "absolute",
-                inset: 0,
-                backgroundImage: `url(${panoramaUrl})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                transition: "transform 0.4s ease",
-              }}
-            />
-          ) : imageUrl ? (
-            <Image
-              alt={name}
-              fill
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-              src={imageUrl}
-              style={{ objectFit: "cover" }}
-            />
-          ) : (
-            <>
-              <div style={{ position: "absolute", inset: 0, background: "#4a3c02" }} />
-              <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 30% 50%, rgba(200,168,48,0.12), transparent 60%)" }} />
-            </>
-          )}
-        </div>
+    <Link className="category-motion-card category-card" href={`/productos?cat=${slug}`}>
+      <div className="category-motion-media category-card-media">
+        {image ? (
+          <Image
+            alt=""
+            fill
+            sizes="(max-width: 768px) 60vw, (max-width: 1280px) 25vw, 260px"
+            src={image}
+            style={{ objectFit: "cover" }}
+          />
+        ) : (
+          <span aria-hidden="true" className="category-card-fallback" />
+        )}
+      </div>
 
-        {/* Overlay */}
-        <div className="category-motion-overlay" style={{ position: "absolute", inset: 0, background: "rgba(58,48,1,0.35)" }} />
-
-        {/* Content */}
-        <div className="category-motion-copy" style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px" }}>
-          <p style={{ fontFamily: "var(--font-serif)", fontSize: "16px", fontWeight: 400, color: "white", lineHeight: 1.3, marginBottom: productCount !== undefined ? "4px" : 0 }}>
-            {name}
+      <div className="category-motion-copy category-card-copy">
+        <p className="category-card-name">{name}</p>
+        {productCount !== undefined ? (
+          <p className="category-card-count">
+            {productCount} {productCount === 1 ? "título" : "títulos"}
           </p>
-          {productCount !== undefined && (
-            <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)" }}>
-              {productCount} {productCount === 1 ? "título" : "títulos"}
-            </p>
-          )}
-        </div>
-      </Link>
-    </>
+        ) : null}
+      </div>
+    </Link>
   );
 }

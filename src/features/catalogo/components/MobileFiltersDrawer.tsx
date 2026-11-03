@@ -24,6 +24,8 @@ const sortOptions: Array<{ value: SortOption; label: string }> = [
 const filterOptions: Array<{ value: string; label: string }> = [
   { value: "nuevo", label: "Nuevos" },
   { value: "seleccion", label: "Selección del mes" },
+  { value: "oferta", label: "En oferta" },
+  { value: "destacado", label: "Recomendados" },
 ];
 
 export function MobileFiltersDrawer({

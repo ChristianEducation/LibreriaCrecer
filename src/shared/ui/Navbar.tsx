@@ -8,6 +8,7 @@ import { cx } from "class-variance-authority";
 
 import { useCartSummary } from "@/features/carrito/hooks";
 import { useCartHydration } from "@/features/carrito/useCartHydration";
+import { getCategoryImage } from "@/shared/config/category-images";
 
 import { CartPanel } from "./CartPanel";
 import { NavbarSearch } from "./NavbarSearch";
@@ -62,21 +63,25 @@ function ChevronDownIcon({ open }: { open: boolean }) {
 }
 
 const navLinksAfterCategories = [
+  // `isNew` muestra un puntito dorado de novedad; quitarlo pasadas unas semanas.
+  { href: "/regalos", label: "Regalos", isNew: true },
   { href: "/productos?filter=seleccion", label: "Selección del mes" },
   { href: "/productos?filter=nuevo", label: "Recién llegados" },
   { href: "/nosotros", label: "Conócenos" },
 ] as const;
 
 export interface NavbarProps {
-  categories?: { id: string; name: string; slug: string }[];
+  categories?: { id: string; name: string; slug: string; imageUrl?: string | null }[];
+  giftOccasions?: { slug: string; label: string; imageUrl: string | null }[];
   variant?: "default" | "checkout";
 }
 
-export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
+export function Navbar({ categories = [], giftOccasions = [], variant = "default" }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const [isGiftsOpen, setIsGiftsOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileCategoriesOpen, setIsMobileCategoriesOpen] = useState(false);
@@ -85,12 +90,30 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
   const { totalItems } = useCartSummary();
   const categoriesRef = useRef<HTMLLIElement | null>(null);
   const categoriesCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const giftsRef = useRef<HTMLLIElement | null>(null);
+  const giftsCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleGiftsMouseEnter() {
+    if (giftsCloseTimeout.current) {
+      clearTimeout(giftsCloseTimeout.current);
+      giftsCloseTimeout.current = null;
+    }
+    setIsCategoriesOpen(false);
+    setIsGiftsOpen(true);
+  }
+
+  function handleGiftsMouseLeave() {
+    giftsCloseTimeout.current = setTimeout(() => {
+      setIsGiftsOpen(false);
+    }, 150);
+  }
 
   function handleCategoriesMouseEnter() {
     if (categoriesCloseTimeout.current) {
       clearTimeout(categoriesCloseTimeout.current);
       categoriesCloseTimeout.current = null;
     }
+    setIsGiftsOpen(false);
     setIsCategoriesOpen(true);
   }
 
@@ -114,6 +137,7 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setIsCategoriesOpen(false);
+        setIsGiftsOpen(false);
         setIsCartOpen(false);
         setIsMobileMenuOpen(false);
       }
@@ -128,6 +152,9 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
       if (!categoriesRef.current?.contains(event.target as Node)) {
         setIsCategoriesOpen(false);
       }
+      if (!giftsRef.current?.contains(event.target as Node)) {
+        setIsGiftsOpen(false);
+      }
     }
 
     document.addEventListener("mousedown", handlePointerDown);
@@ -137,6 +164,7 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
   useEffect(() => {
     setIsCartOpen(false);
     setIsCategoriesOpen(false);
+    setIsGiftsOpen(false);
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
@@ -166,8 +194,9 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
   return (
     <>
       <header
+        data-solid={!isTransparent}
         className={cx(
-          "z-[100] sticky top-0 transition-[background-color,box-shadow,border-color] duration-300",
+          "site-navbar z-[100] sticky top-0 transition-[background-color,box-shadow,border-color] duration-300",
           isTransparent
             ? "border-b border-transparent bg-transparent"
             : "border-b border-border bg-[color-mix(in_srgb,var(--beige)_95%,transparent)] backdrop-blur-xl",
@@ -233,13 +262,14 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
               <nav className="hidden items-center gap-5 lg:flex">
                 <Link
                   className={cx(
-                    "text-[13px] tracking-[0.04em] transition-colors",
+                    "site-nav-link text-[13px] tracking-[0.04em] transition-colors",
                     isTransparent
                       ? "text-white/85 hover:text-white"
                       : pathname === "/productos" || pathname.startsWith("/productos/")
                         ? "font-medium text-moss"
                         : "text-text-mid hover:text-moss",
                   )}
+                  data-active={pathname === "/productos" || pathname.startsWith("/productos/")}
                   href="/productos"
                 >
                   Colección
@@ -253,13 +283,14 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                 >
                   <button
                     className={cx(
-                      "text-[13px] tracking-[0.04em] transition-colors",
+                      "site-nav-link text-[13px] tracking-[0.04em] transition-colors",
                       isTransparent
                         ? "text-white/85 hover:text-white"
                         : pathname.startsWith("/productos")
                           ? "font-medium text-moss"
                           : "text-text-mid hover:text-moss",
                     )}
+                    data-active={isCategoriesOpen}
                     onClick={() => setIsCategoriesOpen((current) => !current)}
                     type="button"
                   >
@@ -272,8 +303,11 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                       top: "100%",
                       left: 0,
                       marginTop: "10px",
-                      minWidth: "230px",
-                      padding: "10px 0",
+                      width: "max-content",
+                      display: "grid",
+                      gridTemplateColumns: "repeat(3, 190px)",
+                      columnGap: "4px",
+                      padding: "10px 8px",
                       background: "rgba(242,239,223,0.98)",
                       backdropFilter: "blur(16px)",
                       border: "1px solid var(--color-border)",
@@ -289,41 +323,128 @@ export function Navbar({ categories = [], variant = "default" }: NavbarProps) {
                   >
                     <Link
                       href="/productos"
-                      style={{ display: "block", padding: "9px 18px", fontSize: "13px", color: "var(--color-moss)", textDecoration: "none", transition: "background 0.15s" }}
+                      style={{ display: "block", gridColumn: "1 / -1", padding: "9px 14px", marginBottom: "6px", borderBottom: "1px solid var(--color-border)", fontSize: "13px", color: "var(--color-moss)", textDecoration: "none", transition: "background 0.15s" }}
                       className="hover:bg-beige-warm"
                     >
                       Ver toda la colección
                     </Link>
-                    {categories.map((category) => (
-                      <Link
-                        href={`/productos?cat=${category.slug}`}
-                        key={category.id}
-                        style={{ display: "block", padding: "9px 18px", fontSize: "13px", color: "var(--color-moss)", textDecoration: "none", transition: "background 0.15s" }}
-                        className="hover:bg-beige-warm"
-                      >
-                        {category.name}
-                      </Link>
-                    ))}
+                    {categories.map((category) => {
+                      const thumb = getCategoryImage(category.slug, category.imageUrl);
+
+                      return (
+                        <Link
+                          href={`/productos?cat=${category.slug}`}
+                          key={category.id}
+                          style={{ display: "flex", alignItems: "center", gap: "10px", padding: "7px 14px", fontSize: "13px", lineHeight: 1.35, color: "var(--color-moss)", textDecoration: "none", transition: "background 0.15s" }}
+                          className="hover:bg-beige-warm"
+                        >
+                          <span aria-hidden="true" className="nav-category-thumb">
+                            {thumb ? (
+                              <Image alt="" fill sizes="32px" src={thumb} style={{ objectFit: "cover" }} />
+                            ) : null}
+                          </span>
+                          <span>{category.name}</span>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </li>
 
                 {navLinksAfterCategories.map((link) => {
                   const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
 
+                  if (link.href === "/regalos" && giftOccasions.length > 0) {
+                    return (
+                      <li
+                        key={link.href}
+                        onMouseEnter={handleGiftsMouseEnter}
+                        onMouseLeave={handleGiftsMouseLeave}
+                        ref={giftsRef}
+                        style={{ position: "relative", listStyle: "none" }}
+                      >
+                        <Link
+                          className={cx(
+                            "site-nav-link text-[13px] tracking-[0.04em] transition-colors",
+                            isTransparent
+                              ? "text-white/85 hover:text-white"
+                              : isActive
+                                ? "font-medium text-moss"
+                                : "text-text-mid hover:text-moss",
+                          )}
+                          data-active={isActive || isGiftsOpen}
+                          href={link.href}
+                        >
+                          {link.label}
+                          {"isNew" in link && link.isNew ? <span aria-hidden="true" className="site-nav-dot" /> : null}
+                        </Link>
+
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            left: 0,
+                            marginTop: "10px",
+                            width: "max-content",
+                            display: "grid",
+                            gridTemplateColumns: "repeat(2, 190px)",
+                            columnGap: "4px",
+                            padding: "10px 8px",
+                            background: "rgba(242,239,223,0.98)",
+                            backdropFilter: "blur(16px)",
+                            border: "1px solid var(--color-border)",
+                            borderRadius: "2px",
+                            boxShadow: "0 16px 40px rgba(58,48,1,0.12)",
+                            opacity: isGiftsOpen ? 1 : 0,
+                            transform: isGiftsOpen ? "translateY(0)" : "translateY(-8px)",
+                            visibility: isGiftsOpen ? "visible" : "hidden",
+                            pointerEvents: isGiftsOpen ? "auto" : "none",
+                            transition: "opacity 0.2s ease, transform 0.2s ease",
+                            zIndex: 10,
+                          }}
+                        >
+                          <Link
+                            href="/regalos"
+                            style={{ display: "block", gridColumn: "1 / -1", padding: "9px 14px", marginBottom: "6px", borderBottom: "1px solid var(--color-border)", fontSize: "13px", color: "var(--color-moss)", textDecoration: "none", transition: "background 0.15s" }}
+                            className="hover:bg-beige-warm"
+                          >
+                            Ver todos los regalos
+                          </Link>
+                          {giftOccasions.map((occasion) => (
+                            <Link
+                              href={`/regalos?ocasion=${occasion.slug}`}
+                              key={occasion.slug}
+                              style={{ display: "flex", alignItems: "center", gap: "10px", padding: "7px 14px", fontSize: "13px", lineHeight: 1.35, color: "var(--color-moss)", textDecoration: "none", transition: "background 0.15s" }}
+                              className="hover:bg-beige-warm"
+                            >
+                              <span aria-hidden="true" className="nav-category-thumb">
+                                {occasion.imageUrl ? (
+                                  <Image alt="" fill sizes="32px" src={occasion.imageUrl} style={{ objectFit: "cover" }} />
+                                ) : null}
+                              </span>
+                              <span>{occasion.label}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </li>
+                    );
+                  }
+
                   return (
                     <Link
                       className={cx(
-                        "text-[13px] tracking-[0.04em] transition-colors",
+                        "site-nav-link text-[13px] tracking-[0.04em] transition-colors",
                         isTransparent
                           ? "text-white/85 hover:text-white"
                           : isActive
                             ? "font-medium text-moss"
                             : "text-text-mid hover:text-moss",
                       )}
+                      data-active={isActive}
                       href={link.href}
                       key={link.href}
                     >
                       {link.label}
+                      {"isNew" in link && link.isNew ? <span aria-hidden="true" className="site-nav-dot" /> : null}
                     </Link>
                   );
                 })}

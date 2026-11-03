@@ -2,15 +2,18 @@ import type { Metadata } from "next";
 
 import {
   CategoryCarousel,
+  GiftOccasions,
   HeroSlider,
   InstagramSection,
   LibrosMesSection,
+  ProductsTabsSection,
   QuoteSection,
-  RecentProductsCarousel,
+  TrustStrip,
 } from "@/features/catalogo/components";
 import {
+  getActiveGiftOccasions,
+  getBestSellingProducts,
   getCategories,
-  getCategoriesPanorama,
   getCuratedProducts,
   getHeroIntermedio,
   getHeroViewModel,
@@ -29,25 +32,31 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [hero, novedades, categorias, seleccion, librosMesCopy, heroIntermedio, categoriasPanorama] = await Promise.all([
-    getHeroViewModel(),
-    getNewProducts(10),
-    getCategories(),
-    getCuratedProducts(MONTHLY_SELECTION_SECTION),
-    getLibrosMesViewModel(),
-    getHeroIntermedio(),
-    getCategoriesPanorama(),
-  ]);
+  const [hero, novedades, masBuscados, categorias, seleccion, librosMesCopy, heroIntermedio, ocasiones] =
+    await Promise.all([
+      getHeroViewModel(),
+      getNewProducts(10),
+      getBestSellingProducts(10),
+      getCategories(),
+      getCuratedProducts(MONTHLY_SELECTION_SECTION),
+      getLibrosMesViewModel(),
+      getHeroIntermedio(),
+      getActiveGiftOccasions(),
+    ]);
 
   return (
     <main className="bg-beige">
       <HeroSlider data={hero} />
 
+      <TrustStrip />
+
+      <GiftOccasions occasions={ocasiones} />
+
       <LibrosMesSection copy={librosMesCopy} items={seleccion} />
 
-      <CategoryCarousel categories={categorias} panoramaUrl={categoriasPanorama?.imageUrl ?? null} />
+      <CategoryCarousel categories={categorias} />
 
-      <RecentProductsCarousel products={novedades} />
+      <ProductsTabsSection popular={masBuscados} recent={novedades} />
 
       <QuoteSection
         author={heroIntermedio?.description ?? "Crecer Librería Católica"}

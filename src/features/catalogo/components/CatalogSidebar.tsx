@@ -22,6 +22,8 @@ const filterOptions: Array<{ value: string; label: string }> = [
   { value: "", label: "Todos" },
   { value: "nuevo", label: "Nuevos" },
   { value: "seleccion", label: "Selección del mes" },
+  { value: "oferta", label: "En oferta" },
+  { value: "destacado", label: "Recomendados" },
 ];
 
 export function CatalogSidebar({
@@ -57,8 +59,8 @@ export function CatalogSidebar({
   }
 
   return (
-    <aside className="hidden lg:block w-56 shrink-0">
-      <div className="sticky top-[100px] flex flex-col gap-10 py-2">
+    <aside className="hidden lg:block shrink-0" style={{ width: "252px" }}>
+      <div className="catalog-filters-card sticky top-[100px] flex flex-col">
         {/* Search */}
         <div>
           <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-text-light/80">

@@ -23,9 +23,9 @@ const sections: LandingSection[] = [
     description: "Colección editorial curada con orden manual para home y catálogo.",
   },
   {
-    href: "/admin/landing/categorias",
-    title: "Categorías",
-    description: "Panorámica dividida entre las tarjetas de categorías del landing.",
+    href: "/admin/landing/regalos",
+    title: "Regalos con intención",
+    description: "Productos de cada ocasión (bautizo, comunión…) y el interruptor de Navidad.",
   },
   {
     href: "/admin/landing/hero-final",

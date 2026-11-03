@@ -17,7 +17,7 @@ E-commerce completo para una librería católica ubicada en Antofagasta, Chile. 
 | Estado carrito | Zustand 5 con persist a localStorage |
 | Formularios | React Hook Form + Zod 4 |
 | Pagos | Getnet Web Checkout (actualmente en TEST) |
-| Emails | Resend (pendiente de integrar) |
+| Emails | Resend (integrado: confirmación de pedido, avisos internos y suscripción al newsletter) |
 | Inventario | VESSI (pendiente — esperando respuesta de API) |
 | Instagram feed | Elfsight widget (`NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID`) |
 | Estilos | Tailwind CSS v4 |
@@ -512,7 +512,9 @@ npm run test:e2e:report   # Ver reporte HTML del último run
 - **Badge "Últimas unidades"** — aparece en `ProductCard` cuando `stock_quantity ≤ 5` ✅
 - **Paginación con indicador** — muestra "Página X de Y" en el catálogo ✅
 - **Stepper respeta stock real** — el botón `+` tiene como máximo `product.stockQuantity` ✅
-- **Pendiente:** ejecutar `npm run seed:products` en producción, VESSI, Resend, Fase 5
+- **Home comercial + `/regalos` (nov-2026)** — home con franja de confianza, "Regalos con intención", categorías en fila horizontal con imagen, pestañas Más buscados / Recién llegados y suscripción por correo junto a Instagram. `/regalos` con filtros por ocasión (`?ocasion=`), tipo, precio y ofertas; `/productos` comparte el mismo diseño (encabezado con foto, franja de chips, filtros en tarjeta). Las ocasiones viven en `src/shared/config/regalos.ts`; sus productos se asignan desde `/admin/landing/regalos` y se guardan en `featured_products` con `section = gift_<slug>`. Navidad es una ocasión de temporada con interruptor (`landing_section_copy`, clave `regalos.navidad`). Imágenes por defecto de categorías y encabezados en `public/images/categorias/` (se usan solo si la categoría no tiene imagen propia; ver `src/shared/config/category-images.ts`). Detalle en `docs/PLAN-HOME-COMERCIAL.md` y tutorial para la clienta en `docs/TUTORIAL-PRODUCTOS-Y-REGALOS.md`.
+- **Suscripción por correo** — tabla `newsletter_subscribers` (migración `0018`), `POST /api/newsletter`, baja en `/api/newsletter/baja?token=`, bienvenida vía Resend.
+- **Pendiente:** ejecutar `npm run seed:products` en producción, VESSI, Instagram propio (el widget de Elfsight alcanzó su límite de vistas), Fase 5
 - **Getnet en TEST** — credenciales de producción se configuran post-validación con Getnet
 - **Instagram** — Elfsight activo, `NEXT_PUBLIC_ELFSIGHT_INSTAGRAM_ID=1e93ffdc-0e7e-4160-b103-98c5a444c896`
 

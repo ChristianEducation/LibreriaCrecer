@@ -372,7 +372,7 @@ export async function addCuratedProduct(data: CuratedProductInput) {
     })
     .returning();
 
-  const [withProduct] = await getCuratedProductsAdmin(MONTHLY_SELECTION_SECTION).then((rows) =>
+  const [withProduct] = await getCuratedProductsAdmin(created.section).then((rows) =>
     rows.filter((row) => row.id === created.id),
   );
   return withProduct ?? created;
@@ -392,11 +392,11 @@ export async function updateCuratedProduct(id: string, data: UpdateCuratedProduc
     .update(featuredProducts)
     .set(updateData)
     .where(eq(featuredProducts.id, id))
-    .returning({ id: featuredProducts.id });
+    .returning({ id: featuredProducts.id, section: featuredProducts.section });
 
   if (!updated) return null;
 
-  const rows = await getCuratedProductsAdmin(MONTHLY_SELECTION_SECTION);
+  const rows = await getCuratedProductsAdmin(updated.section);
   return rows.find((row) => row.id === updated.id) ?? null;
 }
 
