@@ -9,8 +9,11 @@ import { useForm } from "react-hook-form";
 
 import { useCart, useCartSummary } from "@/features/carrito/hooks";
 import { CreateOrderSchema, type CreateOrderSchemaInput } from "@/features/checkout/schemas";
+import { BRAND } from "@/shared/config/brand";
+import { PAYMENT_SESSION_MINUTES } from "@/shared/config/payment";
 import { Input, Textarea } from "@/shared/ui";
 import { formatCLP } from "@/shared/utils/formatters";
+import { formatEstimatedDelivery, parseEstimatedBusinessDays } from "@/shared/utils/shipping";
 
 type DeliveryOptionId = "pickup" | "chilexpress";
 type ShippingQuoteStatus = "idle" | "loading" | "available" | "unavailable";
@@ -18,6 +21,8 @@ type ShippingQuoteStatus = "idle" | "loading" | "available" | "unavailable";
 type ShippingQuote = {
   cost: number;
   status: ShippingQuoteStatus;
+  /** Días hábiles estimados por Chilexpress (desde el despacho). */
+  days?: number | null;
 };
 
 type CoverageAreaOption = {
@@ -46,8 +51,8 @@ const deliveryOptions = [
   {
     id: "chilexpress" as const,
     label: "Despacho a domicilio vía Chilexpress",
-    description: "2-3 días hábiles · Todo Chile",
-    priceLabel: "Por pagar al recibir",
+    description: "Envío a todo Chile",
+    priceLabel: "Según comuna",
     shippingCost: 0,
     deliveryMethod: "shipping" as const,
   },
@@ -141,6 +146,17 @@ function SectionTitle({ number, children }: { number: number; children: React.Re
       </span>
       {children}
     </h2>
+  );
+}
+
+function PaymentNotice() {
+  return (
+    <p
+      data-testid="payment-notice"
+      style={{ marginBottom: "12px", fontSize: "12px", lineHeight: 1.6, color: "var(--color-text-light)", textAlign: "center" }}
+    >
+      Pagas con tarjeta en Getnet. Tienes {PAYMENT_SESSION_MINUTES} minutos para completar el pago.
+    </p>
   );
 }
 
@@ -361,44 +377,49 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
         status: "loading",
       }));
 
-      try {
-        const response = await fetch("/api/shipping/cotizar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            destination: {
-              commune,
-              regionCode: region || undefined,
-              destinationCoverageCode: destinationCoverageCode ?? undefined,
-            },
-            quantity: totalItemQuantity,
-            declaredWorth: Math.max(0, subtotal),
-          }),
-          signal: controller.signal,
-        });
+      // Hasta 2 intentos: si Chilexpress falla un instante, el cliente no lo nota.
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+          const response = await fetch("/api/shipping/cotizar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              destination: {
+                commune,
+                regionCode: region || undefined,
+                destinationCoverageCode: destinationCoverageCode ?? undefined,
+              },
+              quantity: totalItemQuantity,
+              declaredWorth: Math.max(0, subtotal),
+            }),
+            signal: controller.signal,
+          });
 
-        const payload = (await response.json().catch(() => null)) as
-          | {
-              data?: {
-                cost?: number;
-              };
-            }
-          | null;
+          const payload = (await response.json().catch(() => null)) as
+            | {
+                data?: {
+                  cost?: number;
+                  selectedRate?: { serviceDescription?: string };
+                };
+              }
+            | null;
 
-        if (!response.ok || typeof payload?.data?.cost !== "number") {
-          setShippingQuote({ cost: 0, status: "unavailable" });
-          return;
+          if (response.ok && typeof payload?.data?.cost === "number") {
+            setShippingQuote({
+              cost: payload.data.cost,
+              status: "available",
+              days: parseEstimatedBusinessDays(payload.data.selectedRate?.serviceDescription),
+            });
+            return;
+          }
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") {
+            return;
+          }
         }
+      }
 
-        setShippingQuote({
-          cost: payload.data.cost,
-          status: "available",
-        });
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return;
-        }
-
+      if (!controller.signal.aborted) {
         setShippingQuote({ cost: 0, status: "unavailable" });
       }
     }
@@ -410,6 +431,15 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
 
   async function handleValidSubmit(values: CreateOrderSchemaInput) {
     setSubmitError(null);
+
+    if (values.deliveryMethod === "shipping" && shippingQuote.status !== "available") {
+      setSubmitError(
+        shippingQuote.status === "loading"
+          ? "Estamos calculando el envío. Intenta de nuevo en un momento."
+          : "No pudimos calcular el envío. Intenta de nuevo en unos minutos o escríbenos por WhatsApp.",
+      );
+      return;
+    }
 
     const result = await onSubmit(values);
 
@@ -497,30 +527,39 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                     {/* Info */}
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text)", marginBottom: "2px" }}>{option.label}</div>
-                      <div style={{ fontSize: "11px", color: "var(--color-text-light)" }}>{option.description}</div>
+                      <div style={{ fontSize: "11px", color: "var(--color-text-light)" }}>
+                        {option.id === "chilexpress" && isSelected && shippingQuote.status === "available" && shippingQuote.days
+                          ? `Entrega estimada: ${formatEstimatedDelivery(shippingQuote.days)} desde que despachamos tu pedido`
+                          : option.description}
+                      </div>
                     </div>
                     {/* Price */}
-                    <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-gold)", flexShrink: 0 }}>{option.priceLabel}</span>
+                    <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-gold)", flexShrink: 0 }}>
+                      {option.id === "chilexpress" && isSelected && commune
+                        ? shippingQuote.status === "available"
+                          ? formatCLP(shippingQuote.cost)
+                          : shippingQuote.status === "loading"
+                            ? "Calculando..."
+                            : option.priceLabel
+                        : option.priceLabel}
+                    </span>
                   </label>
                 );
               })}
             </div>
 
-            {deliveryMethod === "shipping" ? (
-              <p
-                style={{
-                  marginTop: "10px",
-                  fontSize: "11px",
-                  color: shippingQuote.status === "available" ? "var(--color-gold)" : "var(--color-text-light)",
-                }}
-              >
-                {shippingQuote.status === "loading"
-                  ? "Calculando envio Chilexpress..."
-                  : shippingQuote.status === "available"
-                    ? `Envio calculado: ${formatCLP(shippingQuote.cost)}`
-                    : commune
-                      ? "Envio pendiente de confirmar. Puedes continuar con el pedido."
-                      : "Ingresa tu comuna para cotizar el envio."}
+            {deliveryMethod === "shipping" && shippingQuote.status === "unavailable" ? (
+              <p role="alert" style={{ marginTop: "10px", fontSize: "12px", color: "var(--color-error)" }}>
+                No pudimos calcular el envío. Intenta de nuevo en unos minutos o escríbenos por{" "}
+                <a
+                  href={`https://wa.me/${BRAND.whatsappNumber}`}
+                  rel="noreferrer"
+                  style={{ color: "inherit", textDecoration: "underline" }}
+                  target="_blank"
+                >
+                  WhatsApp
+                </a>
+                .
               </p>
             ) : null}
 
@@ -637,7 +676,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
               style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", paddingTop: "16px", paddingBottom: "16px", paddingLeft: "2rem", paddingRight: "2rem", background: "var(--moss)", color: "white", border: "none", borderRadius: "var(--radius-xl)", fontSize: "12px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", cursor: isSubmitting ? "not-allowed" : "pointer", opacity: isSubmitting ? 0.7 : 1, transition: "background 0.2s" }}
               type="submit"
             >
-              {isSubmitting ? "Procesando..." : "Confirmar pedido"}
+              {isSubmitting ? "Procesando..." : "Ir a pagar"}
             </button>
           </div>
         </div>
@@ -677,7 +716,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
           {/* Totals */}
           <div style={{ padding: "16px 24px", borderTop: "1px solid var(--color-border)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-              <span style={{ fontSize: "12px", color: "var(--color-text-light)" }}>Subtotal</span>
+              <span style={{ fontSize: "12px", color: "var(--color-text-light)" }}>Productos</span>
               <span style={{ fontSize: "13px", color: "var(--color-text)" }}>{formatCLP(subtotal)}</span>
             </div>
             {couponDiscount > 0 && (
@@ -695,7 +734,7 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
                     ? "Calculando..."
                     : shippingQuote.status === "available"
                       ? formatCLP(shippingQuote.cost)
-                      : "Por confirmar"}
+                      : "—"}
               </span>
             </div>
             <div style={{ borderTop: "1px solid var(--color-border)", marginTop: "12px", paddingTop: "12px", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -706,13 +745,14 @@ export function CheckoutForm({ onSubmit }: CheckoutFormProps) {
 
           {/* Confirm button */}
           <div style={{ padding: "16px 24px", borderTop: "1px solid var(--color-border)" }}>
+            <PaymentNotice />
             <button
               disabled={isSubmitting}
               style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", paddingTop: "16px", paddingBottom: "16px", background: "var(--moss)", color: "white", border: "none", borderRadius: "var(--radius-xl)", fontSize: "12px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", cursor: isSubmitting ? "not-allowed" : "pointer", opacity: isSubmitting ? 0.7 : 1, transition: "background 0.2s" }}
               type="submit"
             >
               <ShieldIcon />
-              <span>{isSubmitting ? "Procesando..." : "Confirmar pedido"}</span>
+              <span>{isSubmitting ? "Procesando..." : "Ir a pagar"}</span>
             </button>
             <p style={{ marginTop: "12px", textAlign: "center", fontSize: "10px", color: "var(--color-text-light)" }}>
               Compra 100% segura · SSL

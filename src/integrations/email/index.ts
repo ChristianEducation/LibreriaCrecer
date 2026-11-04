@@ -5,6 +5,7 @@ import { buildOrderConfirmationEmail, OrderConfirmationEmailProps } from "./temp
 import { buildOrderShippedEmail, OrderShippedEmailProps } from "./templates/order-shipped";
 import { buildOwnerSaleConfirmedEmail, OwnerSaleConfirmedEmailProps } from "./templates/owner-sale-confirmed";
 import { buildPaymentAlertEmail, PaymentAlertEmailProps } from "./templates/payment-alert";
+import { buildPaymentIncompleteEmail, PaymentIncompleteEmailProps } from "./templates/payment-incomplete";
 
 const resend = new Resend(emailConfig.apiKey);
 
@@ -94,6 +95,31 @@ export async function sendOrderShippedEmail(params: OrderShippedEmailProps & { t
     console.log(`[Email] Notificación de despacho ${params.orderNumber} enviada exitosamente a ${params.toEmail}`);
   } catch (error) {
     console.error(`[Email] Error enviando notificación de despacho ${params.orderNumber}:`, error);
+    // Best-effort: no relanzar el error
+  }
+}
+
+export async function sendPaymentIncompleteEmail(
+  params: PaymentIncompleteEmailProps & { toEmail: string },
+): Promise<void> {
+  if (!emailConfig.apiKey) {
+    console.warn("sendPaymentIncompleteEmail: RESEND_API_KEY no configurada. Saltando envío.");
+    return;
+  }
+
+  try {
+    const html = buildPaymentIncompleteEmail(params);
+
+    await resend.emails.send({
+      from: `${emailConfig.fromName} <${emailConfig.fromAddress}>`,
+      to: params.toEmail,
+      subject: `Tu pago no se completó - pedido ${params.orderNumber}`,
+      html,
+    });
+
+    console.warn(`[Email] Aviso de pago no completado ${params.orderNumber} enviado`);
+  } catch (error) {
+    console.error(`[Email] Error enviando aviso de pago no completado ${params.orderNumber}:`, error);
     // Best-effort: no relanzar el error
   }
 }

@@ -1,4 +1,5 @@
 import { formatCLP } from "@/shared/utils/formatters";
+import { formatEstimatedDelivery } from "@/shared/utils/shipping";
 
 export type OrderConfirmationEmailProps = {
   orderNumber: string;
@@ -21,6 +22,8 @@ export type OrderConfirmationEmailProps = {
     city: string;
     region: string;
   } | null;
+  /** Días hábiles estimados por Chilexpress, contados desde el despacho. */
+  estimatedDeliveryDays?: number | null;
 };
 
 export function buildOrderConfirmationEmail({
@@ -32,8 +35,13 @@ export function buildOrderConfirmationEmail({
   total,
   deliveryMethod,
   address,
+  estimatedDeliveryDays,
 }: OrderConfirmationEmailProps): string {
   const isShipping = deliveryMethod === "shipping";
+  const deliveryEstimateHtml =
+    isShipping && estimatedDeliveryDays
+      ? `<br/><br/><strong>Plazo estimado de entrega: ${formatEstimatedDelivery(estimatedDeliveryDays)}</strong> desde que despachamos tu pedido (estimación de Chilexpress).`
+      : "";
 
   const addressText = isShipping && address
     ? `${address.street} ${address.number}${address.apartment ? `, Dpto ${address.apartment}` : ""}, ${address.commune}, ${address.city}, ${address.region}`
@@ -94,7 +102,7 @@ export function buildOrderConfirmationEmail({
                   
                   ${isShipping ? `
                   <p style="margin: 0 0 30px 0; font-size: 14px; line-height: 1.6; color: #6b5a04; background-color: #ede9d4; padding: 15px; border-radius: 4px;">
-                    Te avisaremos por este mismo correo cuando tu pedido sea despachado, junto con el número de seguimiento.
+                    Te avisaremos por este mismo correo cuando tu pedido sea despachado, junto con el número de seguimiento.${deliveryEstimateHtml}
                   </p>
                   ` : ""}
 

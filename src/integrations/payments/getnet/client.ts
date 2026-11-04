@@ -1,3 +1,5 @@
+import { PAYMENT_SESSION_MINUTES } from "@/shared/config/payment";
+
 import { assertGetnetRuntimeConfig, getnetConfig } from "./config";
 import { buildGetnetAuth } from "./auth";
 import type {
@@ -49,7 +51,7 @@ async function postGetnet<TResponse>(
 export async function createPaymentSession(
   params: GetnetCreateSessionParams,
 ): Promise<GetnetCreateSessionResponse> {
-  const expirationDate = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+  const expirationDate = new Date(Date.now() + PAYMENT_SESSION_MINUTES * 60 * 1000).toISOString();
 
   return postGetnet<GetnetCreateSessionResponse>("/api/session/", {
     auth: buildGetnetAuth(),

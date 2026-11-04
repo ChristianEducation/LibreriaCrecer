@@ -21,8 +21,14 @@ import {
   type GetnetNotificationPayload,
   type GetnetSessionStatus,
 } from "@/integrations/payments/getnet";
-import { sendOrderConfirmationEmail, sendOwnerSaleConfirmedEmail, sendPaymentAlertEmail } from "@/integrations/email";
+import {
+  sendOrderConfirmationEmail,
+  sendOwnerSaleConfirmedEmail,
+  sendPaymentAlertEmail,
+  sendPaymentIncompleteEmail,
+} from "@/integrations/email";
 import { buildAdminOrderUrl } from "@/integrations/email/config";
+import { parseEstimatedBusinessDays } from "@/shared/utils/shipping";
 
 import type { OrderStatus, ServiceResult } from "../types";
 import { checkProductsAvailability, decrementStock } from "./stock-service";
@@ -61,6 +67,42 @@ function buildPaymentNotes(input: {
     chunks.push(`getnet_receipt:${input.receipt}`);
   }
   return chunks.join(" | ").slice(0, 4000);
+}
+
+// No avisar por pedidos viejos (ej: reconciliados días después por el cron).
+const INCOMPLETE_EMAIL_MAX_AGE_MS = 48 * 60 * 60 * 1000;
+
+async function notifyCustomerPaymentIncomplete(orderId: string, orderNumber: string) {
+  try {
+    const [customer] = await db
+      .select({ firstName: orderCustomers.firstName, email: orderCustomers.email })
+      .from(orderCustomers)
+      .where(eq(orderCustomers.orderId, orderId))
+      .limit(1);
+
+    if (!customer) return;
+
+    const items = await db
+      .select({ productTitle: orderItems.productTitle })
+      .from(orderItems)
+      .where(eq(orderItems.orderId, orderId));
+
+    const retryUrl = new URL("/checkout/confirmacion", getnetConfig.appUrl);
+    retryUrl.searchParams.set("order", orderNumber);
+    retryUrl.searchParams.set("status", "cancelled");
+
+    await sendPaymentIncompleteEmail({
+      toEmail: customer.email,
+      orderNumber,
+      customerName: customer.firstName.trim(),
+      productTitles: items.map((item) => item.productTitle),
+      retryUrl: retryUrl.toString(),
+      siteUrl: getnetConfig.appUrl,
+    });
+  } catch (error) {
+    // Best-effort: un fallo del aviso nunca debe romper el procesamiento del pago.
+    console.error(`[payments] No se pudo avisar pago incompleto de ${orderNumber}:`, error);
+  }
 }
 
 export async function initializePayment(
@@ -200,6 +242,7 @@ export async function processPaymentResult(
         total: orders.total,
         couponId: orders.couponId,
         adminNotes: orders.adminNotes,
+        createdAt: orders.createdAt,
       })
       .from(orders)
       .where(eq(orders.paymentReference, String(requestId)))
@@ -344,6 +387,7 @@ export async function processPaymentResult(
             shippingCost: orders.shippingCost,
             total: orders.total,
             deliveryMethod: orders.deliveryMethod,
+            chilexpressServiceDescription: orders.chilexpressServiceDescription,
           })
           .from(orders)
           .where(eq(orders.id, order.id))
@@ -393,6 +437,7 @@ export async function processPaymentResult(
             total: fullOrder.total,
             deliveryMethod: fullOrder.deliveryMethod,
             address,
+            estimatedDeliveryDays: parseEstimatedBusinessDays(fullOrder.chilexpressServiceDescription),
           });
 
           await sendOwnerSaleConfirmedEmail({
@@ -444,6 +489,17 @@ export async function processPaymentResult(
               .where(eq(coupons.id, order.couponId));
           }
         });
+      }
+
+      // Sesión vencida sin que el cliente haya intentado pagar: se le avisa por
+      // correo (una sola vez, porque solo ocurre al pasar de pending a cancelled).
+      const sessionExpiredWithoutAttempt =
+        (paymentInfo.status?.reason === "EX" || paymentStatus === "PARTIAL_EXPIRED") &&
+        (paymentInfo.payment?.length ?? 0) === 0;
+      const isRecentOrder = Date.now() - order.createdAt.getTime() < INCOMPLETE_EMAIL_MAX_AGE_MS;
+
+      if (wasCancelled && sessionExpiredWithoutAttempt && isRecentOrder) {
+        await notifyCustomerPaymentIncomplete(order.id, order.orderNumber);
       }
 
       return {

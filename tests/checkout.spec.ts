@@ -120,14 +120,14 @@ test.describe("Checkout — flujo completo de compra", () => {
     await page.getByText("Retiro en tienda").click();
 
     // ── Paso 7: verificar que el botón de confirmar está habilitado ───────────
-    // Hay dos botones "Confirmar pedido" (columna izq y aside derecho);
+    // Hay dos botones "Ir a pagar" (columna izq y aside derecho);
     // usamos el del aside derecho que es el más prominente al usuario
-    const confirmBtn = page.getByRole("button", { name: /confirmar pedido/i }).last();
+    const confirmBtn = page.getByRole("button", { name: /ir a pagar/i }).last();
     await expect(confirmBtn).toBeEnabled();
     await expect(confirmBtn).not.toHaveAttribute("disabled");
 
     // También verificar el del aside lateral
-    const confirmBtnSidebar = page.getByRole("button", { name: /confirmar pedido/i }).last();
+    const confirmBtnSidebar = page.getByRole("button", { name: /ir a pagar/i }).last();
     await expect(confirmBtnSidebar).toBeEnabled();
 
     // ── Paso 8 & 9: enviar el formulario y verificar redirección a Getnet ─────
@@ -146,7 +146,7 @@ test.describe("Checkout — flujo completo de compra", () => {
 
     // El aside "Tu pedido" muestra el subtotal
     await expect(page.getByText("Tu pedido")).toBeVisible();
-    await expect(page.getByText("Subtotal")).toBeVisible();
+    await expect(page.getByText("Productos", { exact: true })).toBeVisible();
     await expect(page.getByText(/^\$[\d.]+/).first()).toBeVisible();
   });
 
@@ -172,7 +172,7 @@ test.describe("Checkout — flujo completo de compra", () => {
     await expect(page.getByText("Informacion de contacto")).toBeVisible({ timeout: 10_000 });
 
     // Intentar enviar sin llenar los datos
-    const confirmBtn = page.getByRole("button", { name: /confirmar pedido/i }).first();
+    const confirmBtn = page.getByRole("button", { name: /ir a pagar/i }).first();
     await confirmBtn.click();
 
     // Debe seguir en /checkout (validación de RHF evita el submit)
