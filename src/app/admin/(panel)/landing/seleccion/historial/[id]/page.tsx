@@ -320,24 +320,45 @@ export default function AdminSeleccionHistorialDetailPage() {
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-[2rem] leading-none text-text">{heading}</h1>
-          <p className="mt-2 text-sm font-light text-text-light">
-            {isDraft
-              ? "Borrador: no se ve en la tienda hasta que lo publiques."
-              : detail
-                ? `Guardada el ${formatDate(detail.createdAt)}. Para modificarla, cópiala como borrador.`
-                : ""}
-          </p>
-        </div>
-        <Link
-          className="text-sm text-text-mid transition-colors hover:text-text"
-          href="/admin/landing/seleccion/historial"
-        >
+      <div className="pf-header">
+        <Link className="pf-back" href="/admin/landing/seleccion/historial">
           ← Historial y borradores
         </Link>
+        <h1 className="pf-title">{heading}</h1>
+        {detail ? (
+          <>
+            {dirty ? (
+              <span style={{ fontSize: 12, color: "var(--text-light)", whiteSpace: "nowrap" }}>
+                Cambios sin guardar
+              </span>
+            ) : null}
+            {!isDraft ? (
+              <button className="admin-btn-secondary" disabled={busy} onClick={() => { void handleDuplicate(); }} type="button">
+                Copiar como borrador
+              </button>
+            ) : null}
+            <button
+              className="admin-btn-secondary"
+              disabled={busy || !dirty}
+              onClick={() => { void handleSave(); }}
+              type="button"
+            >
+              {isDraft ? "Guardar borrador" : "Guardar nombre"}
+            </button>
+            <button className="admin-btn-primary" disabled={busy} onClick={() => { void handlePublish(); }} type="button">
+              {isDraft ? "Publicar ahora" : "Publicar de nuevo"}
+            </button>
+          </>
+        ) : null}
       </div>
+
+      <p className="text-sm font-light text-text-light" style={{ marginTop: 0 }}>
+        {isDraft
+          ? "Borrador: no se ve en la tienda hasta que lo publiques."
+          : detail
+            ? `Guardada el ${formatDate(detail.createdAt)}. Para modificarla, cópiala como borrador.`
+            : ""}
+      </p>
 
       {error ? <div className="admin-error-block">{error}</div> : null}
 
@@ -542,7 +563,7 @@ export default function AdminSeleccionHistorialDetailPage() {
                 })}
               </div>
             )}
-            <div className="editor-card-footer" style={{ justifyContent: "space-between", flexWrap: "wrap" }}>
+            <div className="editor-card-footer" style={{ justifyContent: "flex-start" }}>
               <button
                 className="admin-btn-secondary"
                 disabled={busy}
@@ -550,26 +571,8 @@ export default function AdminSeleccionHistorialDetailPage() {
                 style={{ color: "var(--error)" }}
                 type="button"
               >
-                Eliminar
+                {isDraft ? "Eliminar este borrador" : "Eliminar de la lista"}
               </button>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {!isDraft ? (
-                  <button className="admin-btn-secondary" disabled={busy} onClick={() => { void handleDuplicate(); }} type="button">
-                    Copiar como borrador
-                  </button>
-                ) : null}
-                <button
-                  className="admin-btn-secondary"
-                  disabled={busy || !dirty}
-                  onClick={() => { void handleSave(); }}
-                  type="button"
-                >
-                  {isDraft ? "Guardar borrador" : "Guardar nombre"}
-                </button>
-                <button className="admin-btn-primary" disabled={busy} onClick={() => { void handlePublish(); }} type="button">
-                  {isDraft ? "Publicar ahora" : "Publicar de nuevo"}
-                </button>
-              </div>
             </div>
           </div>
         </>
