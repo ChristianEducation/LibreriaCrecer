@@ -25,6 +25,10 @@ export const CreateProductSchema = z.object({
   isActive: z.boolean().default(true),
   onlineSaleEnabled: z.boolean().default(false),
   categoryIds: z.array(z.string().uuid()).default([]),
+  // Slugs de "Regalos con intención" (ver shared/config/regalos.ts). Sin `.default`:
+  // si no viene, el producto conserva las ocasiones que ya tiene (el editor rápido
+  // del listado actualiza solo algunos campos).
+  giftOccasions: z.array(z.string()).optional(),
 });
 
 export const UpdateProductSchema = toUpdateSchema(CreateProductSchema);

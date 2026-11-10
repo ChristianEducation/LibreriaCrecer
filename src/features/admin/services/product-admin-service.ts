@@ -10,7 +10,14 @@ import {
 } from "drizzle-orm";
 
 import { db } from "@/integrations/drizzle";
-import { categories, productCategories, productImages, products } from "@/integrations/drizzle/schema";
+import {
+  categories,
+  featuredProducts,
+  productCategories,
+  productImages,
+  products,
+} from "@/integrations/drizzle/schema";
+import { GIFT_OCCASIONS, giftSection } from "@/shared/config/regalos";
 import {
   deleteImage as deleteStorageImage,
   STORAGE_BUCKETS,
@@ -211,11 +218,92 @@ export async function getProductAdmin(id: string) {
     .where(eq(productImages.productId, id))
     .orderBy(asc(productImages.displayOrder), asc(productImages.createdAt));
 
+  const giftOccasions = await getGiftOccasionSlugs(id);
+
   return {
     ...product,
     categories: categoryRows,
     images: imageRows,
+    giftOccasions,
   };
+}
+
+type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+const GIFT_SECTIONS = GIFT_OCCASIONS.map((occasion) => giftSection(occasion.slug));
+
+/** Slugs de las ocasiones de regalo en que el producto aparece hoy (solo filas activas). */
+async function getGiftOccasionSlugs(productId: string): Promise<string[]> {
+  const rows = await db
+    .select({ section: featuredProducts.section })
+    .from(featuredProducts)
+    .where(
+      and(
+        eq(featuredProducts.productId, productId),
+        eq(featuredProducts.isActive, true),
+        inArray(featuredProducts.section, GIFT_SECTIONS),
+      ),
+    );
+
+  const active = new Set(rows.map((row) => row.section));
+  return GIFT_OCCASIONS.filter((occasion) => active.has(giftSection(occasion.slug))).map(
+    (occasion) => occasion.slug,
+  );
+}
+
+/**
+ * Deja al producto exactamente en las ocasiones indicadas. Usa la misma tabla que la
+ * pantalla "Regalos con intención" (`featured_products`, section = gift_<slug>), así
+ * ambas formas de asignar quedan siempre en sintonía. Los productos nuevos en una
+ * ocasión van al final de su lista para no alterar el orden ya armado.
+ */
+async function syncGiftOccasions(tx: DbTransaction, productId: string, requested: string[]) {
+  const wanted = new Set(
+    requested.filter((slug) => GIFT_OCCASIONS.some((occasion) => occasion.slug === slug)),
+  );
+
+  const existing = await tx
+    .select({
+      id: featuredProducts.id,
+      section: featuredProducts.section,
+      isActive: featuredProducts.isActive,
+    })
+    .from(featuredProducts)
+    .where(and(eq(featuredProducts.productId, productId), inArray(featuredProducts.section, GIFT_SECTIONS)));
+
+  for (const occasion of GIFT_OCCASIONS) {
+    const section = giftSection(occasion.slug);
+    const rows = existing.filter((row) => row.section === section);
+
+    if (wanted.has(occasion.slug)) {
+      if (rows.some((row) => row.isActive)) continue;
+
+      const inactive = rows[0];
+      if (inactive) {
+        await tx
+          .update(featuredProducts)
+          .set({ isActive: true, updatedAt: new Date() })
+          .where(eq(featuredProducts.id, inactive.id));
+        continue;
+      }
+
+      const [{ maxOrder }] = await tx
+        .select({ maxOrder: max(featuredProducts.displayOrder) })
+        .from(featuredProducts)
+        .where(eq(featuredProducts.section, section));
+
+      await tx.insert(featuredProducts).values({
+        productId,
+        section,
+        displayOrder: (maxOrder ?? -1) + 1,
+        isActive: true,
+      });
+    } else if (rows.length > 0) {
+      await tx
+        .delete(featuredProducts)
+        .where(and(eq(featuredProducts.productId, productId), eq(featuredProducts.section, section)));
+    }
+  }
 }
 
 export async function createProduct(data: CreateProductInput) {
@@ -253,6 +341,10 @@ export async function createProduct(data: CreateProductInput) {
           categoryId,
         })),
       );
+    }
+
+    if (data.giftOccasions && data.giftOccasions.length > 0) {
+      await syncGiftOccasions(tx, product.id, data.giftOccasions);
     }
 
     return product.id;
@@ -314,6 +406,10 @@ export async function updateProduct(id: string, data: UpdateProductInput) {
           })),
         );
       }
+    }
+
+    if (data.giftOccasions) {
+      await syncGiftOccasions(tx, id, data.giftOccasions);
     }
   });
 

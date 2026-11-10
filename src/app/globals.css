@@ -4193,3 +4193,386 @@ body {
   border-radius: 50%;
   background: var(--beige-mid);
 }
+
+/* ─── Formulario de producto (admin) ─── */
+.pf-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 10px 0;
+  background: rgba(245, 244, 241, 0.94);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.pf-back {
+  color: var(--text-mid);
+  font-size: 13px;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.pf-back:hover {
+  color: var(--text);
+}
+.pf-title {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-serif);
+  font-size: 21px;
+  line-height: 1.2;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-body {
+  container-type: inline-size;
+}
+.pf-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.pf-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.pf-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.pf-card-h {
+  padding: 14px 16px 0;
+}
+.pf-card-h h2 {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text);
+}
+.pf-card-h p {
+  margin-top: 1px;
+  font-size: 12px;
+  color: var(--text-light);
+}
+.pf-card-b {
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pf-sep {
+  height: 1px;
+  background: var(--border);
+}
+.pf-group-label {
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+}
+
+/* Campos con el ancho que necesita lo que se escribe */
+.pf-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.pf-f {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.pf-w-full {
+  flex: 1 1 100%;
+}
+.pf-w-half {
+  flex: 1 1 200px;
+}
+.pf-w-sku {
+  width: 170px;
+}
+.pf-w-cod {
+  width: 130px;
+}
+.pf-w-tapa {
+  width: 150px;
+}
+.pf-w-short {
+  width: 84px;
+}
+.pf-w-money {
+  width: 130px;
+}
+.pf-textarea {
+  height: auto;
+  min-height: 84px;
+  padding: 9px 12px;
+  line-height: 1.45;
+  resize: vertical;
+  overflow: hidden;
+}
+.pf-money {
+  position: relative;
+}
+.pf-money > span {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  font-weight: 600;
+  pointer-events: none;
+}
+.pf-money > input {
+  padding-left: 26px;
+  font-weight: 600;
+}
+.pf-disc {
+  flex: 1 1 200px;
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--beige-warm);
+  color: var(--text-mid);
+  font-size: 12.5px;
+}
+.pf-disc b {
+  margin: 0 3px;
+  color: var(--moss);
+}
+.pf-disc--warn {
+  background: rgba(192, 57, 43, 0.08);
+  color: #a93226;
+}
+
+/* Botones redondeados para categorías y regalos */
+.pf-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 20px;
+}
+.pf-two > div + div {
+  border-left: 1px solid var(--border);
+  padding-left: 20px;
+}
+.pf-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.pf-chip {
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: #faf9f7;
+  color: var(--text-mid);
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.pf-chip:hover {
+  border-color: rgba(115, 96, 2, 0.3);
+  background: white;
+}
+.pf-chip--on {
+  background: rgba(200, 168, 48, 0.14);
+  border-color: rgba(200, 168, 48, 0.55);
+  color: var(--moss);
+  font-weight: 600;
+}
+.pf-chip--on::before {
+  content: "✓ ";
+}
+.pf-chip small {
+  font-weight: 400;
+  opacity: 0.7;
+}
+.pf-more {
+  margin-top: 8px;
+  border: none;
+  background: transparent;
+  color: var(--moss);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Imágenes */
+.pf-cover {
+  display: grid;
+  grid-template-columns: 124px 1fr;
+  gap: 14px;
+}
+.pf-cover-img {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--beige-warm);
+}
+.pf-cover-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pf-cover-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-light);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.pf-cover-empty b {
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+}
+.pf-cover-change {
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  bottom: 7px;
+  padding: 5px;
+  border: none;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--moss);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.pf-cover-side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+.pf-cover-side p {
+  font-size: 12px;
+  color: var(--text-light);
+}
+.pf-gal {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.pf-th {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--beige-warm);
+}
+.pf-th img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pf-th-x {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--text-mid);
+  line-height: 1;
+  cursor: pointer;
+}
+.pf-th-x:hover {
+  color: var(--color-error);
+}
+.pf-th-tag {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: rgba(58, 48, 1, 0.7);
+  color: white;
+  font-size: 10px;
+}
+.pf-th-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed rgba(115, 96, 2, 0.3);
+  background: transparent;
+  color: var(--text-light);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.pf-th-add:hover {
+  border-color: var(--gold);
+  color: var(--moss);
+  background: rgba(200, 168, 48, 0.05);
+}
+.pf-th-add b {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+}
+.pf-toggles > * + * {
+  border-top: 1px solid var(--border);
+}
+
+/* Según el ancho del área de contenido (descontado el menú lateral) */
+@container (max-width: 860px) {
+  .pf-grid {
+    grid-template-columns: 1fr;
+  }
+  .pf-two {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .pf-two > div + div {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+}
+@media (max-width: 640px) {
+  .pf-header {
+    flex-wrap: wrap;
+  }
+  .pf-title {
+    order: 3;
+    flex-basis: 100%;
+  }
+}

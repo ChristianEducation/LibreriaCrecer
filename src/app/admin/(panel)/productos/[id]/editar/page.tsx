@@ -16,13 +16,7 @@ export default async function AdminEditarProductoPage({ params }: EditProductPag
   }
 
   return (
-    <section className="space-y-5">
-      <div>
-        <h1 className="font-serif text-[2rem] leading-none text-text">Editar producto</h1>
-        <p className="mt-2 text-sm font-light text-text-light">
-          Ajusta contenido, estado comercial, stock e imagenes sin alterar la logica del catalogo.
-        </p>
-      </div>
+    <section>
       <ProductAdminForm mode="edit" productId={id} initialData={product} />
     </section>
   );
