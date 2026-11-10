@@ -95,6 +95,32 @@ export default function AdminLandingSeleccionPage() {
   const [productSearchLoading, setProductSearchLoading] = useState(false);
   const [sectionCopy, setSectionCopy] = useState<SectionCopyState>(initialSectionCopy);
   const [sectionCopySaving, setSectionCopySaving] = useState(false);
+  const [archiveLabel, setArchiveLabel] = useState("");
+  const [archiving, setArchiving] = useState(false);
+
+  async function archiveCurrent() {
+    setArchiving(true);
+    try {
+      const response = await fetch("/api/admin/landing/seleccion/historial", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "archive_current", periodLabel: archiveLabel }),
+      });
+      const data = (await response.json().catch(() => null)) as { message?: string } | null;
+
+      if (!response.ok) {
+        toast({ message: data?.message ?? "No se pudo guardar en el historial.", variant: "error" });
+        return;
+      }
+
+      setArchiveLabel("");
+      toast({ message: "Selección guardada en el historial." });
+    } catch {
+      toast({ message: "Error de red. Intenta nuevamente.", variant: "error" });
+    } finally {
+      setArchiving(false);
+    }
+  }
 
   async function fetchItems() {
     setLoading(true);
@@ -329,6 +355,40 @@ export default function AdminLandingSeleccionPage() {
         >
           ← Volver a Landing
         </Link>
+      </div>
+
+      <div className="editor-card">
+        <div className="editor-card-body">
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "flex-end" }}>
+            <div style={{ flex: "1 1 240px", maxWidth: 340 }}>
+              <label className="admin-field-label" htmlFor="archive-label">
+                Guardar esta selección en el historial
+              </label>
+              <input
+                className="admin-input"
+                id="archive-label"
+                onChange={(event) => setArchiveLabel(event.target.value)}
+                placeholder="Nombre opcional, ej: Octubre 2026"
+                value={archiveLabel}
+              />
+            </div>
+            <button
+              className="admin-btn-secondary"
+              disabled={archiving}
+              onClick={() => { void archiveCurrent(); }}
+              type="button"
+            >
+              {archiving ? "Guardando..." : "Guardar en el historial"}
+            </button>
+            <Link className="admin-btn-primary" href="/admin/landing/seleccion/historial" style={{ marginLeft: "auto" }}>
+              Historial y borradores →
+            </Link>
+          </div>
+          <p className="admin-field-help" style={{ margin: 0 }}>
+            Registro interno. Para preparar la del próximo mes sin publicarla, crea un borrador en el historial.
+            Al publicar otra selección, esta se guarda sola.
+          </p>
+        </div>
       </div>
 
       {loading ? (

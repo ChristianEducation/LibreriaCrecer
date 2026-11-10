@@ -5,5 +5,6 @@ export * from "./landing";
 export * from "./newsletter";
 export * from "./orders";
 export * from "./products";
+export * from "./selection";
 export * from "./shipping";
 export * from "./encounters";
