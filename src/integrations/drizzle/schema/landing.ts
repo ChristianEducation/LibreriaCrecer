@@ -30,6 +30,19 @@ export interface FooterBannerMetadata {
   textTone?: "current" | "dark";
 }
 
+/** Ajustes del Hero final (banner `hero_intermedio`): solo imagen, velo oscuro y brillo. */
+export interface HeroFinalMetadata {
+  /** true: se muestra solo la imagen, sin frase ni autor. */
+  imageOnly?: boolean;
+  /** Velo oscuro sobre la imagen, 0–90 (%). */
+  overlay?: number;
+  /** Brillo de la imagen, 60–140 (%). 100 = sin cambio. */
+  brightness?: number;
+}
+
+/** El campo `metadata` de `banners` lo usan el footer y el Hero final; cada uno lee solo lo suyo. */
+export type BannerMetadata = Partial<FooterBannerMetadata> & HeroFinalMetadata;
+
 export const heroSlides = pgTable("hero_slides", {
   id: uuid("id").defaultRandom().primaryKey(),
   title: text("title"),
@@ -78,7 +91,7 @@ export const banners = pgTable("banners", {
   imageUrl: text("image_url").notNull(),
   linkUrl: text("link_url"),
   position: text("position").$type<BannerPosition>().notNull(),
-  metadata: jsonb("metadata").$type<FooterBannerMetadata>(),
+  metadata: jsonb("metadata").$type<BannerMetadata>(),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

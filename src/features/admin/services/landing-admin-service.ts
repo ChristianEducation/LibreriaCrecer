@@ -13,7 +13,6 @@ import {
 import type {
   BannerInput,
   CuratedProductInput,
-  FooterBannerMetadataInput,
   HeroSlideInput,
   LandingSectionCopyInput,
   UpdateBannerInput,
@@ -235,7 +234,7 @@ export async function createBanner(data: BannerInput & { imageUrl: string }) {
       imageUrl: data.imageUrl,
       linkUrl: data.link_url ?? null,
       position: data.position,
-      metadata: (data.metadata as FooterBannerMetadataInput | undefined) ?? null,
+      metadata: data.metadata ?? null,
       isActive: data.is_active,
     })
     .returning();

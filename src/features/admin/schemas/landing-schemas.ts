@@ -55,6 +55,12 @@ const FooterBannerMetadataSchema = z.object({
   textTone: z.enum(["current", "dark"]).optional(),
 });
 
+const HeroFinalMetadataSchema = z.object({
+  imageOnly: z.boolean(),
+  overlay: z.number().int().min(0).max(90),
+  brightness: z.number().int().min(60).max(140),
+});
+
 export const HeroSlideSchema = z.object({
   title: optionalString.nullable(),
   subtitle: optionalString.nullable(),
@@ -99,7 +105,8 @@ export const BannerSchema = z.object({
   cta_label: optionalString,
   link_url: optionalUrl,
   position: z.enum(BANNER_POSITIONS),
-  metadata: FooterBannerMetadataSchema.optional(),
+  // El del footer va primero: sus campos son obligatorios, así que el del Hero final no lo confunde.
+  metadata: z.union([FooterBannerMetadataSchema, HeroFinalMetadataSchema]).optional(),
   is_active: z.boolean().default(true),
 });
 

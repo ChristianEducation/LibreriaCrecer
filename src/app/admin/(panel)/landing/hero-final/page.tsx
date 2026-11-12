@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { AdminToggle, AdminUploadZone } from "@/features/admin/components";
 import { QuoteSection } from "@/features/catalogo/components";
@@ -16,6 +16,7 @@ type BannerRow = {
   linkUrl: string | null;
   position: string;
   isActive: boolean;
+  metadata?: { imageOnly?: boolean; overlay?: number; brightness?: number } | null;
 };
 
 type FormState = {
@@ -26,7 +27,12 @@ type FormState = {
   link_url: string;
   is_active: boolean;
   imageFile: File | null;
+  imageOnly: boolean;
+  overlay: number;
+  brightness: number;
 };
+
+const TEXT_OVERLAY_DEFAULT = 62;
 
 const initialForm: FormState = {
   existingImageUrl: null,
@@ -35,7 +41,50 @@ const initialForm: FormState = {
   link_url: "",
   is_active: true,
   imageFile: null,
+  imageOnly: false,
+  overlay: TEXT_OVERLAY_DEFAULT,
+  brightness: 100,
 };
+
+function Slider({
+  label,
+  help,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string;
+  help: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+}) {
+  const percentage = ((value - min) / (max - min)) * 100;
+
+  return (
+    <label className="block rounded-[10px] border border-border bg-[#faf9f6] p-4">
+      <span className="flex items-center justify-between gap-3">
+        <span className="text-[12px] font-medium text-text-mid">{label}</span>
+        <span className="admin-slider-value">{value}%</span>
+      </span>
+      <input
+        className="admin-slider mt-4"
+        max={max}
+        min={min}
+        onChange={(event) => onChange(Number(event.target.value))}
+        step={step}
+        style={{ "--value": `${percentage}%` } as CSSProperties}
+        type="range"
+        value={value}
+      />
+      <span className="admin-field-help mt-2 block">{help}</span>
+    </label>
+  );
+}
 
 export default function AdminHeroFinalPage() {
   const router = useRouter();
@@ -82,6 +131,9 @@ export default function AdminHeroFinalPage() {
           link_url: row.linkUrl ?? "",
           is_active: row.isActive,
           imageFile: null,
+          imageOnly: row.metadata?.imageOnly ?? false,
+          overlay: row.metadata?.overlay ?? (row.metadata?.imageOnly ? 0 : TEXT_OVERLAY_DEFAULT),
+          brightness: row.metadata?.brightness ?? 100,
         });
       }
     } catch {
@@ -100,6 +152,8 @@ export default function AdminHeroFinalPage() {
     setSaving(true);
     setError(null);
 
+    const heroMetadata = { imageOnly: form.imageOnly, overlay: form.overlay, brightness: form.brightness };
+
     try {
       if (form.id) {
         const res = await fetch(`/api/admin/landing/banners/${form.id}`, {
@@ -110,6 +164,7 @@ export default function AdminHeroFinalPage() {
             description: form.description || undefined,
             link_url: form.link_url || undefined,
             is_active: form.is_active,
+            metadata: heroMetadata,
           }),
         });
 
@@ -143,6 +198,7 @@ export default function AdminHeroFinalPage() {
         createData.append("link_url", form.link_url);
         createData.append("position", "hero_intermedio");
         createData.append("is_active", String(form.is_active));
+        createData.append("metadata", JSON.stringify(heroMetadata));
         createData.append("file", form.imageFile);
 
         const res = await fetch("/api/admin/landing/banners", {
@@ -176,13 +232,22 @@ export default function AdminHeroFinalPage() {
   const previewAuthor = form.description || "Crecer Librería Católica";
   const dropzonePreview = previewUrl ?? form.existingImageUrl;
 
+  function toggleImageOnly(checked: boolean) {
+    // Al cambiar de modo se propone el velo habitual de cada uno (solo imagen: sin velo).
+    setForm((prev) => ({
+      ...prev,
+      imageOnly: checked,
+      overlay: checked ? 0 : TEXT_OVERLAY_DEFAULT,
+    }));
+  }
+
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-serif text-[2rem] leading-none text-text">Hero final</h1>
           <p className="mt-2 text-sm font-light text-text-light">
-            Bloque de frase inspiradora al final del landing, antes de Instagram.
+            Imagen al final del landing, antes de Instagram. Puede llevar una frase encima o ser solo la imagen.
           </p>
         </div>
         <Link
@@ -205,8 +270,8 @@ export default function AdminHeroFinalPage() {
                 </h2>
                 <p className="mt-0.5 text-[12px] text-text-light">
                   {form.id
-                    ? "Actualiza la frase, autor e imagen de fondo."
-                    : "El Hero final aún no existe. Completa los campos para crearlo."}
+                    ? "Actualiza la imagen y cómo se ve."
+                    : "El Hero final aún no existe. Sube una imagen para crearlo."}
                 </p>
               </div>
               {form.id ? (
@@ -220,6 +285,39 @@ export default function AdminHeroFinalPage() {
             </div>
 
             <div className="editor-card-body">
+              <section className="admin-fieldset">
+                <p className="admin-section-label">Apariencia</p>
+                <div className="rounded-[10px] border border-border bg-[#faf9f6] px-4">
+                  <AdminToggle
+                    checked={form.imageOnly}
+                    label="Solo la imagen (sin texto)"
+                    description="Úsalo si tu imagen ya trae su propio texto. Se muestra completa, sin recortar ni agregar frase."
+                    onChange={toggleImageOnly}
+                  />
+                </div>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <Slider
+                    help="0% = imagen limpia. Súbelo solo si necesitas oscurecerla."
+                    label="Oscurecer imagen"
+                    max={90}
+                    min={0}
+                    onChange={(overlay) => setForm((prev) => ({ ...prev, overlay }))}
+                    step={5}
+                    value={form.overlay}
+                  />
+                  <Slider
+                    help="100% = sin cambio. Más de 100% la aclara."
+                    label="Brillo"
+                    max={140}
+                    min={60}
+                    onChange={(brightness) => setForm((prev) => ({ ...prev, brightness }))}
+                    step={5}
+                    value={form.brightness}
+                  />
+                </div>
+              </section>
+
+              {form.imageOnly ? null : (
               <section className="admin-fieldset">
                 <p className="admin-section-label">Contenido</p>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -265,11 +363,16 @@ export default function AdminHeroFinalPage() {
                   </div>
                 </div>
               </section>
+              )}
 
               <section className="admin-fieldset">
-                <p className="admin-section-label">Imagen de fondo</p>
+                <p className="admin-section-label">Imagen</p>
                 <AdminUploadZone
-                  hint="Recomendado: 1920×600 px. JPG o PNG."
+                  hint={
+                    form.imageOnly
+                      ? "Se muestra completa, a todo el ancho de la página. Recomendado: 1920 px de ancho. JPG o PNG."
+                      : "Recomendado: 1920×600 px. JPG o PNG."
+                  }
                   onFileSelect={(file) => setForm((prev) => ({ ...prev, imageFile: file }))}
                   previewUrl={dropzonePreview}
                 />
@@ -346,6 +449,9 @@ export default function AdminHeroFinalPage() {
             <QuoteSection
               author={previewAuthor}
               backgroundImageUrl={previewImageUrl}
+              brightness={form.brightness}
+              imageOnly={form.imageOnly && Boolean(previewImageUrl)}
+              overlayOpacity={form.overlay}
               quote={previewQuote}
             />
           </div>

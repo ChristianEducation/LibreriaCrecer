@@ -61,6 +61,9 @@ export default async function HomePage() {
       <QuoteSection
         author={heroIntermedio?.description ?? "Crecer Librería Católica"}
         backgroundImageUrl={heroIntermedio?.imageUrl ?? hero.slides[0]?.imageUrl ?? null}
+        brightness={heroIntermedio?.metadata?.brightness}
+        imageOnly={Boolean(heroIntermedio?.imageUrl && heroIntermedio.metadata?.imageOnly)}
+        overlayOpacity={heroIntermedio?.metadata?.overlay}
         quote={heroIntermedio?.title ?? "Creemos en libros que no solo informan, sino que acompañan. Textos que permanecen abiertos sobre la mesa, vuelven a la conversación y se convierten en hábito."}
       />
 

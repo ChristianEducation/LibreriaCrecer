@@ -4,9 +4,39 @@ type QuoteSectionProps = {
   quote: string;
   author: string;
   backgroundImageUrl?: string | null;
+  /** Muestra solo la imagen, sin frase ni autor, a su proporción natural (no se recorta). */
+  imageOnly?: boolean;
+  /** Velo oscuro sobre la imagen, 0–90 (%). Con texto, 62 por defecto; solo imagen, 0. */
+  overlayOpacity?: number;
+  /** Brillo de la imagen, 60–140 (%). 100 = sin cambio. */
+  brightness?: number;
 };
 
-export function QuoteSection({ quote, author, backgroundImageUrl }: QuoteSectionProps) {
+export function QuoteSection({
+  quote,
+  author,
+  backgroundImageUrl,
+  imageOnly = false,
+  overlayOpacity,
+  brightness = 100,
+}: QuoteSectionProps) {
+  const filter = brightness === 100 ? undefined : `brightness(${brightness / 100})`;
+
+  if (imageOnly && backgroundImageUrl) {
+    const veil = (overlayOpacity ?? 0) / 100;
+    return (
+      <section className="relative overflow-hidden bg-[var(--foreground)]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img alt="" src={backgroundImageUrl} style={{ display: "block", width: "100%", height: "auto", filter }} />
+        {veil > 0 ? (
+          <div aria-hidden="true" className="absolute inset-0" style={{ background: `rgba(30,24,0,${veil})` }} />
+        ) : null}
+      </section>
+    );
+  }
+
+  const veil = (overlayOpacity ?? 62) / 100;
+
   return (
     <section
       className="page-px relative overflow-hidden bg-[var(--foreground)]"
@@ -19,14 +49,14 @@ export function QuoteSection({ quote, author, backgroundImageUrl }: QuoteSection
             <div
               aria-hidden="true"
               className="quote-background-media absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${backgroundImageUrl})` }}
+              style={{ backgroundImage: `url(${backgroundImageUrl})`, filter }}
             />
           </ScrollReveal>
           {/* Overlay oscuro — permite leer el texto */}
           <div
             aria-hidden="true"
             className="absolute inset-0"
-            style={{ background: "rgba(30,24,0,0.62)" }}
+            style={{ background: `rgba(30,24,0,${veil})` }}
           />
         </>
       ) : null}
