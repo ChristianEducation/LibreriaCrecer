@@ -40,7 +40,12 @@ export type CatalogProduct = {
   effectivePrice: number;
   hasDiscount: boolean;
   discountPercentage: number;
+  /** Imagen de vitrina: la de estudio si existe, si no la original. */
   mainImageUrl: string | null;
+  /** Portada original (siempre). */
+  originalImageUrl: string | null;
+  /** true si `mainImageUrl` es la imagen de estudio (2:3, con fondo propio). */
+  hasStudioImage: boolean;
   sku: string | null;
   inStock: boolean;
   stockQuantity: number;

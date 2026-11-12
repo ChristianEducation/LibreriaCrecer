@@ -8,6 +8,8 @@ type GalleryImage = {
   id: string;
   url: string | null;
   altText?: string | null;
+  /** Imagen de estudio 2:3 (con fondo propio): se muestra sin marco blanco. */
+  isStudio?: boolean;
 };
 
 export interface ProductGalleryProps {
@@ -15,6 +17,9 @@ export interface ProductGalleryProps {
   productTitle: string;
   productAuthor?: string | null;
   mainImageUrl?: string | null;
+  /** Portada original: si la principal es de estudio, va como segunda foto para ver la portada grande. */
+  originalImageUrl?: string | null;
+  hasStudioImage?: boolean;
 }
 
 function BookIcon({ className }: { className?: string }) {
@@ -130,6 +135,8 @@ function PlaceholderBook({
 function buildGalleryImages(
   mainImageUrl: string | null | undefined,
   images: ProductGalleryProps["images"],
+  hasStudioImage: boolean,
+  originalImageUrl: string | null | undefined,
 ): GalleryImage[] {
   const items: GalleryImage[] = [];
   const seen = new Set<string>();
@@ -139,6 +146,17 @@ function buildGalleryImages(
     items.push({
       id: "main-image",
       url: mainImageUrl,
+      altText: null,
+      isStudio: hasStudioImage,
+    });
+  }
+
+  // Con imagen de estudio, la portada original queda como segunda foto (grande y legible).
+  if (hasStudioImage && originalImageUrl && !seen.has(originalImageUrl)) {
+    seen.add(originalImageUrl);
+    items.push({
+      id: "original-cover",
+      url: originalImageUrl,
       altText: null,
     });
   }
@@ -168,10 +186,12 @@ export function ProductGallery({
   productTitle,
   productAuthor,
   mainImageUrl,
+  originalImageUrl,
+  hasStudioImage = false,
 }: ProductGalleryProps) {
   const galleryImages = useMemo(
-    () => buildGalleryImages(mainImageUrl, images),
-    [images, mainImageUrl],
+    () => buildGalleryImages(mainImageUrl, images, hasStudioImage, originalImageUrl),
+    [images, mainImageUrl, hasStudioImage, originalImageUrl],
   );
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -220,7 +240,7 @@ export function ProductGallery({
               height={0}
               sizes="(max-width: 1024px) 100vw, 45vw"
               src={activeImage.url}
-              style={{ width: "100%", height: "auto", padding: "16px" }}
+              style={{ width: "100%", height: "auto", padding: activeImage.isStudio ? 0 : "16px" }}
             />
           ) : (
             <PlaceholderBook productAuthor={productAuthor} productTitle={productTitle} />
@@ -249,11 +269,11 @@ export function ProductGallery({
                 {image.url ? (
                   <Image
                     alt={image.altText ?? `${productTitle} ${index + 1}`}
-                    className="object-contain"
+                    className={image.isStudio ? "object-cover" : "object-contain"}
                     fill
                     sizes="64px"
                     src={image.url}
-                    style={{ padding: "6px" }}
+                    style={{ padding: image.isStudio ? 0 : "6px" }}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-moss/20">
@@ -292,7 +312,7 @@ export function ProductGallery({
             {activeImage?.url ? (
               <Image
                 alt={activeImage.altText ?? productTitle}
-                className="object-cover"
+                className={activeImage.isStudio ? "object-contain" : "object-cover"}
                 fill
                 sizes="90vw"
                 src={activeImage.url}

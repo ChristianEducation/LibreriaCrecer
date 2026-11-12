@@ -26,6 +26,8 @@ import {
 } from "@/integrations/drizzle/schema";
 import { MONTHLY_SELECTION_SECTION_ALIASES } from "@/shared/config/landing";
 
+import { catalogImageColumns } from "./product-image";
+
 import type {
   CatalogProduct,
   CatalogProductDetail,
@@ -44,6 +46,8 @@ type ProductRow = {
   price: number;
   salePrice: number | null;
   mainImageUrl: string | null;
+  originalImageUrl: string | null;
+  hasStudioImage: boolean;
   sku: string | null;
   inStock: boolean;
   stockQuantity: number;
@@ -128,6 +132,8 @@ function mapProduct(row: ProductRow, categoriesForProduct: ProductCategoryRef[])
     hasDiscount,
     discountPercentage: calculateDiscountPercentage(row.price, row.salePrice),
     mainImageUrl: row.mainImageUrl,
+    originalImageUrl: row.originalImageUrl,
+    hasStudioImage: row.hasStudioImage,
     sku: row.sku,
     inStock: row.inStock,
     stockQuantity: row.stockQuantity,
@@ -310,7 +316,7 @@ export async function getProducts(params: ProductQueryParams): Promise<ProductLi
       publisher: products.publisher,
       price: products.price,
       salePrice: products.salePrice,
-      mainImageUrl: products.mainImageUrl,
+      ...catalogImageColumns,
       sku: products.sku,
       inStock: products.inStock,
       stockQuantity: products.stockQuantity,
@@ -357,7 +363,7 @@ export async function getProductBySlug(slug: string): Promise<CatalogProductDeta
       inStock: products.inStock,
       stockQuantity: products.stockQuantity,
       onlineSaleEnabled: products.onlineSaleEnabled,
-      mainImageUrl: products.mainImageUrl,
+      ...catalogImageColumns,
       createdAt: products.createdAt,
     })
     .from(products)
@@ -407,7 +413,7 @@ async function getSimpleProductCollection(
       publisher: products.publisher,
       price: products.price,
       salePrice: products.salePrice,
-      mainImageUrl: products.mainImageUrl,
+      ...catalogImageColumns,
       sku: products.sku,
       inStock: products.inStock,
       stockQuantity: products.stockQuantity,
@@ -567,7 +573,7 @@ export async function getRelatedProducts(
         publisher: products.publisher,
         price: products.price,
         salePrice: products.salePrice,
-        mainImageUrl: products.mainImageUrl,
+        ...catalogImageColumns,
         sku: products.sku,
         inStock: products.inStock,
         stockQuantity: products.stockQuantity,
@@ -613,7 +619,7 @@ export async function getRelatedProducts(
         publisher: products.publisher,
         price: products.price,
         salePrice: products.salePrice,
-        mainImageUrl: products.mainImageUrl,
+        ...catalogImageColumns,
         sku: products.sku,
         inStock: products.inStock,
         stockQuantity: products.stockQuantity,

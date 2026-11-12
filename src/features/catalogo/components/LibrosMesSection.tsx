@@ -58,13 +58,14 @@ function BookTile({ item, revealDelayMs }: { item: CuratedProduct; revealDelayMs
       style={{ transitionDelay: `${revealDelayMs}ms` }}
     >
       <div className="relative aspect-[2/3] overflow-hidden rounded-[2px] bg-[linear-gradient(145deg,var(--beige-warm),var(--beige-mid))] shadow-[4px_6px_24px_rgba(58,48,1,0.12)] transition-[transform,box-shadow] duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1.5 group-hover:shadow-[6px_12px_32px_rgba(58,48,1,0.22)]">
-        {product.mainImageUrl ? (
+        {/* La Selección del mes muestra la portada plana; la imagen de estudio se usa en tarjetas y ficha. */}
+        {product.originalImageUrl ?? product.mainImageUrl ? (
           <Image
             alt={product.title}
             className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.04]"
             fill
             sizes="(max-width: 640px) 45vw, (max-width: 1024px) 28vw, 220px"
-            src={product.mainImageUrl}
+            src={(product.originalImageUrl ?? product.mainImageUrl) as string}
           />
         ) : null}
       </div>

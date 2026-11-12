@@ -137,7 +137,9 @@ export function ProductsTabsSection({ popular, recent }: ProductsTabsSectionProp
               isNew={meta.isNew}
               isOnSale={product.hasDiscount}
               key={`${activeTab}-${product.id}`}
+              hasStudioImage={product.hasStudioImage}
               mainImageUrl={product.mainImageUrl}
+              originalImageUrl={product.originalImageUrl}
               onlineSaleEnabled={product.onlineSaleEnabled}
               price={product.price}
               salePrice={product.salePrice}

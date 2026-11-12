@@ -45,6 +45,13 @@ export type ProductAdminStats = {
   onlineSaleEnabledProducts: number;
 };
 
+/** Al cambiar o quitar la portada principal, se descartan las imágenes de plantilla hechas con la anterior. */
+const NO_STUDIO_IMAGE = {
+  studioImageUrl: null,
+  studioLibroUrl: null,
+  studioPiedraUrl: null,
+};
+
 function extractStoragePathFromPublicUrl(url: string | null): string | null {
   if (!url) return null;
 
@@ -182,6 +189,9 @@ export async function getProductAdmin(id: string) {
       inStock: products.inStock,
       stockQuantity: products.stockQuantity,
       mainImageUrl: products.mainImageUrl,
+      studioImageUrl: products.studioImageUrl,
+      studioLibroUrl: products.studioLibroUrl,
+      studioPiedraUrl: products.studioPiedraUrl,
       isFeatured: products.isFeatured,
       isActive: products.isActive,
       onlineSaleEnabled: products.onlineSaleEnabled,
@@ -442,6 +452,7 @@ export async function uploadProductImage(productId: string, file: File, isMain: 
       .update(products)
       .set({
         mainImageUrl: uploadResult.publicUrl,
+        ...NO_STUDIO_IMAGE, // la portada cambió: las versiones de plantilla de la anterior ya no corresponden
         updatedAt: new Date(),
       })
       .where(eq(products.id, productId));
@@ -515,6 +526,7 @@ export async function deleteProductImage(imageId: string) {
       .update(products)
       .set({
         mainImageUrl: null,
+        ...NO_STUDIO_IMAGE,
         updatedAt: new Date(),
       })
       .where(eq(products.id, product.id));
@@ -598,9 +610,41 @@ export async function clearProductMainImage(productId: string) {
     .update(products)
     .set({
       mainImageUrl: null,
+      ...NO_STUDIO_IMAGE,
       updatedAt: new Date(),
     })
     .where(eq(products.id, productId));
 
   return true;
+}
+
+export type ProductTemplateChoice = "original" | "libro" | "piedra";
+
+/**
+ * Elige qué imagen muestra la tienda: la portada original o una de las dos versiones con plantilla.
+ * `studio_image_url` es la columna que lee la tienda; aquí solo se copia la URL de la versión elegida.
+ * Devuelve null si el producto no existe; "unavailable" si esa versión no se generó para el producto.
+ */
+export async function setProductTemplate(productId: string, choice: ProductTemplateChoice) {
+  const [product] = await db
+    .select({
+      studioLibroUrl: products.studioLibroUrl,
+      studioPiedraUrl: products.studioPiedraUrl,
+    })
+    .from(products)
+    .where(eq(products.id, productId))
+    .limit(1);
+
+  if (!product) return null;
+
+  const nextUrl =
+    choice === "libro" ? product.studioLibroUrl : choice === "piedra" ? product.studioPiedraUrl : null;
+  if (choice !== "original" && !nextUrl) return "unavailable" as const;
+
+  await db
+    .update(products)
+    .set({ studioImageUrl: nextUrl, updatedAt: new Date() })
+    .where(eq(products.id, productId));
+
+  return { choice, studioImageUrl: nextUrl };
 }

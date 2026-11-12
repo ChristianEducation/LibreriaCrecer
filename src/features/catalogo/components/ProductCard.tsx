@@ -20,6 +20,10 @@ export interface ProductCardProps {
   price: number;
   salePrice?: number | null;
   mainImageUrl?: string | null;
+  /** Portada original (se usa en el carrito, donde la miniatura debe verse legible). */
+  originalImageUrl?: string | null;
+  /** true si `mainImageUrl` es la imagen de estudio 2:3: ocupa toda la tarjeta, sin marco. */
+  hasStudioImage?: boolean;
   isNew?: boolean;
   isOnSale?: boolean;
   stockQuantity?: number;
@@ -95,6 +99,8 @@ export function ProductCard({
   price,
   salePrice,
   mainImageUrl,
+  originalImageUrl,
+  hasStudioImage = false,
   isNew = false,
   isOnSale = false,
   stockQuantity,
@@ -174,8 +180,8 @@ export function ProductCard({
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
             src={mainImageUrl}
             style={{
-              objectFit: "contain",
-              padding: "10px",
+              objectFit: hasStudioImage ? "cover" : "contain",
+              padding: hasStudioImage ? 0 : "10px",
               transform: isHovered ? "scale(1.02)" : "scale(1)",
               transition: "transform 0.6s ease-out",
             }}
@@ -244,7 +250,7 @@ export function ProductCard({
                   author,
                   price: effectivePrice,
                   originalPrice: hasDiscount ? price : null,
-                  imageUrl: mainImageUrl ?? null,
+                  imageUrl: originalImageUrl ?? mainImageUrl ?? null,
                   sku,
                 });
                 setIsAdded(true);

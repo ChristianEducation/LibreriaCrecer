@@ -166,8 +166,10 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
           {/* Layout 2 columnas */}
           <div className="product-detail-grid">
             <ProductGallery
+              hasStudioImage={product.hasStudioImage}
               images={product.images}
               mainImageUrl={product.mainImageUrl}
+              originalImageUrl={product.originalImageUrl}
               productAuthor={product.author}
               productTitle={product.title}
             />
@@ -260,7 +262,9 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
                   id={p.id}
                   isOnSale={p.hasDiscount}
                   key={p.id}
+                  hasStudioImage={p.hasStudioImage}
                   mainImageUrl={p.mainImageUrl}
+                  originalImageUrl={p.originalImageUrl}
                   onlineSaleEnabled={p.onlineSaleEnabled}
                   price={p.price}
                   salePrice={p.salePrice ?? undefined}

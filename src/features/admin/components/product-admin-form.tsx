@@ -12,6 +12,7 @@ import {
   type UpdateProductInput,
 } from "../schemas/product-schemas";
 import { AdminToggle } from "./index";
+import { ProductTemplatePicker } from "./ProductTemplatePicker";
 import { GIFT_OCCASIONS } from "@/shared/config/regalos";
 import { useToast } from "@/shared/hooks";
 import { formatCLP } from "@/shared/utils/formatters";
@@ -48,6 +49,9 @@ type ProductData = {
   categories?: Array<{ id: string }>;
   giftOccasions?: string[];
   mainImageUrl?: string | null;
+  studioImageUrl?: string | null;
+  studioLibroUrl?: string | null;
+  studioPiedraUrl?: string | null;
 };
 
 type ProductAdminFormProps = {
@@ -622,6 +626,16 @@ export function ProductAdminForm({ mode, productId, initialData }: ProductAdminF
                 </div>
 
                 {coverMessage ? <p style={{ fontSize: 12, color: "var(--text-mid)" }}>{coverMessage}</p> : null}
+
+                {mode === "edit" && productId && !mainImageFile ? (
+                  <ProductTemplatePicker
+                    currentUrl={initialData?.studioImageUrl ?? null}
+                    libroUrl={initialData?.studioLibroUrl ?? null}
+                    originalUrl={initialData?.mainImageUrl ?? null}
+                    piedraUrl={initialData?.studioPiedraUrl ?? null}
+                    productId={productId}
+                  />
+                ) : null}
 
                 {coverCandidates.length > 0 ? (
                   <div>

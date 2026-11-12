@@ -27,6 +27,11 @@ export const products = pgTable("products", {
   inStock: boolean("in_stock").default(true).notNull(),
   stockQuantity: integer("stock_quantity").default(0).notNull(),
   mainImageUrl: text("main_image_url"),
+  // Imagen derivada con la plantilla de estudio (libro/piedra). Nula = se muestra la imagen original.
+  studioImageUrl: text("studio_image_url"),
+  // Las dos versiones disponibles de la plantilla; `studio_image_url` apunta a la elegida (o es nula = original).
+  studioLibroUrl: text("studio_libro_url"),
+  studioPiedraUrl: text("studio_piedra_url"),
   isFeatured: boolean("is_featured").default(false).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   onlineSaleEnabled: boolean("online_sale_enabled").default(false).notNull(),

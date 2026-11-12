@@ -4551,6 +4551,64 @@ body {
   border-top: 1px solid var(--border);
 }
 
+/* Selector de plantilla de la imagen del producto */
+.pf-tpl {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.pf-tpl-opt {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+.pf-tpl-opt:hover:not(:disabled) {
+  border-color: var(--gold);
+}
+.pf-tpl-opt:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pf-tpl-opt--on {
+  border-color: var(--gold);
+  background: rgba(200, 168, 48, 0.1);
+  box-shadow: 0 0 0 1px var(--gold);
+}
+.pf-tpl-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--beige-warm);
+  color: var(--text-light);
+}
+.pf-tpl-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pf-tpl-img--orig img {
+  object-fit: contain;
+}
+.pf-tpl-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+.pf-tpl-opt--on .pf-tpl-name {
+  color: var(--moss);
+}
+
 /* Según el ancho del área de contenido (descontado el menú lateral) */
 @container (max-width: 860px) {
   .pf-grid {

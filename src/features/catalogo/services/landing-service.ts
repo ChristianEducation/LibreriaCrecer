@@ -19,6 +19,7 @@ import {
 import { GIFT_OCCASIONS, type GiftOccasion } from "@/shared/config/regalos";
 
 import type { CuratedProduct, ProductCategoryRef } from "../types";
+import { catalogImageColumns } from "./product-image";
 
 export async function getHeroSlides() {
   return db
@@ -173,7 +174,7 @@ export async function getCuratedProducts(section?: string): Promise<CuratedProdu
       publisher: products.publisher,
       price: products.price,
       salePrice: products.salePrice,
-      mainImageUrl: products.mainImageUrl,
+      ...catalogImageColumns,
       sku: products.sku,
       inStock: products.inStock,
       stockQuantity: products.stockQuantity,
@@ -205,6 +206,8 @@ export async function getCuratedProducts(section?: string): Promise<CuratedProdu
             ? Math.round(((row.price - row.salePrice) / row.price) * 100)
             : 0,
         mainImageUrl: row.mainImageUrl,
+        originalImageUrl: row.originalImageUrl,
+        hasStudioImage: row.hasStudioImage,
         sku: row.sku,
         inStock: row.inStock,
         stockQuantity: row.stockQuantity,

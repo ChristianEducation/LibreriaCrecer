@@ -114,7 +114,7 @@ export function ProductInfoBlock({ product }: { product: CatalogProductDetail })
       author: product.author,
       price: product.effectivePrice,
       originalPrice: product.hasDiscount ? product.price : null,
-      imageUrl: product.mainImageUrl ?? null,
+      imageUrl: product.originalImageUrl ?? product.mainImageUrl ?? null,
       sku: product.sku ?? null,
     });
     if (qty > 1) {

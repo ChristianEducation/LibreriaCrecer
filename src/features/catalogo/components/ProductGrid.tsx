@@ -39,7 +39,9 @@ export function ProductGrid({ products }: ProductGridProps) {
           isNew={isRecent(product.createdAt)}
           isOnSale={product.hasDiscount}
           key={product.id}
+          hasStudioImage={product.hasStudioImage}
           mainImageUrl={product.mainImageUrl}
+          originalImageUrl={product.originalImageUrl}
           onlineSaleEnabled={product.onlineSaleEnabled}
           price={product.price}
           salePrice={product.salePrice}
