@@ -55,10 +55,11 @@
 }
 
 /* Reset global. Se excluye el admin (.admin-theme): allí el reset de Tailwind (capa base) ya basta
-   y así las utilidades de espaciado (p-4, px-3, space-y-5...) sí se aplican. Un reset sin capa les ganaba. */
-*:not(.admin-theme):not(.admin-theme *),
-*:not(.admin-theme):not(.admin-theme *)::before,
-*:not(.admin-theme):not(.admin-theme *)::after {
+   y así las utilidades de espaciado (p-4, px-3, space-y-5...) sí se aplican. Un reset sin capa les ganaba. El :where() deja el reset con especificidad 0, igual que el `*` original,
+   para no pisar las clases de la tienda (.page-px, etc.). */
+:where(*:not(.admin-theme):not(.admin-theme *)),
+:where(*:not(.admin-theme):not(.admin-theme *))::before,
+:where(*:not(.admin-theme):not(.admin-theme *))::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
