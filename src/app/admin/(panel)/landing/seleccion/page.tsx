@@ -583,7 +583,7 @@ export default function AdminLandingSeleccionPage() {
                           padding: "9px 14px",
                           background:
                             form.product_id === option.id
-                              ? "rgba(200,168,48,0.07)"
+                              ? "rgba(197,160,77,0.07)"
                               : "transparent",
                           border: "none",
                           borderTop: i > 0 ? "1px solid var(--border)" : "none",
@@ -962,7 +962,7 @@ export default function AdminLandingSeleccionPage() {
                         style={{
                           padding: "4px 12px",
                           fontSize: 12,
-                          border: "1px solid rgba(192, 57, 43, 0.25)",
+                          border: "1px solid rgba(185,74,72, 0.25)",
                           borderRadius: 6,
                           background: "transparent",
                           color: "var(--error)",

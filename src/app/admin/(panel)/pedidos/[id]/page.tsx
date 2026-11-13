@@ -479,7 +479,7 @@ export default function AdminPedidoDetallePage() {
           <h2 className="text-[0.82rem] font-semibold text-text">Gestion del pedido</h2>
 
           {order.deliveryMethod === "pickup" && order.status === "paid" ? (
-            <div className="rounded-[8px] border border-border-gold bg-[rgba(232,208,96,0.08)] p-3 space-y-2">
+            <div className="rounded-[8px] border border-border-gold bg-[rgba(197,160,77,0.08)] p-3 space-y-2">
               <p className="text-sm text-text-mid">
                 Este pedido es retiro en tienda. Marca como entregado cuando el cliente se lleve el libro.
               </p>

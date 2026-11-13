@@ -40,7 +40,7 @@ export function AdminPanelShell({ adminName, mustChangePassword, onAdminHost, ch
   }, [mobileMenuOpen]);
 
   return (
-    <div className="admin-panel-layout flex overflow-hidden bg-[#f5f4f1]">
+    <div className="admin-panel-layout admin-theme flex overflow-hidden">
       <AdminSidebar
         adminName={adminName}
         mobileOpen={mobileMenuOpen}
@@ -49,7 +49,7 @@ export function AdminPanelShell({ adminName, mustChangePassword, onAdminHost, ch
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminTopbar onOpenMenu={() => setMobileMenuOpen(true)} />
-        <main className="admin-panel-scroll min-w-0 flex-1 overflow-y-auto bg-[#f5f4f1]">
+        <main className="admin-panel-scroll min-w-0 flex-1 overflow-y-auto">
           <div className="admin-main-canvas">{children}</div>
         </main>
       </div>

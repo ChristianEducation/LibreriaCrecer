@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Castoro, DM_Sans, EB_Garamond, Geist_Mono, Inter } from "next/font/google";
+import { Castoro, DM_Sans, EB_Garamond, Geist_Mono, Inter, Source_Serif_4 } from "next/font/google";
 
 import { ToastViewport } from "@/shared/ui";
 
@@ -27,6 +27,14 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+});
+
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+  preload: false,
 });
 
 const castoro = Castoro({
@@ -84,7 +92,7 @@ export default function RootLayout({
   return (
     <html lang="es-CL">
       <body
-        className={`${dmSans.variable} ${ebGaramond.variable} ${geistMono.variable} ${inter.variable} ${castoro.variable} antialiased`}
+        className={`${dmSans.variable} ${ebGaramond.variable} ${geistMono.variable} ${inter.variable} ${castoro.variable} ${sourceSerif.variable} antialiased`}
       >
         <script
           dangerouslySetInnerHTML={{

@@ -324,7 +324,7 @@ export default function AdminEncuentrosPage() {
                     style={{
                       padding: "4px 12px",
                       fontSize: 12,
-                      border: "1px solid rgba(192, 57, 43, 0.25)",
+                      border: "1px solid rgba(185,74,72, 0.25)",
                       borderRadius: 6,
                       background: "transparent",
                       color: "var(--error)",

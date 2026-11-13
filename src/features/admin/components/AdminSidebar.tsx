@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -141,7 +142,7 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
   }, []);
 
   const effectiveCollapsed = isMobile ? false : collapsed;
-  const width = isMobile ? "min(280px, 82vw)" : effectiveCollapsed ? 60 : 220;
+  const width = isMobile ? "min(280px, 82vw)" : effectiveCollapsed ? 64 : 232;
   const initials = adminName.slice(0, 1).toUpperCase();
 
   return (
@@ -154,12 +155,13 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
         />
       ) : null}
       <aside
+        className="admin-sidebar"
         style={{
           width,
           flexShrink: 0,
           height: "100%",
-          background: "#17140f",
-          color: "white",
+          background: "var(--adm-side-bg, #17140f)",
+          color: "var(--adm-side-text-soft, white)",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
@@ -180,39 +182,28 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
           position: "absolute",
           inset: 0,
           pointerEvents: "none",
-          background: "radial-gradient(circle at top left, rgba(232, 208, 96, 0.10), transparent 34%)",
+          background: "var(--adm-side-glow, radial-gradient(circle at top left, rgba(232, 208, 96, 0.10), transparent 34%))",
         }}
       />
 
       <div
         style={{
           position: "relative",
-          padding: effectiveCollapsed ? "20px 0 16px" : "22px 20px 16px",
+          padding: effectiveCollapsed ? "24px 0 18px" : "26px 24px 20px",
           display: "flex",
           alignItems: "center",
           gap: 10,
           justifyContent: effectiveCollapsed ? "center" : "flex-start",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+          borderBottom: "1px solid var(--adm-side-line, rgba(255, 255, 255, 0.06))",
         }}
       >
-        <div
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 9,
-            background: "linear-gradient(135deg, var(--gold), var(--moss-mid))",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            fontSize: 13,
-            fontWeight: 800,
-            letterSpacing: "-0.02em",
-            flexShrink: 0,
-          }}
-        >
-          C
-        </div>
+        <Image
+          alt="Crecer Librería"
+          height={42}
+          src="/images/Logo-Crecer.png"
+          style={{ objectFit: "contain", flexShrink: 0 }}
+          width={42}
+        />
         <div
           style={{
             flex: 1,
@@ -224,20 +215,28 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
             whiteSpace: "nowrap",
           }}
         >
-          <p style={{ fontSize: 14, fontWeight: 700, color: "#f5f0e8", letterSpacing: "-0.02em", lineHeight: 1 }}>
-            Crecer
+          <p
+            style={{
+              fontFamily: "var(--adm-serif, var(--font-castoro), Georgia, serif)",
+              fontSize: 17,
+              fontWeight: 600,
+              color: "var(--adm-side-strong, #f5f0e8)",
+              lineHeight: 1,
+            }}
+          >
+            Crecer Librería
           </p>
           <p
             style={{
               marginTop: 4,
               fontSize: 10,
-              fontWeight: 500,
-              letterSpacing: "0.08em",
+              fontWeight: 600,
+              letterSpacing: "0.24em",
               textTransform: "uppercase",
-              color: "rgba(255, 255, 255, 0.35)",
+              color: "var(--adm-side-brand, var(--adm-side-muted, rgba(255, 255, 255, 0.35)))",
             }}
           >
-            Admin panel
+            Panel admin
           </p>
         </div>
         {isMobile ? (
@@ -253,8 +252,8 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
               height: 30,
               borderRadius: 8,
               border: "none",
-              background: "rgba(255, 255, 255, 0.06)",
-              color: "rgba(255, 255, 255, 0.65)",
+              background: "var(--adm-side-chip, rgba(255, 255, 255, 0.06))",
+              color: "var(--adm-side-text-soft, rgba(255, 255, 255, 0.65))",
               cursor: "pointer",
             }}
             type="button"
@@ -270,19 +269,19 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
           flex: 1,
           overflowY: "auto",
           overflowX: "hidden",
-          padding: "12px 0",
+          padding: "6px 0 12px",
         }}
       >
         {sections.filter((section) => section.items.length > 0).map((section) => (
           <div key={section.label} style={{ marginBottom: 4 }}>
             <p
               style={{
-                padding: "12px 20px 6px",
+                padding: "14px 24px 6px",
                 fontSize: 9.5,
                 fontWeight: 700,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                color: "rgba(255, 255, 255, 0.22)",
+                color: "var(--adm-side-label, rgba(255, 255, 255, 0.22))",
                 opacity: effectiveCollapsed ? 0 : 1,
                 height: effectiveCollapsed ? 0 : "auto",
                 overflow: "hidden",
@@ -310,13 +309,13 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
                       display: "flex",
                       alignItems: "center",
                       gap: 12,
-                      width: "100%",
-                      minHeight: 36,
-                      padding: effectiveCollapsed ? "9px 0" : "9px 20px",
+                      width: effectiveCollapsed ? "calc(100% - 16px)" : "calc(100% - 24px)",
+                      margin: effectiveCollapsed ? "2px 8px" : "2px 12px",
+                      minHeight: 38,
+                      padding: effectiveCollapsed ? "10px 0" : "10px 14px",
                       justifyContent: effectiveCollapsed ? "center" : "flex-start",
-                      background: isActive ? "rgba(255, 255, 255, 0.07)" : "transparent",
-                      borderLeft: `2px solid ${isActive ? "var(--gold)" : "transparent"}`,
-                      color: isActive ? "#f5f0e8" : "rgba(255, 255, 255, 0.55)",
+                      background: isActive ? "var(--adm-side-active-bg, rgba(255, 255, 255, 0.07))" : "transparent",
+                      color: isActive ? "var(--adm-side-active-text, var(--adm-side-strong, #f5f0e8))" : "var(--adm-side-text-soft, rgba(255, 255, 255, 0.55))",
                       textDecoration: "none",
                       transition: "background-color 150ms ease, color 150ms ease",
                     }}
@@ -328,7 +327,7 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
                         alignItems: "center",
                         justifyContent: "center",
                         flexShrink: 0,
-                        color: isActive ? "var(--gold)" : "rgba(255, 255, 255, 0.55)",
+                        color: isActive ? "var(--adm-side-active-text, var(--adm-side-accent, var(--gold)))" : "var(--adm-side-text-soft, rgba(255, 255, 255, 0.55))",
                         position: "relative",
                       }}
                     >
@@ -338,7 +337,7 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
                       style={{
                         flex: 1,
                         minWidth: 0,
-                        fontSize: 13.5,
+                        fontSize: 13,
                         fontWeight: isActive ? 600 : 400,
                         opacity: effectiveCollapsed ? 0 : 1,
                         width: effectiveCollapsed ? 0 : "auto",
@@ -361,7 +360,7 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
       <div
         style={{
           position: "relative",
-          borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+          borderTop: "1px solid var(--adm-side-line, rgba(255, 255, 255, 0.06))",
         }}
       >
         <div
@@ -369,7 +368,7 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
             display: "flex",
             alignItems: "center",
             gap: 10,
-            padding: effectiveCollapsed ? "12px 0" : "12px 20px",
+            padding: effectiveCollapsed ? "14px 0" : "16px 24px",
             justifyContent: effectiveCollapsed ? "center" : "flex-start",
           }}
         >
@@ -378,8 +377,8 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
               width: 32,
               height: 32,
               borderRadius: 999,
-              background: "rgba(200, 168, 48, 0.35)",
-              color: "#f5e8c8",
+              background: "var(--adm-side-avatar-bg, rgba(200, 168, 48, 0.35))",
+              color: "var(--adm-side-avatar-text, #f5e8c8)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -406,7 +405,7 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
               style={{
                 fontSize: 12.5,
                 fontWeight: 600,
-                color: "#f5f0e8",
+                color: "var(--adm-side-strong, #f5f0e8)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
               }}
@@ -417,7 +416,7 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
               style={{
                 marginTop: 2,
                 fontSize: 10.5,
-                color: "rgba(255, 255, 255, 0.35)",
+                color: "var(--adm-side-muted, rgba(255, 255, 255, 0.35))",
               }}
             >
               Administrador
@@ -445,8 +444,8 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "rgba(255, 255, 255, 0.32)",
-              borderTop: "1px solid rgba(255, 255, 255, 0.04)",
+              color: "var(--adm-side-muted, rgba(255, 255, 255, 0.32))",
+              borderTop: "1px solid var(--adm-side-line, rgba(255, 255, 255, 0.04))",
               transition: "color 150ms ease",
             }}
             title={effectiveCollapsed ? "Expandir menú" : "Colapsar menú"}
@@ -459,15 +458,15 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
 
       <style jsx>{`
         .admin-sidebar-link:hover {
-          background-color: rgba(255, 255, 255, 0.04);
-          color: rgba(255, 255, 255, 0.85);
+          background-color: var(--adm-side-hover-bg, rgba(255, 255, 255, 0.04));
+          color: var(--adm-side-strong, rgba(255, 255, 255, 0.85));
         }
         :global(.admin-sidebar-logout) {
           background: transparent;
           border: none;
           padding: 6px;
           border-radius: 8px;
-          color: rgba(255, 255, 255, 0.45);
+          color: var(--adm-side-text-soft, rgba(255, 255, 255, 0.45));
           cursor: pointer;
           display: inline-flex;
           align-items: center;
@@ -476,8 +475,8 @@ export function AdminSidebar({ adminName, mobileOpen, onCloseMobile, onAdminHost
           flex-shrink: 0;
         }
         :global(.admin-sidebar-logout:hover) {
-          color: var(--gold);
-          background-color: rgba(255, 255, 255, 0.06);
+          color: var(--adm-side-accent, var(--gold));
+          background-color: var(--adm-side-chip, rgba(255, 255, 255, 0.06));
         }
       `}</style>
       </aside>

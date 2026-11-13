@@ -99,32 +99,32 @@ export default async function AdminPage() {
       label: "Pendientes",
       count: stats.byStatus.pending,
       hint: "Esperando pago o revisión",
-      color: "var(--warning)",
-      tintBg: "rgba(230, 126, 34, 0.12)",
+      color: "var(--adm-warning)",
+      tintBg: "rgba(201, 138, 43, 0.14)",
     },
     {
       id: "paid",
       label: "Pagados",
       count: stats.byStatus.paid,
       hint: "Listos para procesamiento",
-      color: "var(--success)",
-      tintBg: "rgba(39, 174, 96, 0.12)",
+      color: "var(--adm-success)",
+      tintBg: "rgba(63, 143, 107, 0.14)",
     },
     {
       id: "shipped",
       label: "Enviados",
       count: stats.byStatus.shipped,
       hint: "En ruta al cliente (despacho)",
-      color: "var(--info)",
-      tintBg: "rgba(41, 128, 185, 0.12)",
+      color: "var(--adm-info)",
+      tintBg: "rgba(79, 127, 168, 0.14)",
     },
     {
       id: "delivered",
       label: "Entregados",
       count: stats.byStatus.delivered,
       hint: "Retirados en tienda o recibidos",
-      color: "var(--moss)",
-      tintBg: "rgba(115, 96, 2, 0.12)",
+      color: "var(--adm-gold-deep)",
+      tintBg: "rgba(197, 160, 77, 0.17)",
     },
   ];
   const trackedOrders = orderStatusRows.reduce((sum, row) => sum + row.count, 0);
@@ -136,8 +136,8 @@ export default async function AdminPage() {
       copy: stats.byStatus.pending > 0 ? "Requieren revisión o confirmación de pago." : "Sin pendientes críticos.",
       value: String(stats.byStatus.pending),
       icon: "clock",
-      color: "var(--warning)",
-      tintBg: "rgba(230, 126, 34, 0.12)",
+      color: "var(--adm-warning)",
+      tintBg: "rgba(201, 138, 43, 0.14)",
     },
     {
       id: "paid",
@@ -145,8 +145,8 @@ export default async function AdminPage() {
       copy: stats.byStatus.paid > 0 ? "Listos para preparar." : "No hay pagos en espera.",
       value: String(stats.byStatus.paid),
       icon: "check",
-      color: "var(--success)",
-      tintBg: "rgba(39, 174, 96, 0.12)",
+      color: "var(--adm-success)",
+      tintBg: "rgba(63, 143, 107, 0.14)",
     },
     {
       id: "shipped",
@@ -154,8 +154,8 @@ export default async function AdminPage() {
       copy: stats.byStatus.shipped > 0 ? "En ruta hacia el cliente (despacho)." : "Sin envíos activos.",
       value: String(stats.byStatus.shipped),
       icon: "truck",
-      color: "var(--info)",
-      tintBg: "rgba(41, 128, 185, 0.12)",
+      color: "var(--adm-info)",
+      tintBg: "rgba(79, 127, 168, 0.14)",
     },
     {
       id: "delivered",
@@ -163,8 +163,8 @@ export default async function AdminPage() {
       copy: stats.byStatus.delivered > 0 ? "Retirados en tienda o ya recibidos." : "Sin entregas registradas.",
       value: String(stats.byStatus.delivered),
       icon: "check",
-      color: "var(--moss)",
-      tintBg: "rgba(115, 96, 2, 0.12)",
+      color: "var(--adm-gold-deep)",
+      tintBg: "rgba(197, 160, 77, 0.17)",
     },
   ];
 
@@ -180,95 +180,60 @@ export default async function AdminPage() {
     ? `Hay ${stats.byStatus.pending} pedido${stats.byStatus.pending === 1 ? "" : "s"} pendiente${stats.byStatus.pending === 1 ? "" : "s"} que requieren revisión.`
     : "No hay pedidos pendientes en este momento.";
 
+  const statusIcons: Record<OrderStatusRow["id"], DashboardIconName> = {
+    pending: "package",
+    paid: "package",
+    shipped: "truck",
+    delivered: "check",
+  };
+
   return (
     <section className="admin-page-shell">
-      <div className="admin-page-container">
-        <div className="admin-page-header">
-          <div style={{ maxWidth: 640 }}>
-            <p
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                letterSpacing: "0.04em",
-                color: "var(--gold)",
-                marginBottom: 6,
-              }}
-            >
-              {dateLabel}
-            </p>
-            <h1
-              style={{
-                fontSize: 26,
-                fontWeight: 700,
-                letterSpacing: "-0.025em",
-                lineHeight: 1.1,
-                color: "var(--text)",
-              }}
-            >
+      <div className="admin-page-container adm-dash">
+        <header className="adm-dash-head">
+          <div className="adm-dash-head-copy">
+            <p className="adm-dash-date">{dateLabel}</p>
+            <h1 className="adm-dash-title">
               Bienvenido{session?.name ? `, ${session.name}` : ""}
-              <span style={{ color: "var(--gold)" }}>.</span>
+              <span>.</span>
             </h1>
-            <p
-              style={{
-                fontSize: 13.5,
-                color: "var(--text-light)",
-                marginTop: 6,
-                fontWeight: 300,
-              }}
-            >
+            <p className="adm-dash-sub">
               Resumen rápido del estado de la tienda, pedidos activos y accesos principales.
             </p>
+            <div aria-hidden="true" className="adm-dash-rule" />
           </div>
-          <Link
-            href="/admin/pedidos"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              height: 36,
-              padding: "0 16px",
-              borderRadius: 10,
-              border: "1px solid var(--border)",
-              background: "white",
-              fontSize: 12.5,
-              fontWeight: 600,
-              color: "var(--moss)",
-              transition: "all 0.15s",
-              flexShrink: 0,
-            }}
-          >
+          <Link className="adm-outline-btn" href="/admin/pedidos">
             Ver pedidos activos
-            <DashboardIcon name="arrow" size={13} />
+            <DashboardIcon name="arrow" size={13} strokeWidth={1.9} />
           </Link>
-        </div>
+        </header>
 
         <div className="admin-grid-kpis">
           <AdminMetricCard
             delta={`${stats.paidTodayCount} pagos hoy`}
             deltaType="up"
-            icon={<DashboardIcon name="money" size={18} strokeWidth={1.8} />}
+            icon={<DashboardIcon name="money" size={18} strokeWidth={1.7} />}
             label="Ventas del día"
             value={formatCLP(stats.salesToday)}
             variant="gold"
           />
           <AdminMetricCard
             delta={`${stats.paidShippingCount} despacho, ${stats.paidPickupCount} retiro`}
-            icon={<DashboardIcon name="package" size={18} strokeWidth={1.8} />}
+            icon={<DashboardIcon name="package" size={18} strokeWidth={1.7} />}
             label="Por preparar"
             value={String(stats.byStatus.paid)}
             variant="green"
           />
           <AdminMetricCard
             delta={`${stats.ordersThisMonth} acumulados`}
-            icon={<DashboardIcon name="calendar" size={18} strokeWidth={1.8} />}
+            icon={<DashboardIcon name="calendar" size={18} strokeWidth={1.7} />}
             label="Pedidos del mes"
             value={String(stats.ordersThisMonth)}
             variant="blue"
           />
           <AdminMetricCard
             delta={`${stats.closedShippingThisMonth} despacho, ${stats.closedPickupThisMonth} retiro`}
-            icon={<DashboardIcon name="check" size={18} strokeWidth={1.8} />}
+            icon={<DashboardIcon name="check" size={18} strokeWidth={1.7} />}
             label="Cerrados del mes"
             value={String(stats.closedShippingThisMonth + stats.closedPickupThisMonth)}
             variant="purple"
@@ -276,130 +241,36 @@ export default async function AdminPage() {
         </div>
 
         <div className="admin-grid-main">
-          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-            <section className="admin-card" style={{ padding: "22px 24px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  marginBottom: 6,
-                }}
-              >
+          <div style={{ display: "flex", flexDirection: "column", gap: 20, minWidth: 0 }}>
+            <section className="admin-card adm-card-pad">
+              <div className="adm-card-head">
                 <div>
-                  <h2 style={{ fontSize: 15, fontWeight: 600, color: "var(--text)" }}>Estado de pedidos</h2>
-                  <p style={{ fontSize: 12, color: "var(--text-light)", marginTop: 4, fontWeight: 300 }}>
-                    Vista operacional del flujo actual.
-                  </p>
+                  <h2 className="adm-card-title">Estado de pedidos</h2>
+                  <p className="adm-card-sub">Vista operacional del flujo actual.</p>
                 </div>
-                <Link
-                  href="/admin/pedidos"
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "var(--moss)",
-                    background: "rgba(200, 168, 48, 0.1)",
-                    border: "1px solid var(--border-gold)",
-                    padding: "6px 14px",
-                    borderRadius: 8,
-                    transition: "background 0.15s",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Ver todos →
+                <Link className="adm-chip-btn" href="/admin/pedidos">
+                  Ver todos
+                  <DashboardIcon name="arrow" size={14} strokeWidth={1.9} />
                 </Link>
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                  columnGap: 32,
-                }}
-              >
+              <div className="adm-status-grid">
                 {orderStatusRows.map((row) => {
                   const percent = trackedOrders > 0 ? Math.round((row.count / trackedOrders) * 100) : 0;
                   return (
-                    <div
-                      key={row.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: 14,
-                        padding: "14px 0",
-                        borderBottom: "1px solid #f2efe8",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 34,
-                          height: 34,
-                          borderRadius: 9,
-                          background: row.tintBg,
-                          color: row.color,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <DashboardIcon name="package" size={15} strokeWidth={1.6} />
+                    <div className="adm-status-item" key={row.id}>
+                      <div className="adm-status-icon" style={{ background: row.tintBg, color: row.color }}>
+                        <DashboardIcon name={statusIcons[row.id]} size={17} strokeWidth={1.7} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            gap: 8,
-                            marginBottom: 6,
-                          }}
-                        >
-                          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                            <span
-                              aria-hidden="true"
-                              style={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: 999,
-                                background: row.color,
-                                flexShrink: 0,
-                                display: "inline-block",
-                              }}
-                            />
-                            <span style={{ fontSize: 13.5, fontWeight: 500, color: "var(--text)" }}>{row.label}</span>
-                          </div>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{row.count}</span>
+                        <div className="adm-status-top">
+                          <span className="adm-status-name">{row.label}</span>
+                          <span className="adm-status-count">{row.count}</span>
                         </div>
-                        <div
-                          style={{
-                            height: 5,
-                            borderRadius: 999,
-                            background: "#f0ede8",
-                            overflow: "hidden",
-                          }}
-                        >
-                          <div
-                            style={{
-                              height: "100%",
-                              width: `${percent}%`,
-                              borderRadius: 999,
-                              background: row.color,
-                              transition: "width 0.8s cubic-bezier(.4,0,.2,1)",
-                            }}
-                          />
+                        <div className="adm-status-bar">
+                          <span style={{ width: `${percent}%`, background: row.color }} />
                         </div>
-                        <div
-                          style={{
-                            fontSize: 11,
-                            color: "var(--text-light)",
-                            marginTop: 6,
-                            fontWeight: 300,
-                          }}
-                        >
-                          {row.hint}
-                        </div>
+                        <div className="adm-status-hint">{row.hint}</div>
                       </div>
                     </div>
                   );
@@ -407,73 +278,26 @@ export default async function AdminPage() {
               </div>
             </section>
 
-            <section className="admin-card" style={{ padding: "22px 24px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  marginBottom: 12,
-                }}
-              >
+            <section className="admin-card adm-card-pad adm-summary">
+              <div className="adm-card-head" style={{ marginBottom: 12, position: "relative" }}>
                 <div>
-                  <h2 style={{ fontSize: 15, fontWeight: 600, color: "var(--text)" }}>Resumen operativo</h2>
-                  <p style={{ fontSize: 12, color: "var(--text-light)", marginTop: 4, fontWeight: 300 }}>
-                    Lectura del flujo basada en estados reales de pedidos.
-                  </p>
+                  <h2 className="adm-card-title">Resumen operativo</h2>
+                  <p className="adm-card-sub">Lectura del flujo basada en estados reales de pedidos.</p>
                 </div>
               </div>
 
-              <div>
-                {summaryRows.map((row, idx) => (
-                  <div
-                    key={row.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 12,
-                      padding: "12px 0",
-                      borderBottom: idx === summaryRows.length - 1 ? "none" : "1px solid #f2efe8",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: 8,
-                        background: row.tintBg,
-                        color: row.color,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        marginTop: 2,
-                      }}
-                    >
-                      <DashboardIcon name={row.icon} size={14} strokeWidth={1.6} />
+              <div style={{ position: "relative" }}>
+                {summaryRows.map((row) => (
+                  <div className="adm-summary-row" key={row.id}>
+                    <div className="adm-summary-icon" style={{ background: row.tintBg, color: row.color }}>
+                      <DashboardIcon name={row.icon} size={15} strokeWidth={1.7} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 8,
-                        }}
-                      >
-                        <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text)" }}>{row.label}</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{row.value}</span>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                        <span className="adm-status-name">{row.label}</span>
+                        <span className="adm-status-count">{row.value}</span>
                       </div>
-                      <p
-                        style={{
-                          fontSize: 11.5,
-                          color: "var(--text-light)",
-                          marginTop: 3,
-                          fontWeight: 300,
-                          lineHeight: 1.5,
-                        }}
-                      >
+                      <p className="adm-status-hint" style={{ marginTop: 4 }}>
                         {row.copy}
                       </p>
                     </div>
@@ -483,118 +307,57 @@ export default async function AdminPage() {
             </section>
           </div>
 
-          <aside className="admin-card" style={{ padding: "22px 24px" }}>
-            <h2 style={{ fontSize: 15, fontWeight: 600, color: "var(--text)" }}>Accesos rápidos</h2>
-            <p style={{ fontSize: 12, color: "var(--text-light)", marginTop: 4, marginBottom: 18, fontWeight: 300 }}>
+          <aside className="admin-card adm-card-pad">
+            <h2 className="adm-card-title">Accesos rápidos</h2>
+            <p className="adm-card-sub" style={{ marginBottom: 16 }}>
               Atajos a las secciones principales del panel.
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {quickLinks.map((item) => (
-                <Link
-                  className="group transition-all duration-150 hover:translate-x-0.5 hover:border-[var(--border-gold)] hover:bg-[#faf8f4]"
-                  href={item.href}
-                  key={item.href}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 14,
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    background: "white",
-                    border: "1px solid #ede9e2",
-                    textDecoration: "none",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 9,
-                      background: "#f4f0e6",
-                      color: "var(--moss)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      transition: "background 0.15s",
-                    }}
-                  >
+                <Link className="adm-quick" href={item.href} key={item.href}>
+                  <span className="adm-quick-icon">
                     <DashboardIcon name={item.icon} size={16} strokeWidth={1.7} />
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span
-                      style={{
-                        display: "block",
-                        fontSize: 13.5,
-                        fontWeight: 500,
-                        color: "var(--text)",
-                      }}
-                    >
-                      {item.label}
-                    </span>
-                    <span
-                      style={{
-                        display: "block",
-                        fontSize: 11.5,
-                        color: "var(--text-light)",
-                        marginTop: 2,
-                        fontWeight: 300,
-                      }}
-                    >
-                      {item.copy}
-                    </span>
+                    <span className="adm-quick-title">{item.label}</span>
+                    <span className="adm-quick-copy">{item.copy}</span>
                   </span>
-                  <span style={{ color: "#c0bbb4", flexShrink: 0 }}>
-                    <DashboardIcon name="arrow" size={14} />
+                  <span className="adm-quick-arrow">
+                    <DashboardIcon name="arrow" size={14} strokeWidth={1.9} />
                   </span>
                 </Link>
               ))}
             </div>
 
-            <div
-              style={{
-                marginTop: 22,
-                padding: 16,
-                borderRadius: 12,
-                background: "rgba(232, 208, 96, 0.1)",
-                border: "1px solid var(--border-gold)",
-              }}
-            >
+            <div className="adm-tip">
               <div
                 style={{
-                  fontSize: 11.5,
+                  fontSize: 10.5,
                   fontWeight: 600,
-                  color: "var(--moss)",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--adm-gold-deep)",
                   marginBottom: 6,
-                  letterSpacing: "0.02em",
                 }}
               >
                 Consejo
               </div>
-              <div
-                style={{
-                  fontSize: 12,
-                  color: "var(--text-mid)",
-                  lineHeight: 1.6,
-                }}
-              >
-                {pendingTip}
-              </div>
+              <div style={{ fontSize: 12, color: "var(--adm-ink)", lineHeight: 1.55 }}>{pendingTip}</div>
               <Link
                 href="/admin/pedidos"
                 style={{
                   marginTop: 10,
                   fontSize: 12,
                   fontWeight: 600,
-                  color: "var(--moss)",
+                  color: "var(--adm-ink-strong)",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 4,
+                  gap: 6,
                 }}
               >
                 Ver pedidos activos
-                <DashboardIcon name="arrow" size={13} />
+                <DashboardIcon name="arrow" size={14} strokeWidth={1.9} />
               </Link>
             </div>
           </aside>

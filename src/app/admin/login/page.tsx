@@ -28,7 +28,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <main className="relative min-h-screen w-full lg:flex" style={{ background: "var(--beige)" }}>
+    <main className="relative min-h-screen w-full lg:flex" style={{ background: "#f7f5f0" }}>
       {/* Desktop — 60% foto de la librería */}
       <div className="relative hidden lg:block lg:w-3/5 lg:shrink-0">
         <Image
@@ -38,6 +38,12 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
           sizes="60vw"
           src="/images/login-libreria.jpg"
           style={{ objectFit: "cover", objectPosition: "center" }}
+        />
+        {/* Velo azul suave para unir la foto con el panel */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(180deg, rgba(41,70,95,0.2) 0%, rgba(41,70,95,0.6) 100%)" }}
         />
       </div>
 
@@ -65,7 +71,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(180deg, rgba(58,48,1,0.35) 0%, rgba(58,48,1,0.55) 55%, rgba(58,48,1,0.8) 100%)",
+              "linear-gradient(180deg, rgba(41,70,95,0.4) 0%, rgba(41,70,95,0.6) 55%, rgba(34,64,91,0.85) 100%)",
           }}
         />
         <div
@@ -74,7 +80,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
             zIndex: 1,
             width: "100%",
             maxWidth: "320px",
-            background: "rgba(245,243,232,0.88)",
+            background: "rgba(247,245,240,0.92)",
             backdropFilter: "blur(20px)",
             borderRadius: "var(--radius-lg)",
             boxShadow: "0 20px 48px rgba(0,0,0,0.25)",

@@ -392,7 +392,7 @@ export default function AdminLandingRegalosPage() {
                   <button
                     disabled={busy}
                     onClick={() => { void removeItem(item.id); }}
-                    style={{ padding: "4px 12px", fontSize: 12, border: "1px solid rgba(192, 57, 43, 0.25)", borderRadius: 6, background: "transparent", color: "var(--error)", cursor: "pointer" }}
+                    style={{ padding: "4px 12px", fontSize: 12, border: "1px solid rgba(185,74,72, 0.25)", borderRadius: 6, background: "transparent", color: "var(--error)", cursor: "pointer" }}
                     type="button"
                   >
                     Quitar

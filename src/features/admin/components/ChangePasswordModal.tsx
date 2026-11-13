@@ -104,7 +104,7 @@ export function ChangePasswordModal({ initiallyOpen }: ChangePasswordModalProps)
         alignItems: "center",
         justifyContent: "center",
         padding: "1.5rem",
-        background: "rgba(58,48,1,0.45)",
+        background: "rgba(34,64,91,0.45)",
         backdropFilter: "blur(4px)",
       }}
     >
@@ -142,11 +142,11 @@ export function ChangePasswordModal({ initiallyOpen }: ChangePasswordModalProps)
             style={{
               marginBottom: "1rem",
               borderRadius: "var(--radius-md)",
-              border: "1px solid rgba(220,38,38,0.2)",
-              background: "rgba(220,38,38,0.06)",
+              border: "1px solid rgba(185,74,72,0.2)",
+              background: "rgba(185,74,72,0.06)",
               padding: "10px 14px",
               fontSize: "12px",
-              color: "var(--error, #dc2626)",
+              color: "var(--error, #b94a48)",
             }}
           >
             {errorMessage}
@@ -170,7 +170,7 @@ export function ChangePasswordModal({ initiallyOpen }: ChangePasswordModalProps)
             </span>
             <input
               className={cx(
-                "w-full border bg-white text-sm text-text outline-none transition-all duration-200 focus:border-gold focus:shadow-[0_0_0_3px_rgba(200,168,48,0.12)]",
+                "w-full border bg-white text-sm text-text outline-none transition-all duration-200 focus:border-gold focus:shadow-[0_0_0_3px_rgba(197,160,77,0.12)]",
                 errors.newPassword ? "border-error" : "border-border",
               )}
               style={{ borderRadius: "var(--radius-md)", padding: "10px 14px", width: "100%" }}
@@ -178,7 +178,7 @@ export function ChangePasswordModal({ initiallyOpen }: ChangePasswordModalProps)
               {...form.register("newPassword")}
             />
             {errors.newPassword ? (
-              <span style={{ marginTop: "4px", display: "block", fontSize: "11px", color: "var(--error, #dc2626)" }}>
+              <span style={{ marginTop: "4px", display: "block", fontSize: "11px", color: "var(--error, #b94a48)" }}>
                 {errors.newPassword.message}
               </span>
             ) : (
@@ -204,7 +204,7 @@ export function ChangePasswordModal({ initiallyOpen }: ChangePasswordModalProps)
             </span>
             <input
               className={cx(
-                "w-full border bg-white text-sm text-text outline-none transition-all duration-200 focus:border-gold focus:shadow-[0_0_0_3px_rgba(200,168,48,0.12)]",
+                "w-full border bg-white text-sm text-text outline-none transition-all duration-200 focus:border-gold focus:shadow-[0_0_0_3px_rgba(197,160,77,0.12)]",
                 errors.confirmPassword ? "border-error" : "border-border",
               )}
               style={{ borderRadius: "var(--radius-md)", padding: "10px 14px", width: "100%" }}
@@ -212,7 +212,7 @@ export function ChangePasswordModal({ initiallyOpen }: ChangePasswordModalProps)
               {...form.register("confirmPassword")}
             />
             {errors.confirmPassword ? (
-              <span style={{ marginTop: "4px", display: "block", fontSize: "11px", color: "var(--error, #dc2626)" }}>
+              <span style={{ marginTop: "4px", display: "block", fontSize: "11px", color: "var(--error, #b94a48)" }}>
                 {errors.confirmPassword.message}
               </span>
             ) : null}

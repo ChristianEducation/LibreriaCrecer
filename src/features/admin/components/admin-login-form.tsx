@@ -110,11 +110,11 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
             alignItems: "center",
             gap: "8px",
             borderRadius: "var(--radius-md)",
-            border: "1px solid rgba(220,38,38,0.2)",
-            background: "rgba(220,38,38,0.06)",
+            border: "1px solid rgba(185,74,72,0.2)",
+            background: "rgba(185,74,72,0.06)",
             padding: "10px 14px",
             fontSize: "12px",
-            color: "var(--error, #dc2626)",
+            color: "var(--error, #b94a48)",
           }}
         >
           <svg aria-hidden="true" style={{ width: "14px", height: "14px", flexShrink: 0 }} fill="none" viewBox="0 0 24 24">
@@ -163,7 +163,7 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
               <MailIcon />
             </span>
           </span>
-          {errors.email ? <span style={{ marginTop: "4px", display: "block", fontSize: "11px", color: "var(--error, #dc2626)" }}>{errors.email.message}</span> : null}
+          {errors.email ? <span style={{ marginTop: "4px", display: "block", fontSize: "11px", color: "var(--error, #b94a48)" }}>{errors.email.message}</span> : null}
         </label>
 
         <label style={{ display: "block" }}>
@@ -209,7 +209,7 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
             </button>
           </span>
           {errors.password ? (
-            <span style={{ marginTop: "4px", display: "block", fontSize: "11px", color: "var(--error, #dc2626)" }}>{errors.password.message}</span>
+            <span style={{ marginTop: "4px", display: "block", fontSize: "11px", color: "var(--error, #b94a48)" }}>{errors.password.message}</span>
           ) : null}
         </label>
 
@@ -231,7 +231,7 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
             justifyContent: "center",
             paddingTop: "12px",
             paddingBottom: "12px",
-            background: "var(--gold)",
+            background: "var(--adm-navy, var(--gold))",
             color: "white",
             border: "none",
             borderRadius: "var(--radius-md)",

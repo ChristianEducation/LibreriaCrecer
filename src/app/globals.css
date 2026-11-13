@@ -54,11 +54,19 @@
   --border-gold: rgba(200, 168, 48, 0.3);
 }
 
-*,
-*::before,
-*::after {
+/* Reset global. Se excluye el admin (.admin-theme): allí el reset de Tailwind (capa base) ya basta
+   y así las utilidades de espaciado (p-4, px-3, space-y-5...) sí se aplican. Un reset sin capa les ganaba. */
+*:not(.admin-theme):not(.admin-theme *),
+*:not(.admin-theme):not(.admin-theme *)::before,
+*:not(.admin-theme):not(.admin-theme *)::after {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+.admin-theme,
+.admin-theme *,
+.admin-theme *::before,
+.admin-theme *::after {
   box-sizing: border-box;
 }
 
@@ -284,7 +292,7 @@ body {
     height: 56px;
     flex-shrink: 0;
     padding-inline: 16px;
-    border-bottom: 1px solid #ede9e2;
+    border-bottom: 1px solid rgba(41,70,95,0.12);
     background: white;
   }
 }
@@ -317,10 +325,10 @@ body {
 
 .admin-card {
   min-width: 0;
-  border: 1px solid #ede9e2;
+  border: 1px solid rgba(41,70,95,0.12);
   border-radius: 16px;
   background: #fffdf8;
-  box-shadow: 0 2px 12px rgba(58, 48, 1, 0.045);
+  box-shadow: 0 2px 12px rgba(34,64,91, 0.045);
 }
 
 .admin-grid-kpis {
@@ -2138,10 +2146,10 @@ body {
   font-weight: 400;
 }
 .hero-preview-chip--active {
-  background: rgba(200, 168, 48, 0.12);
+  background: rgba(197,160,77, 0.12);
   color: var(--moss);
   font-weight: 600;
-  border: 1px solid rgba(200, 168, 48, 0.35);
+  border: 1px solid rgba(197,160,77, 0.35);
 }
 
 /* ─── Admin form & slide list ─── */
@@ -2204,7 +2212,7 @@ body {
   outline: none;
   border-color: var(--gold);
   background: white;
-  box-shadow: 0 0 0 3px rgba(200, 168, 48, 0.12);
+  box-shadow: 0 0 0 3px rgba(197,160,77, 0.12);
 }
 
 .admin-slide-grid {
@@ -2223,7 +2231,7 @@ body {
   transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
 }
 .admin-slide-grid-card:hover {
-  border-color: rgba(115, 96, 2, 0.25);
+  border-color: rgba(41,70,95, 0.25);
 }
 
 .admin-slide-grid-image-wrap {
@@ -2290,9 +2298,9 @@ body {
   background: currentColor;
 }
 .admin-badge--active {
-  background: rgba(39, 174, 96, 0.1);
-  color: #1f8a4a;
-  border-color: rgba(39, 174, 96, 0.25);
+  background: rgba(63,143,107, 0.1);
+  color: #2f7a58;
+  border-color: rgba(63,143,107, 0.25);
 }
 .admin-badge--inactive {
   background: #f0ede8;
@@ -2322,7 +2330,7 @@ body {
   cursor: not-allowed;
 }
 .admin-icon-btn--danger:hover:not(:disabled) {
-  background: rgba(192, 57, 43, 0.08);
+  background: rgba(185,74,72, 0.08);
   color: var(--color-error);
 }
 
@@ -2341,12 +2349,12 @@ body {
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(200, 168, 48, 0.35);
+  box-shadow: 0 2px 8px rgba(197,160,77, 0.35);
   transition: transform 0.15s, box-shadow 0.15s;
 }
 .admin-btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(200, 168, 48, 0.45);
+  box-shadow: 0 4px 12px rgba(197,160,77, 0.45);
 }
 .admin-btn-primary:disabled {
   opacity: 0.6;
@@ -2371,12 +2379,12 @@ body {
 }
 .admin-btn-secondary:hover {
   background: #faf9f6;
-  border-color: rgba(115, 96, 2, 0.22);
+  border-color: rgba(41,70,95, 0.22);
 }
 
 .admin-error-block {
-  border: 1px solid rgba(192, 57, 43, 0.3);
-  background: rgba(192, 57, 43, 0.05);
+  border: 1px solid rgba(185,74,72, 0.3);
+  background: rgba(185,74,72, 0.05);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 13px;
@@ -2903,7 +2911,7 @@ body {
   justify-content: center;
   border: 1px solid var(--border-gold);
   border-radius: 50%;
-  background: rgba(200, 168, 48, 0.08);
+  background: rgba(197,160,77, 0.08);
   font-size: 20px;
   color: var(--moss);
 }
@@ -4189,7 +4197,7 @@ body {
   height: 32px;
   flex-shrink: 0;
   overflow: hidden;
-  border: 1px solid rgba(200, 168, 48, 0.4);
+  border: 1px solid rgba(197,160,77, 0.4);
   border-radius: 50%;
   background: var(--beige-mid);
 }
@@ -4354,8 +4362,8 @@ body {
   color: var(--moss);
 }
 .pf-disc--warn {
-  background: rgba(192, 57, 43, 0.08);
-  color: #a93226;
+  background: rgba(185,74,72, 0.08);
+  color: #a33f3d;
 }
 
 /* Botones redondeados para categorías y regalos */
@@ -4386,12 +4394,12 @@ body {
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 .pf-chip:hover {
-  border-color: rgba(115, 96, 2, 0.3);
+  border-color: rgba(41,70,95, 0.3);
   background: white;
 }
 .pf-chip--on {
-  background: rgba(200, 168, 48, 0.14);
-  border-color: rgba(200, 168, 48, 0.55);
+  background: rgba(197,160,77, 0.14);
+  border-color: rgba(197,160,77, 0.55);
   color: var(--moss);
   font-weight: 600;
 }
@@ -4521,7 +4529,7 @@ body {
   bottom: 4px;
   padding: 0 6px;
   border-radius: 5px;
-  background: rgba(58, 48, 1, 0.7);
+  background: rgba(34,64,91, 0.7);
   color: white;
   font-size: 10px;
 }
@@ -4530,7 +4538,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1.5px dashed rgba(115, 96, 2, 0.3);
+  border: 1.5px dashed rgba(41,70,95, 0.3);
   background: transparent;
   color: var(--text-light);
   font-size: 11px;
@@ -4540,7 +4548,7 @@ body {
 .pf-th-add:hover {
   border-color: var(--gold);
   color: var(--moss);
-  background: rgba(200, 168, 48, 0.05);
+  background: rgba(197,160,77, 0.05);
 }
 .pf-th-add b {
   font-size: 18px;
@@ -4578,7 +4586,7 @@ body {
 }
 .pf-tpl-opt--on {
   border-color: var(--gold);
-  background: rgba(200, 168, 48, 0.1);
+  background: rgba(197,160,77, 0.1);
   box-shadow: 0 0 0 1px var(--gold);
 }
 .pf-tpl-img {
@@ -4633,4 +4641,606 @@ body {
     order: 3;
     flex-basis: 100%;
   }
+}
+
+/* =========================================================================
+   Sistema visual del panel admin: Premium Editorial.
+   Sidebar azul sólido, fondo marfil, superficies blancas con sombra suave,
+   títulos serif y acentos dorados. Solo afecta al admin: las variables se
+   redefinen dentro de .admin-theme, la tienda pública no cambia.
+   ========================================================================= */
+.admin-theme {
+  /* Paleta */
+  --adm-navy: #29465f;
+  --adm-navy-deep: #1f384e;
+  --adm-ivory: #f7f5f0;
+  --adm-surface: #ffffff;
+  --adm-sand: #f4efe3;
+  --adm-gold: #c5a04d;
+  --adm-gold-deep: #a47f2c;
+  --adm-gold-soft: rgba(197, 160, 77, 0.15);
+  --adm-ink: #344d66;
+  --adm-ink-strong: #22405b;
+  --adm-ink-soft: #6e8196;
+  --adm-ink-faint: #9aa8b6;
+  --adm-line: rgba(41, 70, 95, 0.09);
+  --adm-line-strong: rgba(41, 70, 95, 0.17);
+  --adm-success: #3f8f6b;
+  --adm-warning: #c98a2b;
+  --adm-info: #4f7fa8;
+  --adm-danger: #b94a48;
+
+  /* Forma y profundidad */
+  --adm-radius-sm: 10px;
+  --adm-radius: 14px;
+  --adm-radius-lg: 18px;
+  --adm-shadow-sm: 0 1px 2px rgba(34, 64, 91, 0.05);
+  --adm-shadow: 0 1px 2px rgba(34, 64, 91, 0.04), 0 10px 28px rgba(34, 64, 91, 0.07);
+  --adm-shadow-hover: 0 2px 4px rgba(34, 64, 91, 0.05), 0 14px 34px rgba(34, 64, 91, 0.11);
+
+  /* Escala de espacios */
+  --adm-s1: 4px;
+  --adm-s2: 8px;
+  --adm-s3: 12px;
+  --adm-s4: 16px;
+  --adm-s5: 24px;
+  --adm-s6: 32px;
+  --adm-s7: 40px;
+
+  /* Tipografía: serif editorial para títulos, sans para lo funcional */
+  --adm-serif: var(--font-source-serif), "Source Serif 4", Georgia, serif;
+
+  /* Variables heredadas del sitio, redefinidas para el admin */
+  --moss: #29465f;
+  --moss-mid: #3a6082;
+  --gold: #c5a04d;
+  --gold-light: #d4b26a;
+  --gold-pale: #e6cf94;
+  --text: #22405b;
+  --text-mid: #4b6279;
+  --text-light: #74879a;
+  --foreground: #22405b;
+  --beige: #f7f5f0;
+  --beige-warm: #f1ecdf;
+  --beige-mid: #e5decc;
+  --white: #ffffff;
+  --border: rgba(41, 70, 95, 0.1);
+  --border-gold: rgba(197, 160, 77, 0.42);
+  --success: #3f8f6b;
+  --warning: #c98a2b;
+  --info: #4f7fa8;
+  --error: #b94a48;
+
+  /* Menú lateral */
+  --adm-side-bg: #29465f;
+  --adm-side-glow: none;
+  --adm-side-text-soft: rgba(255, 255, 255, 0.76);
+  --adm-side-strong: #ffffff;
+  --adm-side-muted: rgba(255, 255, 255, 0.52);
+  --adm-side-label: rgba(255, 255, 255, 0.5);
+  --adm-side-brand: #c5a04d;
+  --adm-side-line: rgba(255, 255, 255, 0.12);
+  --adm-side-chip: rgba(255, 255, 255, 0.09);
+  --adm-side-active-bg: #c5a04d;
+  --adm-side-active-text: #1a2f43;
+  --adm-side-hover-bg: rgba(255, 255, 255, 0.07);
+  --adm-side-accent: #c5a04d;
+  --adm-side-avatar-bg: rgba(255, 255, 255, 0.16);
+  --adm-side-avatar-text: #ffffff;
+  --adm-logo-from: #29465f;
+  --adm-logo-to: #29465f;
+
+  color: var(--text);
+  background: var(--adm-ivory);
+}
+
+.admin-theme .admin-panel-scroll {
+  background: var(--adm-ivory);
+}
+
+/* Clases de Tailwind con color fijo: en el admin siguen la paleta */
+.admin-theme .text-text { color: var(--text); }
+.admin-theme .text-text-mid { color: var(--text-mid); }
+.admin-theme .text-text-light { color: var(--text-light); }
+.admin-theme .text-moss { color: var(--moss); }
+.admin-theme .border-border { border-color: var(--border); }
+
+/* Tipografía editorial */
+.admin-theme h1,
+.admin-theme h2,
+.admin-theme .font-serif {
+  font-family: var(--adm-serif);
+}
+.admin-theme h1 {
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.admin-theme h2 {
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+/* Foco visible y consistente */
+.admin-theme a:focus-visible,
+.admin-theme button:focus-visible,
+.admin-theme [role="switch"]:focus-visible {
+  outline: 2px solid rgba(197, 160, 77, 0.75);
+  outline-offset: 2px;
+}
+
+/* Menú lateral: azul sólido, continuo con el resto de la app */
+.admin-theme .admin-sidebar {
+  border-right: none;
+}
+.admin-theme .admin-sidebar-link {
+  border-radius: 12px;
+}
+
+/* Superficies: tarjetas blancas elevadas, bordes casi invisibles */
+.admin-theme .admin-card,
+.admin-theme .editor-card,
+.admin-theme .pf-card {
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-radius-lg);
+  box-shadow: var(--adm-shadow);
+}
+.admin-theme .admin-card--gold {
+  border-color: rgba(197, 160, 77, 0.7);
+}
+.admin-theme .editor-card-header,
+.admin-theme .editor-card-footer {
+  border-color: var(--adm-line);
+}
+.admin-theme .editor-card-footer {
+  background: #fbfaf6;
+  border-radius: 0 0 var(--adm-radius-lg) var(--adm-radius-lg);
+}
+
+/* Botones: azul editorial el principal, blanco con filo el secundario */
+.admin-theme .admin-btn-primary {
+  background: var(--adm-navy);
+  color: #fff;
+  border: 1px solid var(--adm-navy);
+  border-radius: var(--adm-radius-sm);
+  box-shadow: 0 1px 2px rgba(34, 64, 91, 0.2), 0 6px 14px rgba(34, 64, 91, 0.14);
+}
+.admin-theme .admin-btn-primary:hover:not(:disabled) {
+  background: #35597a;
+  border-color: #35597a;
+  box-shadow: 0 2px 4px rgba(34, 64, 91, 0.22), 0 10px 20px rgba(34, 64, 91, 0.18);
+}
+.admin-theme .admin-btn-secondary {
+  background: #fff;
+  color: var(--adm-ink);
+  border: 1px solid var(--adm-line-strong);
+  border-radius: var(--adm-radius-sm);
+}
+.admin-theme .admin-btn-secondary:hover {
+  background: #fff;
+  color: var(--adm-ink-strong);
+  border-color: rgba(197, 160, 77, 0.7);
+  box-shadow: var(--adm-shadow-sm);
+}
+
+/* Campos */
+.admin-theme .admin-input {
+  background: #fff;
+  border-color: var(--adm-line-strong);
+  border-radius: var(--adm-radius-sm);
+  color: var(--adm-ink-strong);
+}
+.admin-theme .admin-input:focus {
+  border-color: var(--adm-gold);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(197, 160, 77, 0.18);
+}
+
+/* -------------------------------------------------------------------------
+   Dashboard
+   ------------------------------------------------------------------------- */
+.adm-dash {
+  position: relative;
+  gap: 20px;
+}
+.adm-dash-head {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--adm-s4);
+  padding-top: var(--adm-s2);
+}
+.adm-dash-head-copy {
+  position: relative;
+  max-width: 620px;
+}
+.adm-dash-date {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--adm-gold-deep);
+  margin-bottom: 6px;
+}
+.adm-dash-title {
+  font-size: clamp(24px, 2.3vw, 30px);
+  line-height: 1.1;
+  color: var(--adm-ink-strong);
+}
+.adm-dash-title span {
+  color: var(--adm-gold);
+}
+.adm-dash-sub {
+  margin-top: 8px;
+  font-size: 13.5px;
+  color: var(--adm-ink-soft);
+  font-weight: 400;
+  line-height: 1.5;
+}
+.adm-dash-rule {
+  width: 48px;
+  height: 2px;
+  margin-top: 12px;
+  background: var(--adm-gold);
+  border-radius: 2px;
+}
+.adm-outline-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: var(--adm-radius);
+  border: 1px solid rgba(197, 160, 77, 0.75);
+  background: #fff;
+  color: var(--adm-ink-strong);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: var(--adm-shadow-sm);
+  transition: background-color 0.18s, box-shadow 0.18s, transform 0.18s;
+}
+.adm-outline-btn:hover {
+  background: #fffaf0;
+  box-shadow: 0 6px 16px rgba(165, 128, 44, 0.16);
+  transform: translateY(-1px);
+}
+.adm-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 10px;
+  border: 1px solid rgba(197, 160, 77, 0.6);
+  background: rgba(197, 160, 77, 0.1);
+  color: var(--adm-gold-deep);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.18s;
+}
+.adm-chip-btn:hover {
+  background: rgba(197, 160, 77, 0.2);
+}
+
+/* Tarjetas de indicadores */
+.adm-kpi {
+  position: relative;
+  overflow: hidden;
+  padding: 20px 22px 18px;
+  min-height: 142px;
+  display: flex;
+  flex-direction: column;
+}
+.adm-kpi-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.adm-kpi-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--adm-ink-soft);
+  margin-bottom: 6px;
+}
+.adm-kpi-value {
+  font-family: var(--adm-serif);
+  font-size: clamp(24px, 2.1vw, 29px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--adm-ink-strong);
+}
+.adm-kpi-note {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--adm-ink-soft);
+}
+
+/* Secciones dentro de tarjetas */
+.adm-card-pad {
+  padding: 20px 22px;
+}
+.adm-card-title {
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.15;
+  color: var(--adm-ink-strong);
+  font-weight: 700;
+}
+.adm-card-sub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--adm-ink-soft);
+  line-height: 1.45;
+}
+.adm-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--adm-s3);
+  margin-bottom: 14px;
+}
+
+/* Estado de pedidos */
+.adm-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 26px;
+}
+.adm-status-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--adm-line);
+}
+.adm-status-item:nth-child(n + 4) {
+  border-bottom: none;
+}
+.adm-status-item:nth-child(-n + 3) {
+  padding-top: 0;
+}
+.adm-status-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.adm-status-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.adm-status-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--adm-ink-strong);
+}
+.adm-status-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--adm-ink-strong);
+}
+.adm-status-bar {
+  height: 5px;
+  border-radius: 999px;
+  background: #eeebe3;
+  overflow: hidden;
+}
+.adm-status-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.adm-status-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--adm-ink-soft);
+}
+
+/* Resumen operativo */
+.adm-summary {
+  position: relative;
+  overflow: hidden;
+}
+.adm-summary-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--adm-line);
+}
+.adm-summary-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Accesos rápidos */
+.adm-quick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 13px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--adm-line);
+  box-shadow: var(--adm-shadow-sm);
+  transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+}
+.adm-quick:hover {
+  border-color: rgba(197, 160, 77, 0.55);
+  box-shadow: var(--adm-shadow);
+  transform: translateY(-1px);
+}
+.adm-quick-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--adm-sand);
+  color: var(--adm-gold-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.adm-quick-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--adm-ink-strong);
+}
+.adm-quick-copy {
+  display: block;
+  margin-top: 1px;
+  font-size: 11px;
+  color: var(--adm-ink-soft);
+}
+.adm-quick-arrow {
+  color: var(--adm-gold);
+  flex-shrink: 0;
+  transition: transform 0.18s;
+}
+.adm-quick:hover .adm-quick-arrow {
+  transform: translateX(3px);
+}
+.adm-tip {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--adm-sand);
+  border: 1px solid rgba(197, 160, 77, 0.28);
+}
+
+@media (max-width: 1180px) {
+  .adm-status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .adm-status-item:nth-child(n + 4) {
+    border-bottom: 1px solid var(--adm-line);
+  }
+  .adm-status-item:nth-child(n + 3) {
+    padding-top: 20px;
+  }
+  .adm-status-item:nth-child(-n + 2) {
+    padding-top: 0;
+  }
+  .adm-status-item:nth-child(n + 3):nth-last-child(-n + 2) {
+    border-bottom: none;
+  }
+}
+@media (max-width: 760px) {
+  .adm-dash-head {
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 0;
+  }
+  .adm-status-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .adm-status-item,
+  .adm-status-item:nth-child(n) {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--adm-line);
+  }
+  .adm-status-item:last-child {
+    border-bottom: none;
+  }
+  .adm-card-pad {
+    padding: 18px 16px;
+  }
+  .adm-kpi {
+    min-height: 0;
+    padding: 18px 16px;
+  }
+}
+
+/* Menú: barra de desplazamiento discreta sobre el azul */
+.admin-theme .admin-sidebar nav {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+.admin-theme .admin-sidebar nav::-webkit-scrollbar {
+  width: 6px;
+}
+.admin-theme .admin-sidebar nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-theme .admin-sidebar nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+}
+
+/* Columna de accesos rápidos más amplia en pantallas grandes */
+@media (min-width: 1181px) {
+  .admin-theme .admin-grid-main {
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 24vw, 350px);
+  }
+}
+
+/* Botones y superficies de Tailwind con color fijo: en el admin siguen la paleta nueva */
+.admin-theme .bg-white {
+  background-color: #fff;
+}
+.admin-theme .bg-moss {
+  background-color: var(--adm-navy);
+}
+.admin-theme button.bg-moss,
+.admin-theme a.bg-moss {
+  box-shadow: 0 1px 2px rgba(34, 64, 91, 0.2), 0 6px 14px rgba(34, 64, 91, 0.14);
+  transition: background-color 0.18s, box-shadow 0.18s, transform 0.18s;
+}
+.admin-theme button.bg-moss:hover:not(:disabled),
+.admin-theme a.bg-moss:hover {
+  background-color: #35597a;
+  box-shadow: 0 2px 4px rgba(34, 64, 91, 0.22), 0 10px 20px rgba(34, 64, 91, 0.18);
+}
+.admin-theme .bg-moss-mid,
+.admin-theme .hover\:bg-moss-mid:hover {
+  background-color: #35597a;
+}
+.admin-theme .bg-beige { background-color: var(--beige); }
+.admin-theme .bg-beige-warm { background-color: var(--beige-warm); }
+.admin-theme .bg-beige-mid { background-color: var(--beige-mid); }
+
+/* Contenedores de Tailwind del admin (rounded-[2px] + borde + blanco): mismas tarjetas elevadas */
+.admin-theme .rounded-\[2px\] {
+  border-radius: 12px;
+}
+.admin-theme .rounded-\[2px\].bg-white.border-border {
+  border-color: var(--adm-line);
+  box-shadow: var(--adm-shadow);
+}
+
+/* Botones dorados de Tailwind: texto azul oscuro para que se lea bien */
+.admin-theme button.bg-gold,
+.admin-theme a.bg-gold {
+  background-color: var(--adm-gold);
+  color: #1a2f43;
+  box-shadow: 0 1px 2px rgba(34, 64, 91, 0.12), 0 6px 14px rgba(165, 128, 44, 0.2);
+  transition: background-color 0.18s, box-shadow 0.18s;
+}
+.admin-theme button.bg-gold:hover:not(:disabled),
+.admin-theme a.bg-gold:hover {
+  background-color: #d2b062;
 }

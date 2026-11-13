@@ -18,48 +18,34 @@ type AdminLoginPanelProps = {
 
 export function AdminLoginPanel({ nextPath }: AdminLoginPanelProps) {
   return (
-    <div style={{ width: "100%" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "32px" }}>
+    <div className="admin-theme" style={{ width: "100%", background: "transparent" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "40px" }}>
         <Image
           alt="Crecer Librería"
-          height={40}
+          height={52}
+          priority
           src="/images/Logo-Crecer.png"
           style={{ objectFit: "contain" }}
-          width={40}
+          width={52}
         />
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <span style={{ fontFamily: "var(--font-serif)", fontSize: "16px", fontWeight: 500, color: "var(--moss)" }}>
+          <span style={{ fontFamily: "var(--adm-serif, var(--font-serif))", fontSize: "22px", fontWeight: 600, color: "var(--adm-ink-strong)", lineHeight: 1.1 }}>
             Crecer Librería
           </span>
           <span
             style={{
-              fontSize: "10px",
-              fontWeight: 500,
-              letterSpacing: "0.2em",
+              marginTop: "4px",
+              fontSize: "11px",
+              fontWeight: 600,
+              letterSpacing: "0.26em",
               textTransform: "uppercase",
-              color: "var(--gold)",
+              color: "var(--adm-gold-deep)",
             }}
           >
-            Librería Católica
+            Panel admin
           </span>
         </div>
       </div>
-
-      <span
-        style={{
-          display: "inline-block",
-          marginBottom: "22px",
-          borderRadius: "20px",
-          background: "var(--beige-warm)",
-          border: "1px solid var(--border-gold)",
-          padding: "5px 14px",
-          fontSize: "11px",
-          fontWeight: 500,
-          color: "var(--moss)",
-        }}
-      >
-        Crecer Librería · Panel administrativo
-      </span>
 
       <p
         style={{
@@ -76,11 +62,12 @@ export function AdminLoginPanel({ nextPath }: AdminLoginPanelProps) {
       <h1
         style={{
           marginBottom: "10px",
-          fontFamily: "var(--font-serif)",
-          fontSize: "30px",
-          fontWeight: 400,
-          letterSpacing: "-0.01em",
-          color: "var(--text)",
+          fontFamily: "var(--adm-serif, var(--font-serif))",
+          fontSize: "32px",
+          fontWeight: 700,
+          letterSpacing: "-0.015em",
+          lineHeight: 1.1,
+          color: "var(--adm-ink-strong)",
         }}
       >
         Accede a tu cuenta

@@ -323,8 +323,8 @@ function HotspotEditor({
           top: `${rect.y}%`,
           width: `${rect.width}%`,
           height: `${rect.height}%`,
-          border: "2px dashed #c8a830",
-          background: "rgba(200, 168, 48, 0.18)",
+          border: "2px dashed #c5a04d",
+          background: "rgba(197,160,77, 0.18)",
           cursor: "move",
         }}
       >
@@ -341,7 +341,7 @@ function HotspotEditor({
             width: 14,
             height: 14,
             borderRadius: "50%",
-            background: "#c8a830",
+            background: "#c5a04d",
             border: "2px solid white",
             cursor: "nwse-resize",
           }}
@@ -786,8 +786,8 @@ export function HeroAdminEditor({ initialData }: HeroAdminEditorProps = {}) {
         className="admin-slide-grid-card"
         style={{
           opacity: draggedId === slide.id ? 0.4 : 1,
-          borderColor: isEditing ? "rgba(200, 168, 48, 0.55)" : undefined,
-          boxShadow: isEditing ? "0 0 0 2px rgba(200, 168, 48, 0.25)" : undefined,
+          borderColor: isEditing ? "rgba(197,160,77, 0.55)" : undefined,
+          boxShadow: isEditing ? "0 0 0 2px rgba(197,160,77, 0.25)" : undefined,
         }}
       >
         <div className="admin-slide-grid-image-wrap">

@@ -19,14 +19,14 @@ export interface AdminStatusPillProps {
 }
 
 const statusMap: Record<AdminStatus, string> = {
-  pending: "bg-[rgba(230,126,34,0.08)] text-[#E67E22]",
-  paid: "bg-[rgba(39,174,96,0.10)] text-[#27AE60]",
-  preparing: "bg-[rgba(41,128,185,0.08)] text-[#2980B9]",
-  shipped: "bg-[rgba(139,92,246,0.08)] text-[#8B5CF6]",
-  delivered: "bg-[rgba(39,174,96,0.10)] text-[#27AE60]",
-  cancelled: "bg-[rgba(192,57,43,0.08)] text-[#C0392B]",
-  active: "bg-[rgba(39,174,96,0.10)] text-[#27AE60]",
-  inactive: "bg-[rgba(115,96,2,0.08)] text-text-light",
+  pending: "bg-[rgba(201,138,43,0.12)] text-[#a8691a]",
+  paid: "bg-[rgba(63,143,107,0.12)] text-[#2f7a58]",
+  preparing: "bg-[rgba(79,127,168,0.12)] text-[#3a6a92]",
+  shipped: "bg-[rgba(90,111,176,0.12)] text-[#4a5f9f]",
+  delivered: "bg-[rgba(197,160,77,0.18)] text-[#8f6c1f]",
+  cancelled: "bg-[rgba(185,74,72,0.10)] text-[#a33f3d]",
+  active: "bg-[rgba(63,143,107,0.12)] text-[#2f7a58]",
+  inactive: "bg-[rgba(41,70,95,0.08)] text-text-light",
 };
 
 const labelMap: Record<AdminStatus, string> = {

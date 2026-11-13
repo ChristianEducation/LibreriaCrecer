@@ -53,7 +53,7 @@ export function AdminTopbar({ onOpenMenu }: AdminTopbarProps) {
           height: 36,
           flexShrink: 0,
           borderRadius: 8,
-          border: "1px solid #ede9e2",
+          border: "1px solid rgba(41,70,95,0.12)",
           background: "white",
           color: "var(--text)",
           cursor: "pointer",

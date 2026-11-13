@@ -162,7 +162,7 @@ export default function AdminCategoriasPage() {
                     </p>
                     {category.hideFromNav ? (
                       <button
-                        className="mt-1 flex items-center gap-1 rounded-[6px] border border-border-gold bg-[rgba(232,208,96,0.08)] px-2 py-[3px] text-[11px] text-moss transition-colors hover:bg-[rgba(232,208,96,0.16)]"
+                        className="mt-1 flex items-center gap-1 rounded-[6px] border border-border-gold bg-[rgba(197,160,77,0.08)] px-2 py-[3px] text-[11px] text-moss transition-colors hover:bg-[rgba(197,160,77,0.16)]"
                         onClick={() => handleCopyLink(category.slug)}
                         type="button"
                       >
@@ -216,7 +216,7 @@ export default function AdminCategoriasPage() {
                     className={`rounded-[8px] border px-3 py-[6px] text-[12px] transition-colors ${
                       category.isActive
                         ? "border-error/30 text-error hover:bg-error/8"
-                        : "border-[#27AE60]/30 text-[#27AE60] hover:bg-[#27AE60]/8"
+                        : "border-[#3f8f6b]/30 text-[#3f8f6b] hover:bg-[#3f8f6b]/8"
                     }`}
                     onClick={() =>
                       category.isActive ? handleDelete(category.id) : handleActivate(category.id)

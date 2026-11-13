@@ -65,7 +65,7 @@ export function AdminTable<T>({
             justifyContent: "space-between",
             gap: 16,
             padding: "16px 20px",
-            borderBottom: "1px solid #ede9e2",
+            borderBottom: "1px solid rgba(41,70,95,0.12)",
           }}
         >
           <div>
@@ -103,7 +103,7 @@ export function AdminTable<T>({
         <div ref={scrollRef} style={{ overflowX: "auto", minWidth: 0 }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ background: "#faf8f4", borderBottom: "1px solid #ede9e2" }}>
+            <tr style={{ background: "#faf8f4", borderBottom: "1px solid rgba(41,70,95,0.12)" }}>
               {columns.map((column, index) => (
                 <th
                   className={column.className}
@@ -148,7 +148,7 @@ export function AdminTable<T>({
                   className="transition-colors duration-150 hover:bg-[#faf9f6]"
                   key={rowKey(item)}
                   style={{
-                    borderTop: rowIndex === 0 ? "none" : "1px solid #f2efe8",
+                    borderTop: rowIndex === 0 ? "none" : "1px solid rgba(41,70,95,0.07)",
                   }}
                 >
                   {columns.map((column, colIndex) => (

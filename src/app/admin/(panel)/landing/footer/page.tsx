@@ -180,7 +180,7 @@ function FooterPreview({
   const bodyTextColor = isDarkTone ? "var(--text)" : "var(--text-light)";
 
   return (
-    <div className="overflow-hidden rounded-[12px] border border-border bg-[#f7f4e7] shadow-[0_18px_60px_rgba(58,48,1,0.10)]">
+    <div className="overflow-hidden rounded-[12px] border border-border bg-[#f7f4e7] shadow-[0_18px_60px_rgba(34,64,91,0.10)]">
       <div className="flex items-center justify-between border-b border-border bg-white px-4 py-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gold">

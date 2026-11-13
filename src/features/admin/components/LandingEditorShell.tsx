@@ -20,7 +20,7 @@ export function LandingEditorShell({
         paddingBottom: "clamp(20px, 2.5vw, 32px)",
       }}
     >
-      <header className="mb-4 border-b border-[#ede9e2] pb-3">
+      <header className="mb-4 border-b border-[rgba(41,70,95,0.12)] pb-3">
         <h1 className="text-[20px] font-semibold leading-tight text-text">
           {title}
         </h1>

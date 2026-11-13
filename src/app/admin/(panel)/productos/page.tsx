@@ -125,7 +125,7 @@ function BookCover({ title, imageUrl }: { title: string; imageUrl: string | null
           borderRadius: 4,
           objectFit: "cover",
           flexShrink: 0,
-          boxShadow: "1px 1px 4px rgba(58, 48, 1, 0.18)",
+          boxShadow: "1px 1px 4px rgba(34,64,91, 0.18)",
         }}
       />
     );
@@ -155,7 +155,7 @@ function BookCover({ title, imageUrl }: { title: string; imageUrl: string | null
         fontSize: 10,
         fontWeight: 700,
         letterSpacing: 1,
-        boxShadow: "1px 1px 4px rgba(58, 48, 1, 0.22)",
+        boxShadow: "1px 1px 4px rgba(34,64,91, 0.22)",
         position: "relative",
         overflow: "hidden",
       }}
@@ -192,7 +192,7 @@ function StockIndicator({ stock, inStock }: { stock: number; inStock: boolean })
           width: 36,
           height: 4,
           borderRadius: 999,
-          background: "#e8e5df",
+          background: "rgba(41,70,95,0.12)",
           overflow: "hidden",
         }}
       >
@@ -218,7 +218,7 @@ function CategoryPill({ label }: { label: string }) {
         display: "inline-block",
         padding: "3px 10px",
         borderRadius: 999,
-        background: "rgba(115, 96, 2, 0.07)",
+        background: "rgba(41,70,95, 0.07)",
         color: "var(--text-mid)",
         fontSize: 11,
         fontWeight: 500,
@@ -280,8 +280,8 @@ function ActionMenu({
           width: 32,
           height: 32,
           borderRadius: 8,
-          border: "1px solid #e8e5df",
-          background: open ? "#f0ede7" : "white",
+          border: "1px solid rgba(41,70,95,0.12)",
+          background: open ? "rgba(41,70,95,0.07)" : "white",
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
@@ -304,8 +304,8 @@ function ActionMenu({
             width: 200,
             background: "white",
             borderRadius: 10,
-            border: "1px solid #e8e5df",
-            boxShadow: "0 8px 24px rgba(58, 48, 1, 0.12)",
+            border: "1px solid rgba(41,70,95,0.12)",
+            boxShadow: "0 8px 24px rgba(34,64,91, 0.12)",
             padding: 4,
           }}
         >
@@ -336,7 +336,7 @@ function ActionMenu({
           </button>
           <div
             aria-hidden="true"
-            style={{ height: 1, background: "#f0ede7", margin: "4px 10px" }}
+            style={{ height: 1, background: "rgba(41,70,95,0.07)", margin: "4px 10px" }}
           />
           <button
             onClick={() => {
@@ -656,7 +656,7 @@ function BulkVentaWebControl({
           height: 36,
           padding: "0 14px",
           borderRadius: 10,
-          border: "1px solid #e8e5df",
+          border: "1px solid rgba(41,70,95,0.12)",
           background: "white",
           color: "var(--text-mid)",
           fontSize: 13,
@@ -682,8 +682,8 @@ function BulkVentaWebControl({
             width: 260,
             background: "white",
             borderRadius: 10,
-            border: "1px solid #e8e5df",
-            boxShadow: "0 8px 24px rgba(58, 48, 1, 0.12)",
+            border: "1px solid rgba(41,70,95,0.12)",
+            boxShadow: "0 8px 24px rgba(34,64,91, 0.12)",
             padding: 4,
           }}
         >
@@ -789,7 +789,7 @@ function ProductMobileCard({
           justifyContent: "space-between",
           gap: 12,
           paddingTop: 10,
-          borderTop: "1px solid #f2efe8",
+          borderTop: "1px solid rgba(41,70,95,0.07)",
         }}
       >
         <EditableStatus
@@ -1116,7 +1116,7 @@ export default function AdminProductosPage() {
                 fontSize: 13,
                 fontWeight: 600,
                 letterSpacing: "0.01em",
-                boxShadow: "0 2px 8px rgba(200, 168, 48, 0.35)",
+                boxShadow: "0 2px 8px rgba(197,160,77, 0.35)",
                 textDecoration: "none",
                 flexShrink: 0,
               }}
@@ -1222,7 +1222,7 @@ export default function AdminProductosPage() {
             <ProductIcon name="filter" size={15} />
             Filtros
           </div>
-          <div style={{ width: 1, height: 20, background: "#ede9e2" }} />
+          <div style={{ width: 1, height: 20, background: "rgba(41,70,95,0.12)" }} />
           <label style={{ flex: "1 1 240px", minWidth: 220, position: "relative" }}>
             <span className="sr-only">Buscar productos</span>
             <span
@@ -1246,7 +1246,7 @@ export default function AdminProductosPage() {
                 width: "100%",
                 height: 36,
                 borderRadius: 10,
-                border: "1px solid #e8e5df",
+                border: "1px solid rgba(41,70,95,0.12)",
                 background: "#faf9f7",
                 padding: "0 14px 0 34px",
                 fontSize: 13,
@@ -1266,7 +1266,7 @@ export default function AdminProductosPage() {
                 width: "100%",
                 height: 36,
                 borderRadius: 10,
-                border: "1px solid #e8e5df",
+                border: "1px solid rgba(41,70,95,0.12)",
                 background: "white",
                 padding: "0 32px 0 14px",
                 fontSize: 13,
@@ -1307,7 +1307,7 @@ export default function AdminProductosPage() {
                 width: "100%",
                 height: 36,
                 borderRadius: 10,
-                border: "1px solid #e8e5df",
+                border: "1px solid rgba(41,70,95,0.12)",
                 background: "white",
                 padding: "0 32px 0 14px",
                 fontSize: 13,
@@ -1345,7 +1345,7 @@ export default function AdminProductosPage() {
                 width: "100%",
                 height: 36,
                 borderRadius: 10,
-                border: "1px solid #e8e5df",
+                border: "1px solid rgba(41,70,95,0.12)",
                 background: "white",
                 padding: "0 32px 0 14px",
                 fontSize: 13,
@@ -1399,8 +1399,8 @@ export default function AdminProductosPage() {
           <div
             style={{
               borderRadius: 14,
-              border: "1px solid rgba(192, 57, 43, 0.25)",
-              background: "rgba(192, 57, 43, 0.06)",
+              border: "1px solid rgba(185,74,72, 0.25)",
+              background: "rgba(185,74,72, 0.06)",
               padding: "14px 20px",
               fontSize: 13,
               color: "var(--error)",

@@ -72,7 +72,7 @@ function OrderMobileCard({ order }: { order: OrderRow }) {
         </p>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, paddingTop: 8, borderTop: "1px solid #f2efe8" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, paddingTop: 8, borderTop: "1px solid rgba(41,70,95,0.07)" }}>
         <span style={{ fontSize: 12, color: "var(--text-light)" }}>
           {order.deliveryMethod === "pickup" ? "Retiro en tienda" : "Despacho"}
         </span>
@@ -326,7 +326,7 @@ export default function AdminPedidosPage() {
                         type="button"
                         disabled={updatingOrderId === order.id}
                         onClick={() => handleGenerateTicket(order.id)}
-                        className="rounded-[8px] border border-border-gold bg-[rgba(232,208,96,0.08)] px-3 py-[6px] text-[12px] text-moss transition-colors hover:bg-[rgba(232,208,96,0.16)] disabled:opacity-50"
+                        className="rounded-[8px] border border-border-gold bg-[rgba(197,160,77,0.08)] px-3 py-[6px] text-[12px] text-moss transition-colors hover:bg-[rgba(197,160,77,0.16)] disabled:opacity-50"
                       >
                         {updatingOrderId === order.id ? "Generando..." : action.label}
                       </button>
@@ -336,7 +336,7 @@ export default function AdminPedidosPage() {
                         type="button"
                         disabled={updatingOrderId === order.id}
                         onClick={() => handleQuickStatusChange(order.id, action.status, action.label)}
-                        className="rounded-[8px] border border-border-gold bg-[rgba(232,208,96,0.08)] px-3 py-[6px] text-[12px] text-moss transition-colors hover:bg-[rgba(232,208,96,0.16)] disabled:opacity-50"
+                        className="rounded-[8px] border border-border-gold bg-[rgba(197,160,77,0.08)] px-3 py-[6px] text-[12px] text-moss transition-colors hover:bg-[rgba(197,160,77,0.16)] disabled:opacity-50"
                       >
                         {action.label}
                       </button>
